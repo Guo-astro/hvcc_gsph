@@ -21,6 +21,7 @@ brew --prefix llvm
 brew --prefix libomp  
 echo 'export OpenMP_ROOT=$(brew --prefix)/opt/libomp' >> ~/.zshrc
 
+sudo ln -s /opt/homebrew/Cellar/boost /usr/local/bin/homebrew/Cellar/boost
 
 echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
 echo -e 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"\nexport CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' >> ~/.zshrc
@@ -45,7 +46,7 @@ make
 ### サンプル実行
 次のコマンドを実行します。
 ```Shell
-./sph <sample> <threads>
+./sph shock_tube 1
 ```
 #### \<sample\>
 サンプルの名前を指定します。以下のサンプルを用意しています。

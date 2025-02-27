@@ -1,0 +1,14 @@
+{
+  "time_factor": 1.0,
+  "length_factor": 100.0,
+  "mass_factor": 1000.0,
+  "density_factor": 0.001,
+  "pressure_factor": 0.1,
+  "energy_factor": 1.0,
+  "time_unit": "s",
+  "length_unit": "cm",
+  "mass_unit": "g",
+  "density_unit": "g/cm^3",
+  "pressure_unit": "barye",
+  "energy_unit": "erg/g"
+}
