@@ -39,7 +39,8 @@ cmake -B build \
 -DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp /opt/homebrew/opt/libomp/lib/libomp.dylib -I/opt/homebrew/opt/libomp/include"
 
 
-make
+cd build && make
+./sph shock_tube 1
 ```
 
 ## 実行
