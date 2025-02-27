@@ -15,11 +15,27 @@ GCCバージョン7.4.0でコンパイルチェックしています。
 [Makefileの書き方に関する備忘録 その4 - minus9d's diary](https://minus9d.hatenablog.com/entry/2017/10/20/222901) を参考にしています。
 
 ### CMake
-次のコマンドでビルドします。
+MacOS: 次のコマンドでビルドします。
 ```Shell
-mkdir build
-cd build
-cmake ..
+brew --prefix llvm  
+brew --prefix libomp  
+echo 'export OpenMP_ROOT=$(brew --prefix)/opt/libomp' >> ~/.zshrc
+
+
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+echo -e 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"\nexport CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' >> ~/.zshrc
+source ~/.zshrc
+
+rm -rf build && mkdir build && cd build
+cmake  \
+  -B build \
+    -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+    -DOpenMP_C_FLAGS=-fopenmp=lomp \
+-DOpenMP_CXX_FLAGS=-fopenmp=lomp \
+-DOpenMP_C_LIB_NAMES="libomp" \
+-DOpenMP_libomp_LIBRARY="/opt/local/lib/libomp.dylib" \
+-DOpenMP_CXX_LIB_NAMES="libomp" 
+cmake -S . -B build
 make
 ```
 

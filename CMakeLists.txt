@@ -1,25 +1,43 @@
-cmake_minimum_required(VERSION 3.13)
-project(sphcode CXX)
+cmake_minimum_required(VERSION 3.23)
+project(gsphcode CXX)
 
+# If you use OpenMP
 find_package(OpenMP REQUIRED)
-find_package(Boost REQUIRED)
 
-add_executable(sph)
+# If your code uses property_tree, format, etc. and needs linking:
+# (If you only need header-only parts of Boost, you can leave out COMPONENTS or reduce it.)
+find_package(Boost REQUIRED COMPONENTS filesystem iostreams)
+
+add_executable(sph)  # Our main executable
 target_compile_features(sph PUBLIC cxx_std_14)
+
 target_compile_options(sph
-  PUBLIC
+    PUBLIC
     -Wall
     -Wno-sign-compare
     -Wno-maybe-uninitialized
     -funroll-loops
     -ffast-math
-  )
-target_include_directories(sph PUBLIC include)
-target_link_libraries(sph
-  PUBLIC
-    OpenMP::OpenMP_CXX
-    Boost::boost
-  )
+)
 
+# Where to look for headers
+target_include_directories(sph PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    # NOTE: Not strictly needed if you rely on the imported targets
+    # but sometimes people still do: ${Boost_INCLUDE_DIRS}
+)
+
+# Link libraries
+target_link_libraries(sph
+    PUBLIC
+    OpenMP::OpenMP_CXX
+    # If you actually need a specific Boost library:
+    Boost::filesystem       # e.g. for <boost/filesystem.hpp> usage
+    Boost::iostreams        # e.g. if needed by property_tree JSON
+    # Or if everything you need is purely header-only, you might only do:
+    # Boost::boost
+)
+
+# Add subdirectories for source
 add_subdirectory(include)
 add_subdirectory(src)
