@@ -1,60 +1,74 @@
 #pragma once
-
+#include "defines.hpp"
 #include <cmath>
 
-#include "defines.hpp"
-
-class vec_t {
+class vec_t
+{
     real vec[DIM];
+
 public:
     // Constructor
 #if DIM == 1
-    vec_t(const real x = 0) {
+    vec_t(const real x = 0)
+    {
         vec[0] = x;
     }
 #elif DIM == 2
-    vec_t(const real x = 0, const real y = 0) {
+    vec_t(const real x = 0, const real y = 0)
+    {
         vec[0] = x;
         vec[1] = y;
     }
 #elif DIM == 3
-    vec_t(const real x = 0, const real y = 0, const real z = 0) {
+    vec_t(const real x = 0, const real y = 0, const real z = 0)
+    {
         vec[0] = x;
         vec[1] = y;
         vec[2] = z;
     }
 #endif
 
-    vec_t(const vec_t & a) {
-        for(int i = 0; i < DIM; ++i) vec[i] = a[i];
+    vec_t(const vec_t &a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] = a[i];
     }
 
-    vec_t(const real (&a)[DIM]) {
-        for(int i = 0; i < DIM; ++i) vec[i] = a[i];
+    vec_t(const real (&a)[DIM])
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] = a[i];
     }
 
     // Operator
-    real & operator[](const int i) { return vec[i]; }
-    const real & operator[](const int i) const { return vec[i]; }
+    real &operator[](const int i) { return vec[i]; }
+    const real &operator[](const int i) const { return vec[i]; }
 
-    vec_t & operator=(const vec_t &a) {
-        for(int i = 0; i < DIM; ++i) vec[i] = a[i];
+    vec_t &operator=(const vec_t &a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] = a[i];
         return *this;
     }
 
-    vec_t & operator=(const real (&a)[DIM]) {
-        for(int i = 0; i < DIM; ++i) vec[i] = a[i];
+    vec_t &operator=(const real (&a)[DIM])
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] = a[i];
         return *this;
     }
 
-    vec_t & operator=(const real a) {
-        for(int i = 0; i < DIM; ++i) vec[i] = a;
+    vec_t &operator=(const real a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] = a;
         return *this;
     }
 
-    const vec_t & operator+() const { return *this; }
+    const vec_t &operator+() const { return *this; }
 
-    const vec_t operator-() const {
+    const vec_t operator-() const
+    {
 #if DIM == 1
         return vec_t(-vec[0]);
 #elif DIM == 2
@@ -65,49 +79,66 @@ public:
     }
 
     // +=
-    vec_t & operator+=(const vec_t &a) {
-        for(int i = 0; i < DIM; ++i) vec[i] += a[i];
+    vec_t &operator+=(const vec_t &a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] += a[i];
         return *this;
     }
 
-    vec_t & operator+=(const real (&a)[DIM]) {
-        for(int i = 0; i < DIM; ++i) vec[i] += a[i];
+    vec_t &operator+=(const real (&a)[DIM])
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] += a[i];
         return *this;
     }
 
-    vec_t & operator+=(const real a) {
-        for(int i = 0; i < DIM; ++i) vec[i] += a;
+    vec_t &operator+=(const real a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] += a;
         return *this;
     }
 
     // -=
-    vec_t & operator-=(const vec_t &a) {
-        for(int i = 0; i < DIM; ++i) vec[i] -= a[i];
+    vec_t &operator-=(const vec_t &a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] -= a[i];
         return *this;
     }
 
-    vec_t & operator-=(const real (&a)[DIM]) {
-        for(int i = 0; i < DIM; ++i) vec[i] -= a[i];
+    vec_t &operator-=(const real (&a)[DIM])
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] -= a[i];
         return *this;
     }
 
-    vec_t & operator-=(const real a) {
-        for(int i = 0; i < DIM; ++i) vec[i] -= a;
+    vec_t &operator-=(const real a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] -= a;
         return *this;
     }
 
-    vec_t & operator*=(const real a) {
-        for(int i = 0; i < DIM; ++i) vec[i] *= a;
+    vec_t &operator*=(const real a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] *= a;
         return *this;
     }
 
-    vec_t & operator/=(const real a) {
-        for(int i = 0; i < DIM; ++i) vec[i] /= a;
+    vec_t &operator/=(const real a)
+    {
+        for (int i = 0; i < DIM; ++i)
+            vec[i] /= a;
         return *this;
     }
 
     // +
-    vec_t operator+(const vec_t &a) const {
+    vec_t operator+(const vec_t &a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] + a[0]);
 #elif DIM == 2
@@ -117,7 +148,8 @@ public:
 #endif
     }
 
-    vec_t operator+(const real (&a)[DIM]) const {
+    vec_t operator+(const real (&a)[DIM]) const
+    {
 #if DIM == 1
         return vec_t(vec[0] + a[0]);
 #elif DIM == 2
@@ -127,7 +159,8 @@ public:
 #endif
     }
 
-    vec_t operator+(const real a) const {
+    vec_t operator+(const real a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] + a);
 #elif DIM == 2
@@ -138,7 +171,8 @@ public:
     }
 
     // -
-    vec_t operator-(const vec_t &a) const {
+    vec_t operator-(const vec_t &a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] - a[0]);
 #elif DIM == 2
@@ -148,7 +182,8 @@ public:
 #endif
     }
 
-    vec_t operator-(const real (&a)[DIM]) const {
+    vec_t operator-(const real (&a)[DIM]) const
+    {
 #if DIM == 1
         return vec_t(vec[0] - a[0]);
 #elif DIM == 2
@@ -158,7 +193,8 @@ public:
 #endif
     }
 
-    vec_t operator-(const real a) const {
+    vec_t operator-(const real a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] - a);
 #elif DIM == 2
@@ -168,7 +204,8 @@ public:
 #endif
     }
 
-    vec_t operator*(const real a) const {
+    vec_t operator*(const real a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] * a);
 #elif DIM == 2
@@ -178,7 +215,8 @@ public:
 #endif
     }
 
-    vec_t operator/(const real a) const {
+    vec_t operator/(const real a) const
+    {
 #if DIM == 1
         return vec_t(vec[0] / a);
 #elif DIM == 2
@@ -229,11 +267,12 @@ inline real abs2(const vec_t &a)
     return inner_product(a, a);
 }
 
-namespace std {
-inline real abs(const vec_t &a)
+namespace std
 {
-    return std::sqrt(inner_product(a, a));
-}
+    inline ::real abs(const vec_t &a)
+    {
+        return std::sqrt(inner_product(a, a));
+    }
 }
 
 #if DIM == 2

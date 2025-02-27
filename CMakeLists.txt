@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 project(gsphcode CXX)
+set(CMAKE_OSX_ARCHITECTURES "arm64")
 
 # If you use OpenMP
 find_package(OpenMP REQUIRED)
@@ -21,11 +22,8 @@ target_compile_options(sph
 )
 
 # Where to look for headers
-target_include_directories(sph PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    # NOTE: Not strictly needed if you rely on the imported targets
-    # but sometimes people still do: ${Boost_INCLUDE_DIRS}
-)
+target_include_directories(sph PUBLIC include)
+
 
 # Link libraries
 target_link_libraries(sph

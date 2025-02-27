@@ -27,15 +27,17 @@ echo -e 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"\nexport CPPFLAGS="-I/opt/
 source ~/.zshrc
 
 rm -rf build && mkdir build && cd build
-cmake  \
-  -B build \
-    -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
-    -DOpenMP_C_FLAGS=-fopenmp=lomp \
+cmake -B build \
+-DOpenMP_C_FLAGS=-fopenmp=lomp \
 -DOpenMP_CXX_FLAGS=-fopenmp=lomp \
 -DOpenMP_C_LIB_NAMES="libomp" \
--DOpenMP_libomp_LIBRARY="/opt/local/lib/libomp.dylib" \
--DOpenMP_CXX_LIB_NAMES="libomp" 
-cmake -S . -B build
+-DOpenMP_CXX_LIB_NAMES="libomp" \
+-DOpenMP_libomp_LIBRARY="/opt/homebrew/opt/libomp//lib/libomp.dylib" \
+-DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/homebrew/opt/libomp/lib/libomp.dylib -I/opt/homebrew/opt/libomp/include" \
+-DOpenMP_CXX_LIB_NAMES="libomp" \
+-DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp /opt/homebrew/opt/libomp/lib/libomp.dylib -I/opt/homebrew/opt/libomp/include"
+
+
 make
 ```
 

@@ -1,7 +1,7 @@
 target_sources(sph
   PUBLIC
-    bhtree.hpp
     defines.hpp
+    bhtree.hpp
     exception.hpp
     exhaustive_search.hpp
     fluid_force.hpp
