@@ -6,4 +6,6 @@ target_sources(sph
         khi.cpp
         pairing_instability.cpp
         shock_tube.cpp
+        shock_tube_astro_unit.cpp
+
     )

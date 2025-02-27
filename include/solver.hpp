@@ -21,6 +21,7 @@ namespace sph
 
     enum struct Sample
     {
+        ShockTubeAstroUnit,
         ShockTube,
         GreshoChanVortex,
         PairingInstability,
@@ -57,6 +58,7 @@ namespace sph
         std::unordered_map<std::string, boost::any> m_sample_parameters;
 
         void make_shock_tube();
+        void make_shock_tube_astro_unit();
         void make_gresho_chan_vortex();
         void make_pairing_instability();
         void make_hydrostatic();

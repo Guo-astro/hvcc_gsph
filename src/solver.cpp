@@ -178,6 +178,12 @@ namespace sph
             m_sample = Sample::ShockTube;
             m_sample_parameters["N"] = input.get<int>("N", 100);
         }
+        else if (name_str == "shock_tube_astro_unit")
+        {
+            pt::read_json("sample/shock_tube_astro_unit/shock_tube.json", input);
+            m_sample = Sample::ShockTube;
+            m_sample_parameters["N"] = input.get<int>("N", 100);
+        }
         else if (name_str == "gresho_chan_vortex")
         {
             pt::read_json("sample/gresho_chan_vortex/gresho_chan_vortex.json", input);
@@ -545,6 +551,8 @@ namespace sph
         make_##b();       \
         break
             MAKE_SAMPLE(Sample::ShockTube, shock_tube);
+            MAKE_SAMPLE(Sample::ShockTubeAstroUnit, shock_tube_astro_unit);
+
             MAKE_SAMPLE(Sample::GreshoChanVortex, gresho_chan_vortex);
             MAKE_SAMPLE(Sample::PairingInstability, pairing_instability);
             MAKE_SAMPLE(Sample::HydroStatic, hydrostatic);
