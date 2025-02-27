@@ -3,15 +3,15 @@
   "endTime": 1.0,
   "outputTime": 0.1,
   "energyTime": 0.1,
-
-  "SPHType": "ssph",
-  "avAlpha": 1.0,
+  "cflSound": 0.3,
+  "cflForce": 0.125,
+  "SPHType": "gsph",
   "neighborNumber": 32,
   "gamma": 1.4,
   "kernel": "cubic_spline",
 
   "N": 200,
-  "periodic": false,
+  "periodic": true,
   "rangeMax": [3.0],
   "rangeMin": [0.0],
 

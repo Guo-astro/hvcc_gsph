@@ -99,9 +99,6 @@ namespace sph
 
         //    so the sample can fill in param defaults (like param->physics.gamma).
         WRITE_LOG << "app_name: " << m_sample_name;
-
-        // 4) Make an Output object:
-        m_output = std::make_shared<Output>(0, m_unit);
     }
 
     void Solver::parseJsonOverrides()
@@ -307,6 +304,7 @@ namespace sph
     void Solver::initialize()
     {
         parseJsonOverrides();
+        m_output = std::make_shared<Output>(0, m_unit);
 
         m_sim = std::make_shared<Simulation>(m_param);
         // 3) If the sample was recognized, fill actual particles now

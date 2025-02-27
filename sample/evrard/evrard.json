@@ -1,16 +1,18 @@
 {
-    "outputDirectory" : "sample/evrard/results",
-    "endTime" : 3.0,
-    "avAlpha" : 1.0,
-    "neighborNumber" : 32,
-    "useBalsaraSwitch" : true,
-    "useTimeDependentAV" : true,
-    "useArtificialConductivity" : false,
-    "leafParticleNumber" : 32,
-    "gamma" : 1.66666666666666666666666666666666667,
-    "kernel" : "wendland",
-    "N" : 30,
-    "periodic" : false,
-    "useGravity" : true,
-    "SPHType" : "disph"
+  "outputDirectory": "sample/evrard/results",
+  "endTime": 3.0,
+  "avAlpha": 1.0,
+  "neighborNumber": 32,
+  "useBalsaraSwitch": true,
+  "useTimeDependentAV": true,
+  "useArtificialConductivity": false,
+  "leafParticleNumber": 32,
+  "gamma": 1.66666666666666666666666666666666667,
+  "kernel": "wendland",
+  "N": 30,
+  "periodic": false,
+  "useGravity": true,
+  "G": 0.004499,
+
+  "SPHType": "disph"
 }
