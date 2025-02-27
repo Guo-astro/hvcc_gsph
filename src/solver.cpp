@@ -61,7 +61,6 @@ namespace sph
 
         // The first argument is the sample name:
         m_sample_name = argv[1];
-
         // The second argument, if present, might be a .json or an integer:
         if (argc >= 3)
         {
