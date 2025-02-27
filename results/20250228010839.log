@@ -1,0 +1,8 @@
+OpenMP is enabled.
+Number of threads = 1
+app_name: shock_tube
+catch exception.
+Cannot read JSON file: ./sample/shock_tube.json => ./sample/shock_tube.json: cannot open file
+file: /Users/guo/OSS/sphcode/src/solver.cpp
+func: parseJsonOverrides
+line: 124

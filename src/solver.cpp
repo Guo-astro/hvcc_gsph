@@ -20,336 +20,232 @@
 #include "pre_interaction.hpp"
 #include "fluid_force.hpp"
 #include "gravity_force.hpp"
+#include "sample_registry.hpp"
+
+// disph
 #include "disph/d_pre_interaction.hpp"
 #include "disph/d_fluid_force.hpp"
+
+// gsph
 #include "gsph/g_pre_interaction.hpp"
 #include "gsph/g_fluid_force.hpp"
-#include "unit_system.hpp" // NEW: defines the UnitSystem structure
+
+// ADDED: our new HeatingCooling module
+#include "heating_cooling.hpp"
+
+// for unit system
+#include "unit_system.hpp"
 
 namespace sph
 {
 
-    // Assumes that Solver has a member variable 'UnitSystem m_unit;' declared in solver.hpp
-    // Here we explicitly initialize m_unit in the constructor's initializer list.
-
     Solver::Solver(int argc, char *argv[])
-        : m_unit() // default-construct with SI units; will be overridden in read_parameterfile()
+        : m_unit(),
+          m_param(std::make_shared<SPHParameters>()),
+          m_output_dir("results"), // Default output directory
+          m_num_threads(1),
+          m_sample_recognized(false)
     {
         std::cout << "--------------SPH simulation-------------\n\n";
-        if (argc == 1)
+
+        // 1) Parse command-line arguments
+        // We expect:
+        //   argv[1] = sampleName (e.g. "shock_tube")
+        //   argv[2] = optional .json or threads
+        //   argv[3] = optional threads
+        if (argc < 2)
         {
-            std::cerr << "Usage: sph <parameter.json>" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <sampleName> [jsonFile] [numThreads]\n";
             std::exit(EXIT_FAILURE);
         }
-        else
+
+        // The first argument is the sample name:
+        m_sample_name = argv[1];
+
+        // The second argument, if present, might be a .json or an integer:
+        if (argc >= 3)
         {
-            read_parameterfile(argv[1]);
+            std::string arg2 = argv[2];
+            if (arg2.size() > 5 && arg2.substr(arg2.size() - 5) == ".json")
+            {
+                // This is a JSON file
+                m_json_file = arg2;
+            }
+            else
+            {
+                // interpret as an integer for threads
+                m_num_threads = std::atoi(arg2.c_str());
+            }
         }
 
+        // The third argument, if present, is threads:
+        if (argc >= 4)
+        {
+            m_num_threads = std::atoi(argv[3]);
+        }
+        // safety clamp:
+        if (m_num_threads < 1)
+            m_num_threads = 1;
+
+        // 2) Start up the logger
         Logger::open(m_output_dir);
 
 #ifdef _OPENMP
         WRITE_LOG << "OpenMP is enabled.";
-        int num_threads;
-        if (argc == 3)
-        {
-            num_threads = std::atoi(argv[2]);
-            omp_set_num_threads(num_threads);
-        }
-        else
-        {
-            num_threads = omp_get_max_threads();
-        }
-        WRITE_LOG << "Number of threads = " << num_threads << "\n";
+        omp_set_num_threads(m_num_threads);
+        WRITE_LOG << "Number of threads = " << m_num_threads;
 #else
-        WRITE_LOG << "OpenMP is disabled.\n";
+        WRITE_LOG << "OpenMP is disabled.";
 #endif
 
-        // Log simulation parameters.
-        WRITE_LOG << "output directory     = " << m_output_dir;
-        WRITE_LOG << "time";
-        WRITE_LOG << "* start time         = " << m_param->time.start;
-        WRITE_LOG << "* end time           = " << m_param->time.end;
-        WRITE_LOG << "* output time        = " << m_param->time.output;
-        WRITE_LOG << "* energy output time = " << m_param->time.energy;
+        //    so the sample can fill in param defaults (like param->physics.gamma).
+        WRITE_LOG << "app_name: " << m_sample_name;
 
-        switch (m_param->type)
-        {
-        case SPHType::SSPH:
-            WRITE_LOG << "SPH type: Standard SPH";
-            break;
-        case SPHType::DISPH:
-            WRITE_LOG << "SPH type: Density Independent SPH";
-            break;
-        case SPHType::GSPH:
-            if (m_param->gsph.is_2nd_order)
-                WRITE_LOG << "SPH type: Godunov SPH (2nd order)";
-            else
-                WRITE_LOG << "SPH type: Godunov SPH (1st order)";
-            break;
-        }
-
-        WRITE_LOG << "CFL condition";
-        WRITE_LOG << "* sound speed = " << m_param->cfl.sound;
-        WRITE_LOG << "* force       = " << m_param->cfl.force;
-
-        WRITE_LOG << "Artificial Viscosity";
-        WRITE_LOG << "* alpha = " << m_param->av.alpha;
-        if (m_param->av.use_balsara_switch)
-            WRITE_LOG << "* use Balsara switch";
-        if (m_param->av.use_time_dependent_av)
-        {
-            WRITE_LOG << "* use time dependent AV";
-            WRITE_LOG << "* alpha max = " << m_param->av.alpha_max;
-            WRITE_LOG << "* alpha min = " << m_param->av.alpha_min;
-            WRITE_LOG << "* epsilon   = " << m_param->av.epsilon;
-        }
-
-        if (m_param->ac.is_valid)
-        {
-            WRITE_LOG << "Artificial Conductivity";
-            WRITE_LOG << "* alpha = " << m_param->ac.alpha;
-        }
-
-        WRITE_LOG << "Tree";
-        WRITE_LOG << "* max tree level       = " << m_param->tree.max_level;
-        WRITE_LOG << "* leaf particle number = " << m_param->tree.leaf_particle_num;
-
-        WRITE_LOG << "Physics";
-        WRITE_LOG << "* Neighbor number = " << m_param->physics.neighbor_number;
-        WRITE_LOG << "* gamma           = " << m_param->physics.gamma;
-
-        WRITE_LOG << "Kernel";
-        if (m_param->kernel == KernelType::CUBIC_SPLINE)
-            WRITE_LOG << "* Cubic Spline";
-        else if (m_param->kernel == KernelType::WENDLAND)
-            WRITE_LOG << "* Wendland";
-        else
-            THROW_ERROR("kernel is unknown.");
-
-        if (m_param->iterative_sml)
-            WRITE_LOG << "Iterative calculation for smoothing length is enabled.";
-        if (m_param->periodic.is_valid)
-            WRITE_LOG << "Periodic boundary condition is enabled.";
-        if (m_param->gravity.is_valid)
-        {
-            WRITE_LOG << "Gravity is enabled.";
-            WRITE_LOG << "G     = " << m_param->gravity.constant;
-            WRITE_LOG << "theta = " << m_param->gravity.theta;
-        }
-
-        switch (m_sample)
-        {
-#define WRITE_SAMPLE(a, b)                 \
-    case a:                                \
-        WRITE_LOG << "Sample: " b " test"; \
-        break
-            WRITE_SAMPLE(Sample::ShockTube, "shock tube");
-            WRITE_SAMPLE(Sample::GreshoChanVortex, "Gresho-Chan vortex");
-            WRITE_SAMPLE(Sample::PairingInstability, "Pairing Instability");
-            WRITE_SAMPLE(Sample::HydroStatic, "Hydro static");
-            WRITE_SAMPLE(Sample::KHI, "Kelvin-Helmholtz Instability");
-            WRITE_SAMPLE(Sample::Evrard, "Evrard collapse");
-#undef WRITE_SAMPLE
-        default:
-            break;
-        }
-
-        WRITE_LOG;
-
-        // Create the Output object using the loaded unit system.
+        // 4) Make an Output object:
         m_output = std::make_shared<Output>(0, m_unit);
     }
 
-    //
-    // read_parameterfile() reads the main parameters from the given JSON file
-    // and then loads a separate unit configuration file (specified by "unitConfig")
-    // to update the m_unit member.
-    void Solver::read_parameterfile(const char *filename)
+    void Solver::parseJsonOverrides()
     {
-        namespace pt = boost::property_tree;
-        m_param = std::make_shared<SPHParameters>();
-        pt::ptree input;
-
-        std::string name_str = filename;
-        if (name_str == "shock_tube")
+        // If we have no JSON file, skip
+        if (m_json_file.empty())
         {
-            pt::read_json("sample/shock_tube/shock_tube.json", input);
-            m_sample = Sample::ShockTube;
-            m_sample_parameters["N"] = input.get<int>("N", 100);
-        }
-        else if (name_str == "shock_tube_astro_unit")
-        {
-            pt::read_json("sample/shock_tube_astro_unit/shock_tube.json", input);
-            m_sample = Sample::ShockTube;
-            m_sample_parameters["N"] = input.get<int>("N", 100);
-        }
-        else if (name_str == "gresho_chan_vortex")
-        {
-            pt::read_json("sample/gresho_chan_vortex/gresho_chan_vortex.json", input);
-            m_sample = Sample::GreshoChanVortex;
-            m_sample_parameters["N"] = input.get<int>("N", 64);
-        }
-        else if (name_str == "pairing_instability")
-        {
-            pt::read_json("sample/pairing_instability/pairing_instability.json", input);
-            m_sample = Sample::PairingInstability;
-            m_sample_parameters["N"] = input.get<int>("N", 64);
-        }
-        else if (name_str == "hydrostatic")
-        {
-            pt::read_json("sample/hydrostatic/hydrostatic.json", input);
-            m_sample = Sample::HydroStatic;
-            m_sample_parameters["N"] = input.get<int>("N", 32);
-        }
-        else if (name_str == "khi")
-        {
-            pt::read_json("sample/khi/khi.json", input);
-            m_sample = Sample::KHI;
-            m_sample_parameters["N"] = input.get<int>("N", 128);
-        }
-        else if (name_str == "evrard")
-        {
-            pt::read_json("sample/evrard/evrard.json", input);
-            m_sample = Sample::Evrard;
-            m_sample_parameters["N"] = input.get<int>("N", 20);
-        }
-        else
-        {
-            pt::read_json(filename, input);
-            m_sample = Sample::DoNotUse;
-        }
-
-        m_output_dir = input.get<std::string>("outputDirectory");
-
-        // Time parameters
-        m_param->time.start = input.get<real>("startTime", real(0));
-        m_param->time.end = input.get<real>("endTime");
-        if (m_param->time.end < m_param->time.start)
-        {
-            THROW_ERROR("endTime < startTime");
-        }
-        m_param->time.output = input.get<real>("outputTime", (m_param->time.end - m_param->time.start) / 100);
-        m_param->time.energy = input.get<real>("energyTime", m_param->time.output);
-
-        // SPH type
-        std::string sph_type = input.get<std::string>("SPHType", "ssph");
-        if (sph_type == "ssph")
-            m_param->type = SPHType::SSPH;
-        else if (sph_type == "disph")
-            m_param->type = SPHType::DISPH;
-        else if (sph_type == "gsph")
-            m_param->type = SPHType::GSPH;
-        else
-            THROW_ERROR("Unknown SPH type");
-
-        // CFL parameters
-        m_param->cfl.sound = input.get<real>("cflSound", 0.3);
-        m_param->cfl.force = input.get<real>("cflForce", 0.125);
-
-        // Artificial Viscosity
-        m_param->av.alpha = input.get<real>("avAlpha", 1.0);
-        m_param->av.use_balsara_switch = input.get<bool>("useBalsaraSwitch", true);
-        m_param->av.use_time_dependent_av = input.get<bool>("useTimeDependentAV", false);
-        if (m_param->av.use_time_dependent_av)
-        {
-            m_param->av.alpha_max = input.get<real>("alphaMax", 2.0);
-            m_param->av.alpha_min = input.get<real>("alphaMin", 0.1);
-            if (m_param->av.alpha_max < m_param->av.alpha_min)
-                THROW_ERROR("alphaMax < alphaMin");
-            m_param->av.epsilon = input.get<real>("epsilonAV", 0.2);
-        }
-
-        // Artificial Conductivity
-        m_param->ac.is_valid = input.get<bool>("useArtificialConductivity", false);
-        if (m_param->ac.is_valid)
-            m_param->ac.alpha = input.get<real>("alphaAC", 1.0);
-
-        // Tree parameters
-        m_param->tree.max_level = input.get<int>("maxTreeLevel", 20);
-        m_param->tree.leaf_particle_num = input.get<int>("leafParticleNumber", 1);
-
-        // Physics parameters
-        m_param->physics.neighbor_number = input.get<int>("neighborNumber", 32);
-        m_param->physics.gamma = input.get<real>("gamma");
-
-        // Kernel selection
-        std::string kernel_name = input.get<std::string>("kernel", "cubic_spline");
-        if (kernel_name == "cubic_spline")
-            m_param->kernel = KernelType::CUBIC_SPLINE;
-        else if (kernel_name == "wendland")
-            m_param->kernel = KernelType::WENDLAND;
-        else
-            THROW_ERROR("kernel is unknown.");
-
-        // Smoothing length iteration flag
-        m_param->iterative_sml = input.get<bool>("iterativeSmoothingLength", true);
-
-        // Periodic boundary conditions
-        m_param->periodic.is_valid = input.get<bool>("periodic", false);
-        if (m_param->periodic.is_valid)
-        {
-            {
-                auto &range_max = input.get_child("rangeMax");
-                if (range_max.size() != DIM)
-                    THROW_ERROR("rangeMax size != DIM");
-                int i = 0;
-                for (auto &v : range_max)
-                {
-                    m_param->periodic.range_max[i] = std::stod(v.second.data());
-                    ++i;
-                }
-            }
-            {
-                auto &range_min = input.get_child("rangeMin");
-                if (range_min.size() != DIM)
-                    THROW_ERROR("rangeMin size != DIM");
-                int i = 0;
-                for (auto &v : range_min)
-                {
-                    m_param->periodic.range_min[i] = std::stod(v.second.data());
-                    ++i;
-                }
-            }
-        }
-
-        // Gravity parameters
-        m_param->gravity.is_valid = input.get<bool>("useGravity", false);
-        if (m_param->gravity.is_valid)
-        {
-            m_param->gravity.constant = input.get<real>("G", 1.0);
-            m_param->gravity.theta = input.get<real>("theta", 0.5);
-        }
-
-        // GSPH flag
-        if (m_param->type == SPHType::GSPH)
-            m_param->gsph.is_2nd_order = input.get<bool>("use2ndOrderGSPH", true);
-
-        // --- Load unit configuration from a separate JSON file ---
-        std::string unitFile = input.get<std::string>("unitConfig", "units.json");
-        pt::ptree unitTree;
-        try
-        {
-            pt::read_json(unitFile, unitTree);
-        }
-        catch (...)
-        {
-            WRITE_LOG << "Warning: Cannot read unit config file \"" << unitFile << "\". Defaulting to SI units.";
-            m_unit = UnitSystem();
             return;
         }
-        m_unit.time_factor = unitTree.get<double>("time_factor", 1.0);
-        m_unit.length_factor = unitTree.get<double>("length_factor", 1.0);
-        m_unit.mass_factor = unitTree.get<double>("mass_factor", 1.0);
-        m_unit.density_factor = unitTree.get<double>("density_factor", 1.0);
-        m_unit.pressure_factor = unitTree.get<double>("pressure_factor", 1.0);
-        m_unit.energy_factor = unitTree.get<double>("energy_factor", 1.0);
-        m_unit.time_unit = unitTree.get<std::string>("time_unit", "s");
-        m_unit.length_unit = unitTree.get<std::string>("length_unit", "m");
-        m_unit.mass_unit = unitTree.get<std::string>("mass_unit", "kg");
-        m_unit.density_unit = unitTree.get<std::string>("density_unit", "kg/m^3");
-        m_unit.pressure_unit = unitTree.get<std::string>("pressure_unit", "Pa");
-        m_unit.energy_unit = unitTree.get<std::string>("energy_unit", "J/kg");
+
+        namespace pt = boost::property_tree;
+        pt::ptree root;
+        try
+        {
+            pt::read_json(m_json_file, root);
+        }
+        catch (std::exception &e)
+        {
+            THROW_ERROR("Cannot read JSON file: ", m_json_file, " => ", e.what());
+        }
+
+        // Now override fields in m_param as needed:
+        // Example:
+        m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
+
+        m_param->time.start = root.get<real>("startTime", m_param->time.start);
+        m_param->time.end = root.get<real>("endTime", m_param->time.end);
+        m_param->time.output = root.get<real>("outputTime", m_param->time.output);
+        m_param->time.energy = root.get<real>("energyTime", m_param->time.energy);
+
+        // cfl
+        m_param->cfl.sound = root.get<real>("cflSound", m_param->cfl.sound);
+        m_param->cfl.force = root.get<real>("cflForce", m_param->cfl.force);
+
+        // av
+        m_param->av.alpha = root.get<real>("avAlpha", m_param->av.alpha);
+        m_param->av.use_balsara_switch = root.get<bool>("useBalsaraSwitch", m_param->av.use_balsara_switch);
+        m_param->av.use_time_dependent_av = root.get<bool>("useTimeDependentAV", m_param->av.use_time_dependent_av);
+        if (m_param->av.use_time_dependent_av)
+        {
+            m_param->av.alpha_max = root.get<real>("alphaMax", m_param->av.alpha_max);
+            m_param->av.alpha_min = root.get<real>("alphaMin", m_param->av.alpha_min);
+            m_param->av.epsilon = root.get<real>("epsilonAV", m_param->av.epsilon);
+        }
+
+        // ac
+        m_param->ac.is_valid = root.get<bool>("useArtificialConductivity", m_param->ac.is_valid);
+        if (m_param->ac.is_valid)
+        {
+            m_param->ac.alpha = root.get<real>("alphaAC", m_param->ac.alpha);
+        }
+
+        // physics
+        m_param->physics.neighbor_number = root.get<int>("neighborNumber", m_param->physics.neighbor_number);
+        m_param->physics.gamma = root.get<real>("gamma", m_param->physics.gamma);
+
+        // kernel
+        std::string kernel_name = root.get<std::string>("kernel", "");
+        if (!kernel_name.empty())
+        {
+            if (kernel_name == "cubic_spline")
+                m_param->kernel = KernelType::CUBIC_SPLINE;
+            else if (kernel_name == "wendland")
+                m_param->kernel = KernelType::WENDLAND;
+            else
+                THROW_ERROR("kernel is unknown: ", kernel_name);
+        }
+
+        // iterative smoothing length
+        m_param->iterative_sml = root.get<bool>("iterativeSmoothingLength", m_param->iterative_sml);
+
+        // periodic
+        bool usePeriodic = root.get<bool>("periodic", m_param->periodic.is_valid);
+        m_param->periodic.is_valid = usePeriodic;
+        if (usePeriodic)
+        {
+            auto rm = root.get_child_optional("rangeMax");
+            auto rmin = root.get_child_optional("rangeMin");
+            if (rm && rmin)
+            {
+                int idx = 0;
+                for (auto &v : *rm)
+                {
+                    m_param->periodic.range_max[idx] = std::stod(v.second.data());
+                    idx++;
+                }
+                idx = 0;
+                for (auto &v : *rmin)
+                {
+                    m_param->periodic.range_min[idx] = std::stod(v.second.data());
+                    idx++;
+                }
+            }
+        }
+
+        // gravity
+        m_param->gravity.is_valid = root.get<bool>("useGravity", m_param->gravity.is_valid);
+        if (m_param->gravity.is_valid)
+        {
+            m_param->gravity.constant = root.get<real>("G", m_param->gravity.constant);
+            m_param->gravity.theta = root.get<real>("theta", m_param->gravity.theta);
+        }
+
+        // GSPH
+        if (m_param->type == SPHType::GSPH)
+        {
+            bool secondOrder = root.get<bool>("use2ndOrderGSPH", false);
+            m_param->gsph.is_2nd_order = secondOrder;
+        }
+
+        // heating/cooling
+        m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", m_param->heating_cooling.is_valid);
+        m_param->heating_cooling.heating_rate = root.get<real>("heatingRate", m_param->heating_cooling.heating_rate);
+        m_param->heating_cooling.cooling_rate = root.get<real>("coolingRate", m_param->heating_cooling.cooling_rate);
+
+        // unitConfig
+        std::string unitFile = root.get<std::string>("unitConfig", "");
+        if (!unitFile.empty())
+        {
+            namespace pt2 = boost::property_tree;
+            pt2::ptree uroot;
+            try
+            {
+                pt2::read_json(unitFile, uroot);
+                m_unit.time_factor = uroot.get<double>("time_factor", 1.0);
+                m_unit.length_factor = uroot.get<double>("length_factor", 1.0);
+                m_unit.mass_factor = uroot.get<double>("mass_factor", 1.0);
+                m_unit.density_factor = uroot.get<double>("density_factor", 1.0);
+                m_unit.pressure_factor = uroot.get<double>("pressure_factor", 1.0);
+                m_unit.energy_factor = uroot.get<double>("energy_factor", 1.0);
+
+                m_unit.time_unit = uroot.get<std::string>("time_unit", "s");
+                m_unit.length_unit = uroot.get<std::string>("length_unit", "m");
+                m_unit.mass_unit = uroot.get<std::string>("mass_unit", "kg");
+                m_unit.density_unit = uroot.get<std::string>("density_unit", "kg/m^3");
+                m_unit.pressure_unit = uroot.get<std::string>("pressure_unit", "Pa");
+                m_unit.energy_unit = uroot.get<std::string>("energy_unit", "J/kg");
+            }
+            catch (...)
+            {
+                WRITE_LOG << "Warning: cannot read unitConfig \"" << unitFile << "\", using defaults.";
+            }
+        }
     }
 
     void Solver::run()
@@ -357,12 +253,11 @@ namespace sph
         initialize();
         assert(m_sim->get_particles().size() == m_sim->get_particle_num());
 
+        m_output->output_particle(m_sim);
+        m_output->output_energy(m_sim);
         const real t_end = m_param->time.end;
         real t_out = m_param->time.output;
         real t_ene = m_param->time.energy;
-
-        m_output->output_particle(m_sim);
-        m_output->output_energy(m_sim);
 
         const auto start = std::chrono::system_clock::now();
         auto t_cout_i = start;
@@ -373,23 +268,24 @@ namespace sph
         {
             integrate();
             const real dt = m_sim->get_dt();
-            const int num = m_sim->get_particle_num();
             ++loop;
 
             m_sim->update_time();
             t = m_sim->get_time();
 
-            // Output to console every second
+            // Output to console every ~1 second
             const auto t_cout_f = std::chrono::system_clock::now();
             const real t_cout_s = std::chrono::duration_cast<std::chrono::seconds>(t_cout_f - t_cout_i).count();
             if (t_cout_s >= 1.0)
             {
-                WRITE_LOG << "loop: " << loop << ", time: " << t << ", dt: " << dt << ", num: " << num;
+                WRITE_LOG << "loop: " << loop << ", time: " << t << ", dt: " << dt
+                          << ", num: " << m_sim->get_particle_num();
                 t_cout_i = std::chrono::system_clock::now();
             }
             else
             {
-                WRITE_LOG_ONLY << "loop: " << loop << ", time: " << t << ", dt: " << dt << ", num: " << num;
+                WRITE_LOG_ONLY << "loop: " << loop << ", time: " << t
+                               << ", dt: " << dt << ", num: " << m_sim->get_particle_num();
             }
 
             if (t > t_out)
@@ -397,7 +293,6 @@ namespace sph
                 m_output->output_particle(m_sim);
                 t_out += m_param->time.output;
             }
-
             if (t > t_ene)
             {
                 m_output->output_energy(m_sim);
@@ -412,9 +307,16 @@ namespace sph
 
     void Solver::initialize()
     {
-        m_sim = std::make_shared<Simulation>(m_param);
+        parseJsonOverrides();
 
-        make_initial_condition();
+        m_sim = std::make_shared<Simulation>(m_param);
+        // 3) If the sample was recognized, fill actual particles now
+        bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
+        if (!recognized)
+        {
+            THROW_ERROR("No recognized sample named ", m_sample_name,
+                        " (and no code to fill from JSON-based ICs).");
+        }
 
         m_timestep = std::make_shared<TimeStep>();
         if (m_param->type == SPHType::SSPH)
@@ -433,6 +335,14 @@ namespace sph
             m_fforce = std::make_shared<gsph::FluidForce>();
         }
         m_gforce = std::make_shared<GravityForce>();
+
+        // ADDED: If heating_cooling is valid, create that module
+        if (m_param->heating_cooling.is_valid)
+        {
+            auto hc = std::make_shared<HeatingCoolingModule>();
+            hc->initialize(m_param);
+            m_hcool = hc;
+        }
 
         // For GSPH additional arrays
         if (m_param->type == SPHType::GSPH)
@@ -460,12 +370,10 @@ namespace sph
         const real gamma = m_param->physics.gamma;
         const real c_sound = gamma * (gamma - 1.0);
 
-        assert(p.size() == num);
-        const real alpha = m_param->av.alpha;
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
-            p[i].alpha = alpha;
+            p[i].alpha = m_param->av.alpha;
             p[i].balsara = 1.0;
             p[i].sound = std::sqrt(c_sound * p[i].ene);
         }
@@ -479,6 +387,12 @@ namespace sph
         m_pre->calculation(m_sim);
         m_fforce->calculation(m_sim);
         m_gforce->calculation(m_sim);
+        if (m_hcool)
+        {
+            m_hcool->calculation(m_sim);
+        }
+        WRITE_LOG << "Initialization complete. Particle count="
+                  << m_sim->get_particle_num();
     }
 
     void Solver::integrate()
@@ -492,6 +406,11 @@ namespace sph
         m_pre->calculation(m_sim);
         m_fforce->calculation(m_sim);
         m_gforce->calculation(m_sim);
+
+        // ADDED: call heating/cooling if present
+        if (m_hcool)
+            m_hcool->calculation(m_sim);
+
         correct();
     }
 
@@ -504,16 +423,12 @@ namespace sph
         const real gamma = m_param->physics.gamma;
         const real c_sound = gamma * (gamma - 1.0);
 
-        assert(p.size() == num);
-
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
-            // Update to half step
             p[i].vel_p = p[i].vel + p[i].acc * (0.5 * dt);
             p[i].ene_p = p[i].ene + p[i].dene * (0.5 * dt);
 
-            // Full step update
             p[i].pos += p[i].vel_p * dt;
             p[i].vel += p[i].acc * dt;
             p[i].ene += p[i].dene * dt;
@@ -531,39 +446,12 @@ namespace sph
         const real gamma = m_param->physics.gamma;
         const real c_sound = gamma * (gamma - 1.0);
 
-        assert(p.size() == num);
-
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
             p[i].vel = p[i].vel_p + p[i].acc * (0.5 * dt);
             p[i].ene = p[i].ene_p + p[i].dene * (0.5 * dt);
             p[i].sound = std::sqrt(c_sound * p[i].ene);
-        }
-    }
-
-    void Solver::make_initial_condition()
-    {
-        switch (m_sample)
-        {
-#define MAKE_SAMPLE(a, b) \
-    case a:               \
-        make_##b();       \
-        break
-            MAKE_SAMPLE(Sample::ShockTube, shock_tube);
-            MAKE_SAMPLE(Sample::ShockTubeAstroUnit, shock_tube_astro_unit);
-
-            MAKE_SAMPLE(Sample::GreshoChanVortex, gresho_chan_vortex);
-            MAKE_SAMPLE(Sample::PairingInstability, pairing_instability);
-            MAKE_SAMPLE(Sample::HydroStatic, hydrostatic);
-            MAKE_SAMPLE(Sample::KHI, khi);
-            MAKE_SAMPLE(Sample::Evrard, evrard);
-        case Sample::DoNotUse:
-            // Implement custom initial condition here.
-            break;
-        default:
-            THROW_ERROR("unknown sample type.");
-#undef MAKE_SAMPLE
         }
     }
 

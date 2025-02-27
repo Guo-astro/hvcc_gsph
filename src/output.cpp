@@ -6,11 +6,10 @@
 #include "defines.hpp"
 #include "particle.hpp"
 #include "simulation.hpp"
-#include "unit_system.hpp" // For UnitSystem
+#include "unit_system.hpp"
 
 namespace sph
 {
-
     // Helper function: outputs one particle's data using conversion factors from the UnitSystem.
     void output_particle_data(const SPHParticle &p, std::ofstream &out, const UnitSystem &units)
     {
@@ -41,13 +40,9 @@ namespace sph
         out << p.pres * units.pressure_factor << " ";
         out << p.ene * units.energy_factor << " ";
         out << p.sml * units.length_factor << " ";
-        out << p.id << " " << p.neighbor << " " << p.alpha << " " << p.gradh << "\n";
+        out << p.id << " " << p.neighbor << " " << p.alpha << " " << p.gradh << " ";
     }
 
-    //
-    // Output constructor now accepts a UnitSystem instance.
-    // It opens the energy file and writes a header line using the unit labels.
-    //
     Output::Output(int count, const UnitSystem &unit)
         : m_count(count), m_unit(unit)
     {
@@ -66,9 +61,6 @@ namespace sph
         m_out_energy.close();
     }
 
-    //
-    // output_particle() writes a header with current simulation time and column names (with units),
-    // then writes the particle data using output_particle_data().
     void Output::output_particle(std::shared_ptr<Simulation> sim)
     {
         const auto &particles = sim->get_particles();
@@ -79,7 +71,7 @@ namespace sph
         const std::string file_name = dir_name + (boost::format("/%05d.dat") % m_count).str();
         std::ofstream out(file_name);
 
-        // Write a header line with the current simulation time (converted to desired units)
+        // Header
         out << "# Time [" << m_unit.time_unit << "]: " << time * m_unit.time_factor << "\n";
 
 #if DIM == 1
@@ -88,7 +80,7 @@ namespace sph
             << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
             << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
             << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh\n";
+            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
 #elif DIM == 2
         out << "# Columns: pos_x [" << m_unit.length_unit << "], pos_y [" << m_unit.length_unit
             << "], vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_y ["
@@ -97,10 +89,11 @@ namespace sph
             << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
             << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
             << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh\n";
+            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
 #elif DIM == 3
-        out << "# Columns: pos_x [" << m_unit.length_unit << "], pos_y [" << m_unit.length_unit << "], pos_z ["
-            << m_unit.length_unit << "], vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_y ["
+        out << "# Columns: pos_x [" << m_unit.length_unit << "], pos_y [" << m_unit.length_unit
+            << "], pos_z [" << m_unit.length_unit << "], vel_x ["
+            << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_y ["
             << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_z ["
             << m_unit.length_unit << "/" << m_unit.time_unit << "], acc_x ["
             << m_unit.length_unit << "/" << m_unit.time_unit << "^2], acc_y ["
@@ -108,20 +101,60 @@ namespace sph
             << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
             << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
             << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh\n";
+            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
 #endif
 
+        // ADDED: Let's gather the additional scalar and vector arrays
+        // We'll print them after the standard columns, each array in columns.
+        auto &scalar_map = sim->get_scalar_map();
+        auto &vector_map = sim->get_vector_map();
+
+        // For clarity, we can write a short header line for them:
+        if (!scalar_map.empty() || !vector_map.empty())
+        {
+            out << "# Additional arrays: ";
+            for (auto &kv : scalar_map)
+            {
+                out << kv.first << "(scalar) ";
+            }
+            for (auto &kv : vector_map)
+            {
+                out << kv.first << "(vector) ";
+            }
+            out << "\n";
+        }
+
+        // Now output data
         for (int i = 0; i < num; ++i)
         {
+            // standard columns
             output_particle_data(particles[i], out, m_unit);
+
+            // ADDED: Dump additional arrays
+            for (auto &[name, arr] : scalar_map)
+            {
+                // arr[i] is a real
+                out << arr[i] << " ";
+            }
+            for (auto &[name, arrv] : vector_map)
+            {
+                // arrv[i] is a vec_t
+#if DIM == 1
+                out << arrv[i][0] << " ";
+#elif DIM == 2
+                out << arrv[i][0] << " " << arrv[i][1] << " ";
+#elif DIM == 3
+                out << arrv[i][0] << " " << arrv[i][1] << " " << arrv[i][2] << " ";
+#endif
+            }
+
+            out << "\n";
         }
+
         WRITE_LOG << "write " << file_name;
         ++m_count;
     }
 
-    //
-    // output_energy() computes the kinetic, thermal, and potential energies, converts them using unit factors,
-    // and writes a header line (with units) to the energy file.
     void Output::output_energy(std::shared_ptr<Simulation> sim)
     {
         const auto &particles = sim->get_particles();

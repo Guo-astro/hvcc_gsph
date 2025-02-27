@@ -1,0 +1,26 @@
+{
+  "outputDirectory": "sample/shock_tube_heating_cooling/results",
+  "endTime": 1.0,
+  "outputTime": 0.1,
+  "energyTime": 0.1,
+
+  "SPHType": "ssph",
+  "avAlpha": 1.0,
+  "neighborNumber": 32,
+  "gamma": 1.4,
+  "kernel": "cubic_spline",
+
+  "N": 200,
+  "periodic": false,
+  "rangeMax": [3.0],
+  "rangeMin": [0.0],
+
+  "useTimeDependentAV": false,
+  "iterativeSmoothingLength": true,
+
+  "useHeatingCooling": true,
+  "heatingRate": 0.01,
+  "coolingRate": 0.0,
+
+  "unitConfig": "units.json"
+}

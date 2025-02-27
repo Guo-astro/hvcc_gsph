@@ -1,0 +1,807 @@
+OpenMP is enabled.
+Number of threads = 1
+app_name: shock_tube
+Warning: cannot read unitConfig "units.json", using defaults.
+Initialization complete. Particle count=500
+write results/00000.dat
+1.4
+loop: 1, time: 0, dt: 0, num: 500
+1.4
+loop: 2, time: 0, dt: 0, num: 500
+1.4
+loop: 3, time: 0, dt: 0, num: 500
+1.4
+loop: 4, time: 0, dt: 0, num: 500
+1.4
+loop: 5, time: 0, dt: 0, num: 500
+1.4
+loop: 6, time: 0, dt: 0, num: 500
+1.4
+loop: 7, time: 0, dt: 0, num: 500
+1.4
+loop: 8, time: 0, dt: 0, num: 500
+1.4
+loop: 9, time: 0, dt: 0, num: 500
+1.4
+loop: 10, time: 0, dt: 0, num: 500
+1.4
+loop: 11, time: 0, dt: 0, num: 500
+1.4
+loop: 12, time: 0, dt: 0, num: 500
+1.4
+loop: 13, time: 0, dt: 0, num: 500
+1.4
+loop: 14, time: 0, dt: 0, num: 500
+1.4
+loop: 15, time: 0, dt: 0, num: 500
+1.4
+loop: 16, time: 0, dt: 0, num: 500
+1.4
+loop: 17, time: 0, dt: 0, num: 500
+1.4
+loop: 18, time: 0, dt: 0, num: 500
+1.4
+loop: 19, time: 0, dt: 0, num: 500
+1.4
+loop: 20, time: 0, dt: 0, num: 500
+1.4
+loop: 21, time: 0, dt: 0, num: 500
+1.4
+loop: 22, time: 0, dt: 0, num: 500
+1.4
+loop: 23, time: 0, dt: 0, num: 500
+1.4
+loop: 24, time: 0, dt: 0, num: 500
+1.4
+loop: 25, time: 0, dt: 0, num: 500
+1.4
+loop: 26, time: 0, dt: 0, num: 500
+1.4
+loop: 27, time: 0, dt: 0, num: 500
+1.4
+loop: 28, time: 0, dt: 0, num: 500
+1.4
+loop: 29, time: 0, dt: 0, num: 500
+1.4
+loop: 30, time: 0, dt: 0, num: 500
+1.4
+loop: 31, time: 0, dt: 0, num: 500
+1.4
+loop: 32, time: 0, dt: 0, num: 500
+1.4
+loop: 33, time: 0, dt: 0, num: 500
+1.4
+loop: 34, time: 0, dt: 0, num: 500
+1.4
+loop: 35, time: 0, dt: 0, num: 500
+1.4
+loop: 36, time: 0, dt: 0, num: 500
+1.4
+loop: 37, time: 0, dt: 0, num: 500
+1.4
+loop: 38, time: 0, dt: 0, num: 500
+1.4
+loop: 39, time: 0, dt: 0, num: 500
+1.4
+loop: 40, time: 0, dt: 0, num: 500
+1.4
+loop: 41, time: 0, dt: 0, num: 500
+1.4
+loop: 42, time: 0, dt: 0, num: 500
+1.4
+loop: 43, time: 0, dt: 0, num: 500
+1.4
+loop: 44, time: 0, dt: 0, num: 500
+1.4
+loop: 45, time: 0, dt: 0, num: 500
+1.4
+loop: 46, time: 0, dt: 0, num: 500
+1.4
+loop: 47, time: 0, dt: 0, num: 500
+1.4
+loop: 48, time: 0, dt: 0, num: 500
+1.4
+loop: 49, time: 0, dt: 0, num: 500
+1.4
+loop: 50, time: 0, dt: 0, num: 500
+1.4
+loop: 51, time: 0, dt: 0, num: 500
+1.4
+loop: 52, time: 0, dt: 0, num: 500
+1.4
+loop: 53, time: 0, dt: 0, num: 500
+1.4
+loop: 54, time: 0, dt: 0, num: 500
+1.4
+loop: 55, time: 0, dt: 0, num: 500
+1.4
+loop: 56, time: 0, dt: 0, num: 500
+1.4
+loop: 57, time: 0, dt: 0, num: 500
+1.4
+loop: 58, time: 0, dt: 0, num: 500
+1.4
+loop: 59, time: 0, dt: 0, num: 500
+1.4
+loop: 60, time: 0, dt: 0, num: 500
+1.4
+loop: 61, time: 0, dt: 0, num: 500
+1.4
+loop: 62, time: 0, dt: 0, num: 500
+1.4
+loop: 63, time: 0, dt: 0, num: 500
+1.4
+loop: 64, time: 0, dt: 0, num: 500
+1.4
+loop: 65, time: 0, dt: 0, num: 500
+1.4
+loop: 66, time: 0, dt: 0, num: 500
+1.4
+loop: 67, time: 0, dt: 0, num: 500
+1.4
+loop: 68, time: 0, dt: 0, num: 500
+1.4
+loop: 69, time: 0, dt: 0, num: 500
+1.4
+loop: 70, time: 0, dt: 0, num: 500
+1.4
+loop: 71, time: 0, dt: 0, num: 500
+1.4
+loop: 72, time: 0, dt: 0, num: 500
+1.4
+loop: 73, time: 0, dt: 0, num: 500
+1.4
+loop: 74, time: 0, dt: 0, num: 500
+1.4
+loop: 75, time: 0, dt: 0, num: 500
+1.4
+loop: 76, time: 0, dt: 0, num: 500
+1.4
+loop: 77, time: 0, dt: 0, num: 500
+1.4
+loop: 78, time: 0, dt: 0, num: 500
+1.4
+loop: 79, time: 0, dt: 0, num: 500
+1.4
+loop: 80, time: 0, dt: 0, num: 500
+1.4
+loop: 81, time: 0, dt: 0, num: 500
+1.4
+loop: 82, time: 0, dt: 0, num: 500
+1.4
+loop: 83, time: 0, dt: 0, num: 500
+1.4
+loop: 84, time: 0, dt: 0, num: 500
+1.4
+loop: 85, time: 0, dt: 0, num: 500
+1.4
+loop: 86, time: 0, dt: 0, num: 500
+1.4
+loop: 87, time: 0, dt: 0, num: 500
+1.4
+loop: 88, time: 0, dt: 0, num: 500
+1.4
+loop: 89, time: 0, dt: 0, num: 500
+1.4
+loop: 90, time: 0, dt: 0, num: 500
+1.4
+loop: 91, time: 0, dt: 0, num: 500
+1.4
+loop: 92, time: 0, dt: 0, num: 500
+1.4
+loop: 93, time: 0, dt: 0, num: 500
+1.4
+loop: 94, time: 0, dt: 0, num: 500
+1.4
+loop: 95, time: 0, dt: 0, num: 500
+1.4
+loop: 96, time: 0, dt: 0, num: 500
+1.4
+loop: 97, time: 0, dt: 0, num: 500
+1.4
+loop: 98, time: 0, dt: 0, num: 500
+1.4
+loop: 99, time: 0, dt: 0, num: 500
+1.4
+loop: 100, time: 0, dt: 0, num: 500
+1.4
+loop: 101, time: 0, dt: 0, num: 500
+1.4
+loop: 102, time: 0, dt: 0, num: 500
+1.4
+loop: 103, time: 0, dt: 0, num: 500
+1.4
+loop: 104, time: 0, dt: 0, num: 500
+1.4
+loop: 105, time: 0, dt: 0, num: 500
+1.4
+loop: 106, time: 0, dt: 0, num: 500
+1.4
+loop: 107, time: 0, dt: 0, num: 500
+1.4
+loop: 108, time: 0, dt: 0, num: 500
+1.4
+loop: 109, time: 0, dt: 0, num: 500
+1.4
+loop: 110, time: 0, dt: 0, num: 500
+1.4
+loop: 111, time: 0, dt: 0, num: 500
+1.4
+loop: 112, time: 0, dt: 0, num: 500
+1.4
+loop: 113, time: 0, dt: 0, num: 500
+1.4
+loop: 114, time: 0, dt: 0, num: 500
+1.4
+loop: 115, time: 0, dt: 0, num: 500
+1.4
+loop: 116, time: 0, dt: 0, num: 500
+1.4
+loop: 117, time: 0, dt: 0, num: 500
+1.4
+loop: 118, time: 0, dt: 0, num: 500
+1.4
+loop: 119, time: 0, dt: 0, num: 500
+1.4
+loop: 120, time: 0, dt: 0, num: 500
+1.4
+loop: 121, time: 0, dt: 0, num: 500
+1.4
+loop: 122, time: 0, dt: 0, num: 500
+1.4
+loop: 123, time: 0, dt: 0, num: 500
+1.4
+loop: 124, time: 0, dt: 0, num: 500
+1.4
+loop: 125, time: 0, dt: 0, num: 500
+1.4
+loop: 126, time: 0, dt: 0, num: 500
+1.4
+loop: 127, time: 0, dt: 0, num: 500
+1.4
+loop: 128, time: 0, dt: 0, num: 500
+1.4
+loop: 129, time: 0, dt: 0, num: 500
+1.4
+loop: 130, time: 0, dt: 0, num: 500
+1.4
+loop: 131, time: 0, dt: 0, num: 500
+1.4
+loop: 132, time: 0, dt: 0, num: 500
+1.4
+loop: 133, time: 0, dt: 0, num: 500
+1.4
+loop: 134, time: 0, dt: 0, num: 500
+1.4
+loop: 135, time: 0, dt: 0, num: 500
+1.4
+loop: 136, time: 0, dt: 0, num: 500
+1.4
+loop: 137, time: 0, dt: 0, num: 500
+1.4
+loop: 138, time: 0, dt: 0, num: 500
+1.4
+loop: 139, time: 0, dt: 0, num: 500
+1.4
+loop: 140, time: 0, dt: 0, num: 500
+1.4
+loop: 141, time: 0, dt: 0, num: 500
+1.4
+loop: 142, time: 0, dt: 0, num: 500
+1.4
+loop: 143, time: 0, dt: 0, num: 500
+1.4
+loop: 144, time: 0, dt: 0, num: 500
+1.4
+loop: 145, time: 0, dt: 0, num: 500
+1.4
+loop: 146, time: 0, dt: 0, num: 500
+1.4
+loop: 147, time: 0, dt: 0, num: 500
+1.4
+loop: 148, time: 0, dt: 0, num: 500
+1.4
+loop: 149, time: 0, dt: 0, num: 500
+1.4
+loop: 150, time: 0, dt: 0, num: 500
+1.4
+loop: 151, time: 0, dt: 0, num: 500
+1.4
+loop: 152, time: 0, dt: 0, num: 500
+1.4
+loop: 153, time: 0, dt: 0, num: 500
+1.4
+loop: 154, time: 0, dt: 0, num: 500
+1.4
+loop: 155, time: 0, dt: 0, num: 500
+1.4
+loop: 156, time: 0, dt: 0, num: 500
+1.4
+loop: 157, time: 0, dt: 0, num: 500
+1.4
+loop: 158, time: 0, dt: 0, num: 500
+1.4
+loop: 159, time: 0, dt: 0, num: 500
+1.4
+loop: 160, time: 0, dt: 0, num: 500
+1.4
+loop: 161, time: 0, dt: 0, num: 500
+1.4
+loop: 162, time: 0, dt: 0, num: 500
+1.4
+loop: 163, time: 0, dt: 0, num: 500
+1.4
+loop: 164, time: 0, dt: 0, num: 500
+1.4
+loop: 165, time: 0, dt: 0, num: 500
+1.4
+loop: 166, time: 0, dt: 0, num: 500
+1.4
+loop: 167, time: 0, dt: 0, num: 500
+1.4
+loop: 168, time: 0, dt: 0, num: 500
+1.4
+loop: 169, time: 0, dt: 0, num: 500
+1.4
+loop: 170, time: 0, dt: 0, num: 500
+1.4
+loop: 171, time: 0, dt: 0, num: 500
+1.4
+loop: 172, time: 0, dt: 0, num: 500
+1.4
+loop: 173, time: 0, dt: 0, num: 500
+1.4
+loop: 174, time: 0, dt: 0, num: 500
+1.4
+loop: 175, time: 0, dt: 0, num: 500
+1.4
+loop: 176, time: 0, dt: 0, num: 500
+1.4
+loop: 177, time: 0, dt: 0, num: 500
+1.4
+loop: 178, time: 0, dt: 0, num: 500
+1.4
+loop: 179, time: 0, dt: 0, num: 500
+1.4
+loop: 180, time: 0, dt: 0, num: 500
+1.4
+loop: 181, time: 0, dt: 0, num: 500
+1.4
+loop: 182, time: 0, dt: 0, num: 500
+1.4
+loop: 183, time: 0, dt: 0, num: 500
+1.4
+loop: 184, time: 0, dt: 0, num: 500
+1.4
+loop: 185, time: 0, dt: 0, num: 500
+1.4
+loop: 186, time: 0, dt: 0, num: 500
+1.4
+loop: 187, time: 0, dt: 0, num: 500
+1.4
+loop: 188, time: 0, dt: 0, num: 500
+1.4
+loop: 189, time: 0, dt: 0, num: 500
+1.4
+loop: 190, time: 0, dt: 0, num: 500
+1.4
+loop: 191, time: 0, dt: 0, num: 500
+1.4
+loop: 192, time: 0, dt: 0, num: 500
+1.4
+loop: 193, time: 0, dt: 0, num: 500
+1.4
+loop: 194, time: 0, dt: 0, num: 500
+1.4
+loop: 195, time: 0, dt: 0, num: 500
+1.4
+loop: 196, time: 0, dt: 0, num: 500
+1.4
+loop: 197, time: 0, dt: 0, num: 500
+1.4
+loop: 198, time: 0, dt: 0, num: 500
+1.4
+loop: 199, time: 0, dt: 0, num: 500
+1.4
+loop: 200, time: 0, dt: 0, num: 500
+1.4
+loop: 201, time: 0, dt: 0, num: 500
+1.4
+loop: 202, time: 0, dt: 0, num: 500
+1.4
+loop: 203, time: 0, dt: 0, num: 500
+1.4
+loop: 204, time: 0, dt: 0, num: 500
+1.4
+loop: 205, time: 0, dt: 0, num: 500
+1.4
+loop: 206, time: 0, dt: 0, num: 500
+1.4
+loop: 207, time: 0, dt: 0, num: 500
+1.4
+loop: 208, time: 0, dt: 0, num: 500
+1.4
+loop: 209, time: 0, dt: 0, num: 500
+1.4
+loop: 210, time: 0, dt: 0, num: 500
+1.4
+loop: 211, time: 0, dt: 0, num: 500
+1.4
+loop: 212, time: 0, dt: 0, num: 500
+1.4
+loop: 213, time: 0, dt: 0, num: 500
+1.4
+loop: 214, time: 0, dt: 0, num: 500
+1.4
+loop: 215, time: 0, dt: 0, num: 500
+1.4
+loop: 216, time: 0, dt: 0, num: 500
+1.4
+loop: 217, time: 0, dt: 0, num: 500
+1.4
+loop: 218, time: 0, dt: 0, num: 500
+1.4
+loop: 219, time: 0, dt: 0, num: 500
+1.4
+loop: 220, time: 0, dt: 0, num: 500
+1.4
+loop: 221, time: 0, dt: 0, num: 500
+1.4
+loop: 222, time: 0, dt: 0, num: 500
+1.4
+loop: 223, time: 0, dt: 0, num: 500
+1.4
+loop: 224, time: 0, dt: 0, num: 500
+1.4
+loop: 225, time: 0, dt: 0, num: 500
+1.4
+loop: 226, time: 0, dt: 0, num: 500
+1.4
+loop: 227, time: 0, dt: 0, num: 500
+1.4
+loop: 228, time: 0, dt: 0, num: 500
+1.4
+loop: 229, time: 0, dt: 0, num: 500
+1.4
+loop: 230, time: 0, dt: 0, num: 500
+1.4
+loop: 231, time: 0, dt: 0, num: 500
+1.4
+loop: 232, time: 0, dt: 0, num: 500
+1.4
+loop: 233, time: 0, dt: 0, num: 500
+1.4
+loop: 234, time: 0, dt: 0, num: 500
+1.4
+loop: 235, time: 0, dt: 0, num: 500
+1.4
+loop: 236, time: 0, dt: 0, num: 500
+1.4
+loop: 237, time: 0, dt: 0, num: 500
+1.4
+loop: 238, time: 0, dt: 0, num: 500
+1.4
+loop: 239, time: 0, dt: 0, num: 500
+1.4
+loop: 240, time: 0, dt: 0, num: 500
+1.4
+loop: 241, time: 0, dt: 0, num: 500
+1.4
+loop: 242, time: 0, dt: 0, num: 500
+1.4
+loop: 243, time: 0, dt: 0, num: 500
+1.4
+loop: 244, time: 0, dt: 0, num: 500
+1.4
+loop: 245, time: 0, dt: 0, num: 500
+1.4
+loop: 246, time: 0, dt: 0, num: 500
+1.4
+loop: 247, time: 0, dt: 0, num: 500
+1.4
+loop: 248, time: 0, dt: 0, num: 500
+1.4
+loop: 249, time: 0, dt: 0, num: 500
+1.4
+loop: 250, time: 0, dt: 0, num: 500
+1.4
+loop: 251, time: 0, dt: 0, num: 500
+1.4
+loop: 252, time: 0, dt: 0, num: 500
+1.4
+loop: 253, time: 0, dt: 0, num: 500
+1.4
+loop: 254, time: 0, dt: 0, num: 500
+1.4
+loop: 255, time: 0, dt: 0, num: 500
+1.4
+loop: 256, time: 0, dt: 0, num: 500
+1.4
+loop: 257, time: 0, dt: 0, num: 500
+1.4
+loop: 258, time: 0, dt: 0, num: 500
+1.4
+loop: 259, time: 0, dt: 0, num: 500
+1.4
+loop: 260, time: 0, dt: 0, num: 500
+1.4
+loop: 261, time: 0, dt: 0, num: 500
+1.4
+loop: 262, time: 0, dt: 0, num: 500
+1.4
+loop: 263, time: 0, dt: 0, num: 500
+1.4
+loop: 264, time: 0, dt: 0, num: 500
+1.4
+loop: 265, time: 0, dt: 0, num: 500
+1.4
+loop: 266, time: 0, dt: 0, num: 500
+1.4
+loop: 267, time: 0, dt: 0, num: 500
+1.4
+loop: 268, time: 0, dt: 0, num: 500
+1.4
+loop: 269, time: 0, dt: 0, num: 500
+1.4
+loop: 270, time: 0, dt: 0, num: 500
+1.4
+loop: 271, time: 0, dt: 0, num: 500
+1.4
+loop: 272, time: 0, dt: 0, num: 500
+1.4
+loop: 273, time: 0, dt: 0, num: 500
+1.4
+loop: 274, time: 0, dt: 0, num: 500
+1.4
+loop: 275, time: 0, dt: 0, num: 500
+1.4
+loop: 276, time: 0, dt: 0, num: 500
+1.4
+loop: 277, time: 0, dt: 0, num: 500
+1.4
+loop: 278, time: 0, dt: 0, num: 500
+1.4
+loop: 279, time: 0, dt: 0, num: 500
+1.4
+loop: 280, time: 0, dt: 0, num: 500
+1.4
+loop: 281, time: 0, dt: 0, num: 500
+1.4
+loop: 282, time: 0, dt: 0, num: 500
+1.4
+loop: 283, time: 0, dt: 0, num: 500
+1.4
+loop: 284, time: 0, dt: 0, num: 500
+1.4
+loop: 285, time: 0, dt: 0, num: 500
+1.4
+loop: 286, time: 0, dt: 0, num: 500
+1.4
+loop: 287, time: 0, dt: 0, num: 500
+1.4
+loop: 288, time: 0, dt: 0, num: 500
+1.4
+loop: 289, time: 0, dt: 0, num: 500
+1.4
+loop: 290, time: 0, dt: 0, num: 500
+1.4
+loop: 291, time: 0, dt: 0, num: 500
+1.4
+loop: 292, time: 0, dt: 0, num: 500
+1.4
+loop: 293, time: 0, dt: 0, num: 500
+1.4
+loop: 294, time: 0, dt: 0, num: 500
+1.4
+loop: 295, time: 0, dt: 0, num: 500
+1.4
+loop: 296, time: 0, dt: 0, num: 500
+1.4
+loop: 297, time: 0, dt: 0, num: 500
+1.4
+loop: 298, time: 0, dt: 0, num: 500
+1.4
+loop: 299, time: 0, dt: 0, num: 500
+1.4
+loop: 300, time: 0, dt: 0, num: 500
+1.4
+loop: 301, time: 0, dt: 0, num: 500
+1.4
+loop: 302, time: 0, dt: 0, num: 500
+1.4
+loop: 303, time: 0, dt: 0, num: 500
+1.4
+loop: 304, time: 0, dt: 0, num: 500
+1.4
+loop: 305, time: 0, dt: 0, num: 500
+1.4
+loop: 306, time: 0, dt: 0, num: 500
+1.4
+loop: 307, time: 0, dt: 0, num: 500
+1.4
+loop: 308, time: 0, dt: 0, num: 500
+1.4
+loop: 309, time: 0, dt: 0, num: 500
+1.4
+loop: 310, time: 0, dt: 0, num: 500
+1.4
+loop: 311, time: 0, dt: 0, num: 500
+1.4
+loop: 312, time: 0, dt: 0, num: 500
+1.4
+loop: 313, time: 0, dt: 0, num: 500
+1.4
+loop: 314, time: 0, dt: 0, num: 500
+1.4
+loop: 315, time: 0, dt: 0, num: 500
+1.4
+loop: 316, time: 0, dt: 0, num: 500
+1.4
+loop: 317, time: 0, dt: 0, num: 500
+1.4
+loop: 318, time: 0, dt: 0, num: 500
+1.4
+loop: 319, time: 0, dt: 0, num: 500
+1.4
+loop: 320, time: 0, dt: 0, num: 500
+1.4
+loop: 321, time: 0, dt: 0, num: 500
+1.4
+loop: 322, time: 0, dt: 0, num: 500
+1.4
+loop: 323, time: 0, dt: 0, num: 500
+1.4
+loop: 324, time: 0, dt: 0, num: 500
+1.4
+loop: 325, time: 0, dt: 0, num: 500
+1.4
+loop: 326, time: 0, dt: 0, num: 500
+1.4
+loop: 327, time: 0, dt: 0, num: 500
+1.4
+loop: 328, time: 0, dt: 0, num: 500
+1.4
+loop: 329, time: 0, dt: 0, num: 500
+1.4
+loop: 330, time: 0, dt: 0, num: 500
+1.4
+loop: 331, time: 0, dt: 0, num: 500
+1.4
+loop: 332, time: 0, dt: 0, num: 500
+1.4
+loop: 333, time: 0, dt: 0, num: 500
+1.4
+loop: 334, time: 0, dt: 0, num: 500
+1.4
+loop: 335, time: 0, dt: 0, num: 500
+1.4
+loop: 336, time: 0, dt: 0, num: 500
+1.4
+loop: 337, time: 0, dt: 0, num: 500
+1.4
+loop: 338, time: 0, dt: 0, num: 500
+1.4
+loop: 339, time: 0, dt: 0, num: 500
+1.4
+loop: 340, time: 0, dt: 0, num: 500
+1.4
+loop: 341, time: 0, dt: 0, num: 500
+1.4
+loop: 342, time: 0, dt: 0, num: 500
+1.4
+loop: 343, time: 0, dt: 0, num: 500
+1.4
+loop: 344, time: 0, dt: 0, num: 500
+1.4
+loop: 345, time: 0, dt: 0, num: 500
+1.4
+loop: 346, time: 0, dt: 0, num: 500
+1.4
+loop: 347, time: 0, dt: 0, num: 500
+1.4
+loop: 348, time: 0, dt: 0, num: 500
+1.4
+loop: 349, time: 0, dt: 0, num: 500
+1.4
+loop: 350, time: 0, dt: 0, num: 500
+1.4
+loop: 351, time: 0, dt: 0, num: 500
+1.4
+loop: 352, time: 0, dt: 0, num: 500
+1.4
+loop: 353, time: 0, dt: 0, num: 500
+1.4
+loop: 354, time: 0, dt: 0, num: 500
+1.4
+loop: 355, time: 0, dt: 0, num: 500
+1.4
+loop: 356, time: 0, dt: 0, num: 500
+1.4
+loop: 357, time: 0, dt: 0, num: 500
+1.4
+loop: 358, time: 0, dt: 0, num: 500
+1.4
+loop: 359, time: 0, dt: 0, num: 500
+1.4
+loop: 360, time: 0, dt: 0, num: 500
+1.4
+loop: 361, time: 0, dt: 0, num: 500
+1.4
+loop: 362, time: 0, dt: 0, num: 500
+1.4
+loop: 363, time: 0, dt: 0, num: 500
+1.4
+loop: 364, time: 0, dt: 0, num: 500
+1.4
+loop: 365, time: 0, dt: 0, num: 500
+1.4
+loop: 366, time: 0, dt: 0, num: 500
+1.4
+loop: 367, time: 0, dt: 0, num: 500
+1.4
+loop: 368, time: 0, dt: 0, num: 500
+1.4
+loop: 369, time: 0, dt: 0, num: 500
+1.4
+loop: 370, time: 0, dt: 0, num: 500
+1.4
+loop: 371, time: 0, dt: 0, num: 500
+1.4
+loop: 372, time: 0, dt: 0, num: 500
+1.4
+loop: 373, time: 0, dt: 0, num: 500
+1.4
+loop: 374, time: 0, dt: 0, num: 500
+1.4
+loop: 375, time: 0, dt: 0, num: 500
+1.4
+loop: 376, time: 0, dt: 0, num: 500
+1.4
+loop: 377, time: 0, dt: 0, num: 500
+1.4
+loop: 378, time: 0, dt: 0, num: 500
+1.4
+loop: 379, time: 0, dt: 0, num: 500
+1.4
+loop: 380, time: 0, dt: 0, num: 500
+1.4
+loop: 381, time: 0, dt: 0, num: 500
+1.4
+loop: 382, time: 0, dt: 0, num: 500
+1.4
+loop: 383, time: 0, dt: 0, num: 500
+1.4
+loop: 384, time: 0, dt: 0, num: 500
+1.4
+loop: 385, time: 0, dt: 0, num: 500
+1.4
+loop: 386, time: 0, dt: 0, num: 500
+1.4
+loop: 387, time: 0, dt: 0, num: 500
+1.4
+loop: 388, time: 0, dt: 0, num: 500
+1.4
+loop: 389, time: 0, dt: 0, num: 500
+1.4
+loop: 390, time: 0, dt: 0, num: 500
+1.4
+loop: 391, time: 0, dt: 0, num: 500
+1.4
+loop: 392, time: 0, dt: 0, num: 500
+1.4
+loop: 393, time: 0, dt: 0, num: 500
+1.4
+loop: 394, time: 0, dt: 0, num: 500
+1.4
+loop: 395, time: 0, dt: 0, num: 500
+1.4
+loop: 396, time: 0, dt: 0, num: 500
+1.4
+loop: 397, time: 0, dt: 0, num: 500
+1.4
+loop: 398, time: 0, dt: 0, num: 500
+1.4
+loop: 399, time: 0, dt: 0, num: 500
+1.4
+loop: 400, time: 0, dt: 0, num: 500
+1.4

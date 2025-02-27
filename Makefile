@@ -22,7 +22,7 @@ build:
 
 run:
 	@echo "Running shock_tube..."
-	./build/sph shock_tube_astro_unit 1
+	./build/sph shock_tube ./build/sample/shock_tube/shock_tube.json 1
 
 clean:
 	@echo "Cleaning build directory..."

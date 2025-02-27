@@ -5,77 +5,100 @@
 namespace sph
 {
 
-enum struct SPHType {
-    SSPH,
-    DISPH,
-    GSPH,
-};
+    enum struct SPHType
+    {
+        SSPH,
+        DISPH,
+        GSPH,
+    };
 
-enum struct KernelType {
-    CUBIC_SPLINE,
-    WENDLAND,
-    UNKNOWN,
-};
+    enum struct KernelType
+    {
+        CUBIC_SPLINE,
+        WENDLAND,
+        UNKNOWN,
+    };
 
-struct SPHParameters {
+    // ADDED: HeatingCooling
+    struct HeatingCooling
+    {
+        bool is_valid = false;
+        real heating_rate = 0.0;
+        real cooling_rate = 0.0;
+    };
 
-    struct Time {
-        real start;
-        real end;
-        real output;
-        real energy;
-    } time;
+    struct SPHParameters
+    {
 
-    SPHType type;
+        struct Time
+        {
+            real start;
+            real end;
+            real output;
+            real energy;
+        } time;
 
-    struct CFL {
-        real sound;
-        real force;
-    } cfl;
+        SPHType type;
 
-    struct ArtificialViscosity {
-        real alpha;
-        bool use_balsara_switch;
-        bool use_time_dependent_av;
-        real alpha_max;
-        real alpha_min;
-        real epsilon; // tau = h / (epsilon * c)
-    } av;
+        struct CFL
+        {
+            real sound;
+            real force;
+        } cfl;
 
-    struct ArtificialConductivity {
-        real alpha;
-        bool is_valid;
-    } ac;
+        struct ArtificialViscosity
+        {
+            real alpha;
+            bool use_balsara_switch;
+            bool use_time_dependent_av;
+            real alpha_max;
+            real alpha_min;
+            real epsilon; // tau = h / (epsilon * c)
+        } av;
 
-    struct Tree {
-        int max_level;
-        int leaf_particle_num;
-    } tree;
+        struct ArtificialConductivity
+        {
+            real alpha;
+            bool is_valid;
+        } ac;
 
-    struct Physics {
-        int neighbor_number;
-        real gamma;
-    } physics;
+        struct Tree
+        {
+            int max_level;
+            int leaf_particle_num;
+        } tree;
 
-    KernelType kernel;
+        struct Physics
+        {
+            int neighbor_number;
+            real gamma;
+        } physics;
 
-    bool iterative_sml;
+        KernelType kernel;
 
-    struct Periodic {
-        bool is_valid;
-        real range_max[DIM];
-        real range_min[DIM];
-    } periodic;
+        bool iterative_sml;
 
-    struct Gravity {
-        bool is_valid;
-        real constant;
-        real theta;
-    } gravity;
+        struct Periodic
+        {
+            bool is_valid;
+            real range_max[DIM];
+            real range_min[DIM];
+        } periodic;
 
-    struct GSPH {
-        bool is_2nd_order;
-    } gsph;
-};
+        struct Gravity
+        {
+            bool is_valid;
+            real constant;
+            real theta;
+        } gravity;
 
-}
+        struct GSPH
+        {
+            bool is_2nd_order;
+        } gsph;
+
+        // ADDED: For Heating & Cooling
+        HeatingCooling heating_cooling;
+    };
+
+} // namespace sph

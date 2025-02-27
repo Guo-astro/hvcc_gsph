@@ -11,6 +11,8 @@ target_sources(sph
         simulation.cpp
         solver.cpp
         timestep.cpp
+        sample_registry.cpp
+        heating_cooling.cpp
     )
 
 add_subdirectory(disph)
