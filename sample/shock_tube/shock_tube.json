@@ -5,14 +5,14 @@
   "cflForce": 0.125,
   "avAlpha": 1.0,
   "neighborNumber": 4,
-  "gamma": 1.66666666666666666666666666666666667,
+  "gamma": 1.4,
   "kernel": "cubic_spline",
   "N": 50,
-  "periodic": true,
+  "periodic": false,
   "iterativeSmoothingLength": true,
   "rangeMax": [1.5],
   "rangeMin": [-0.5],
-  "useTimeDependentAV": true,
-  "SPHType": "gsph",
+  "useTimeDependentAV": false,
+  "SPHType": "ssph",
   "unitConfig": "./units.json"
 }

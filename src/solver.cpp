@@ -124,37 +124,47 @@ namespace sph
         // Example:
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
 
-        m_param->time.start = root.get<real>("startTime", m_param->time.start);
-        m_param->time.end = root.get<real>("endTime", m_param->time.end);
-        m_param->time.output = root.get<real>("outputTime", m_param->time.output);
-        m_param->time.energy = root.get<real>("energyTime", m_param->time.energy);
+        m_param->time.start = root.get<real>("startTime", real(0));
+        m_param->time.end = root.get<real>("endTime");
+        if (m_param->time.end < m_param->time.start)
+        {
+            THROW_ERROR("endTime < startTime");
+        }
+        m_param->time.output = root.get<real>("outputTime", (m_param->time.end - m_param->time.start) / 100);
+        m_param->time.energy = root.get<real>("energyTime", m_param->time.output);
 
         // cfl
-        m_param->cfl.sound = root.get<real>("cflSound", m_param->cfl.sound);
-        m_param->cfl.force = root.get<real>("cflForce", m_param->cfl.force);
+        m_param->cfl.sound = root.get<real>("cflSound", 0.3);
+        m_param->cfl.force = root.get<real>("cflForce", 0.125);
 
-        // av
-        m_param->av.alpha = root.get<real>("avAlpha", m_param->av.alpha);
-        m_param->av.use_balsara_switch = root.get<bool>("useBalsaraSwitch", m_param->av.use_balsara_switch);
-        m_param->av.use_time_dependent_av = root.get<bool>("useTimeDependentAV", m_param->av.use_time_dependent_av);
+        // Artificial Viscosity
+        m_param->av.alpha = root.get<real>("avAlpha", 1.0);
+        m_param->av.use_balsara_switch = root.get<bool>("useBalsaraSwitch", true);
+        m_param->av.use_time_dependent_av = root.get<bool>("useTimeDependentAV", false);
         if (m_param->av.use_time_dependent_av)
         {
-            m_param->av.alpha_max = root.get<real>("alphaMax", m_param->av.alpha_max);
-            m_param->av.alpha_min = root.get<real>("alphaMin", m_param->av.alpha_min);
-            m_param->av.epsilon = root.get<real>("epsilonAV", m_param->av.epsilon);
+            m_param->av.alpha_max = root.get<real>("alphaMax", 2.0);
+            m_param->av.alpha_min = root.get<real>("alphaMin", 0.1);
+            if (m_param->av.alpha_max < m_param->av.alpha_min)
+            {
+                THROW_ERROR("alphaMax < alphaMin");
+            }
+            m_param->av.epsilon = root.get<real>("epsilonAV", 0.2);
         }
-
-        // ac
-        m_param->ac.is_valid = root.get<bool>("useArtificialConductivity", m_param->ac.is_valid);
+        // Artificial Conductivity
+        m_param->ac.is_valid = root.get<bool>("useArtificialConductivity", false);
         if (m_param->ac.is_valid)
         {
-            m_param->ac.alpha = root.get<real>("alphaAC", m_param->ac.alpha);
+            m_param->ac.alpha = root.get<real>("alphaAC", 1.0);
         }
 
-        // physics
-        m_param->physics.neighbor_number = root.get<int>("neighborNumber", m_param->physics.neighbor_number);
-        m_param->physics.gamma = root.get<real>("gamma", m_param->physics.gamma);
+        // Tree
+        m_param->tree.max_level = root.get<int>("maxTreeLevel", 20);
+        m_param->tree.leaf_particle_num = root.get<int>("leafParticleNumber", 1);
 
+        // Physics
+        m_param->physics.neighbor_number = root.get<int>("neighborNumber", 32);
+        m_param->physics.gamma = root.get<real>("gamma");
         // kernel
         std::string kernel_name = root.get<std::string>("kernel", "");
         if (!kernel_name.empty())
@@ -168,49 +178,55 @@ namespace sph
         }
 
         // iterative smoothing length
-        m_param->iterative_sml = root.get<bool>("iterativeSmoothingLength", m_param->iterative_sml);
+        m_param->iterative_sml = root.get<bool>("iterativeSmoothingLength", true);
 
         // periodic
-        bool usePeriodic = root.get<bool>("periodic", m_param->periodic.is_valid);
-        m_param->periodic.is_valid = usePeriodic;
-        if (usePeriodic)
+        m_param->periodic.is_valid = root.get<bool>("periodic", false);
+        if (m_param->periodic.is_valid)
         {
-            auto rm = root.get_child_optional("rangeMax");
-            auto rmin = root.get_child_optional("rangeMin");
-            if (rm && rmin)
             {
-                int idx = 0;
-                for (auto &v : *rm)
+                auto &range_max = root.get_child("rangeMax");
+                if (range_max.size() != DIM)
                 {
-                    m_param->periodic.range_max[idx] = std::stod(v.second.data());
-                    idx++;
+                    THROW_ERROR("rangeMax != DIM");
                 }
-                idx = 0;
-                for (auto &v : *rmin)
+                int i = 0;
+                for (auto &v : range_max)
                 {
-                    m_param->periodic.range_min[idx] = std::stod(v.second.data());
-                    idx++;
+                    m_param->periodic.range_max[i] = std::stod(v.second.data());
+                    ++i;
+                }
+            }
+
+            {
+                auto &range_min = root.get_child("rangeMin");
+                if (range_min.size() != DIM)
+                {
+                    THROW_ERROR("rangeMax != DIM");
+                }
+                int i = 0;
+                for (auto &v : range_min)
+                {
+                    m_param->periodic.range_min[i] = std::stod(v.second.data());
+                    ++i;
                 }
             }
         }
-
         // gravity
-        m_param->gravity.is_valid = root.get<bool>("useGravity", m_param->gravity.is_valid);
+        m_param->gravity.is_valid = root.get<bool>("useGravity", false);
         if (m_param->gravity.is_valid)
         {
-            m_param->gravity.constant = root.get<real>("G", m_param->gravity.constant);
-            m_param->gravity.theta = root.get<real>("theta", m_param->gravity.theta);
+            m_param->gravity.constant = root.get<real>("G", 1.0);
+            m_param->gravity.theta = root.get<real>("theta", 0.5);
         }
 
         // GSPH
         if (m_param->type == SPHType::GSPH)
         {
-            bool secondOrder = root.get<bool>("use2ndOrderGSPH", false);
-            m_param->gsph.is_2nd_order = secondOrder;
+            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", true);
         }
-
         // heating/cooling
-        m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", m_param->heating_cooling.is_valid);
+        m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", false);
         m_param->heating_cooling.heating_rate = root.get<real>("heatingRate", m_param->heating_cooling.heating_rate);
         m_param->heating_cooling.cooling_rate = root.get<real>("coolingRate", m_param->heating_cooling.cooling_rate);
 
