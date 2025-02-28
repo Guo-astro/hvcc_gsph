@@ -20,7 +20,10 @@ build/CMakeCache.txt:
 	@echo "Configuration complete."
 
 run:
+	@echo "Removing result folder"
+	rm -rf result
 	@echo "Running shock_tube..."
+
 	./build/sph shock_tube ./sample/shock_tube/shock_tube.json 4
 
 clean:
