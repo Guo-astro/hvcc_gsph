@@ -298,8 +298,20 @@ namespace sph
                     const real r2 = abs2(r_ij);
                     if (r2 < h2)
                     {
-                        neighbor_list[n_neighbor] = p->id;
-                        ++n_neighbor;
+                        if (n_neighbor < static_cast<int>(neighbor_list.size()))
+                        {
+                            neighbor_list[n_neighbor] = p->id;
+                            ++n_neighbor;
+                        }
+                        else
+                        {
+                            // Log a warning that we've reached the capacity
+                            WRITE_LOG << "WARNING: Neighbor list full. "
+                                      << "Maximum allowed neighbors = " << neighbor_list.size()
+                                      << ", current count = " << n_neighbor;
+                            // Optionally, break out of the loop to prevent further writes.
+                            break;
+                        }
                     }
                     p = p->next;
                 }

@@ -24,7 +24,9 @@ run:
 	rm -rf result
 	@echo "Running shock_tube..."
 
-	./build/sph shock_tube ./sample/shock_tube/shock_tube.json 4
+	# ./build/sph shock_tube ./sample/shock_tube/shock_tube.json 4
+	./build/sph evrard ./sample/evrard/evrard.json 8
+
 
 clean:
 	@echo "Cleaning build directory..."

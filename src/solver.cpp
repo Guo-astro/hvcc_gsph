@@ -38,6 +38,20 @@
 
 namespace sph
 {
+    std::string sphTypeToString(SPHType type)
+    {
+        switch (type)
+        {
+        case SPHType::GSPH:
+            return "GSPH";
+        case SPHType::SSPH:
+            return "SSPH";
+        case SPHType::DISPH:
+            return "DISPH";
+        default:
+            return "UNKNOWN";
+        }
+    }
 
     Solver::Solver(int argc, char *argv[])
         : m_unit(),
@@ -219,7 +233,25 @@ namespace sph
             m_param->gravity.constant = root.get<real>("G", 1.0);
             m_param->gravity.theta = root.get<real>("theta", 0.5);
         }
+        std::string sph_type = root.get<std::string>("SPHType", "ssph");
 
+        if (sph_type == "ssph")
+        {
+            m_param->type = SPHType::SSPH;
+        }
+        else if (sph_type == "disph")
+        {
+            m_param->type = SPHType::DISPH;
+        }
+        else if (sph_type == "gsph")
+        {
+            m_param->type = SPHType::GSPH;
+        }
+        else
+        {
+            THROW_ERROR("Unknown SPH type");
+        }
+        WRITE_LOG << "Using algorithm: " << sph::sphTypeToString(m_param->type);
         // GSPH
         if (m_param->type == SPHType::GSPH)
         {
