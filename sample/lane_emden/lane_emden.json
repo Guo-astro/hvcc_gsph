@@ -12,7 +12,7 @@
   "N": 30,
   "periodic": false,
   "useGravity": true,
-  "iterativeSml": false,
+  "iterativeSml": true,
   "G": 0.00043,
   "SPHType": "gsph"
 }
