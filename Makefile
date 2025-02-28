@@ -21,7 +21,7 @@ build/CMakeCache.txt:
 
 run:
 	@echo "Running shock_tube..."
-	./build/sph shock_tube ./sample/shock_tube/shock_tube.json 1
+	./build/sph shock_tube ./sample/shock_tube/shock_tube.json 4
 
 clean:
 	@echo "Cleaning build directory..."
