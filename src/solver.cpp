@@ -231,6 +231,7 @@ namespace sph
         if (m_param->gravity.is_valid)
         {
             m_param->gravity.constant = root.get<real>("G", 1.0);
+            WRITE_LOG << "G = " << m_param->gravity.constant;
             m_param->gravity.theta = root.get<real>("theta", 0.5);
         }
         std::string sph_type = root.get<std::string>("SPHType", "ssph");

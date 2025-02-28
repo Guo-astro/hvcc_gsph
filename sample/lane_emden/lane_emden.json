@@ -3,8 +3,8 @@
   "endTime": 30.0,
   "avAlpha": 1.0,
   "neighborNumber": 32,
-  "useBalsaraSwitch": true,
-  "useTimeDependentAV": true,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
   "useArtificialConductivity": false,
   "leafParticleNumber": 32,
   "gamma": 1.6666666666666667,
@@ -12,5 +12,7 @@
   "N": 30,
   "periodic": false,
   "useGravity": true,
-  "SPHType": "disph"
+  "iterativeSml": false,
+  "G": 0.00043,
+  "SPHType": "gsph"
 }

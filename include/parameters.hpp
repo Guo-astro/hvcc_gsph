@@ -99,6 +99,7 @@ namespace sph
 
         // ADDED: For Heating & Cooling
         HeatingCooling heating_cooling;
+        real boundary_radius;
     };
 
 } // namespace sph

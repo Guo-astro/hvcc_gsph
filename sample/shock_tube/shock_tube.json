@@ -13,6 +13,6 @@
   "rangeMax": [1.5],
   "rangeMin": [-0.5],
   "useTimeDependentAV": false,
-  "SPHType": "ssph",
+  "SPHType": "gsph",
   "unitConfig": "./units.json"
 }

@@ -188,6 +188,7 @@ namespace sph
         const real gamma = 5.0 / 3.0; // Use the configurable gamma.
         const real G = param->gravity.constant;
         const real K = (4.0 * M_PI * G * std::pow(alpha, 2) * std::pow(rho_c, 1.0 / 3.0)) / (n_poly + 1.0);
+        param->boundary_radius = R_phys;
 
         // 2) Create Particle Positions.
         int N = 20; // Grid resolution.
