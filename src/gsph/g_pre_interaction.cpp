@@ -57,7 +57,6 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
-                // --- Boundary treatment: Reflect particles if they exceed the dynamic boundary ---
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // guess smoothing length
@@ -74,7 +73,6 @@ namespace sph
                 // smoothing length
                 if (m_iteration)
                 {
-
                     p_i.sml = newton_raphson(p_i, particles, neighbor_list, n_neighbor_tmp, periodic, kernel);
                 }
 
@@ -92,7 +90,7 @@ namespace sph
 
                     if (r >= p_i.sml)
                     {
-                        continue;
+                        break;
                     }
 
                     ++n_neighbor;

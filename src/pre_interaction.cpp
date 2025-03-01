@@ -261,8 +261,8 @@ namespace sph
         // f = rho h^d - b
         // f' = drho/dh h^d + d rho h^{d-1}
 
-        constexpr real epsilon = 1e-4;
-        constexpr int max_iter = 10;
+        constexpr real epsilon = 1e-3;
+        constexpr int max_iter = 100;
         const auto &r_i = p_i.pos;
         for (int i = 0; i < max_iter; ++i)
         {

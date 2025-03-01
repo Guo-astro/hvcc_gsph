@@ -144,7 +144,7 @@ namespace sph
         {
             THROW_ERROR("endTime < startTime");
         }
-        m_param->time.output = root.get<real>("outputTime", (m_param->time.end - m_param->time.start) / 100);
+        m_param->time.output = root.get<real>("outputTime", (m_param->time.end - m_param->time.start) / 1000);
         m_param->time.energy = root.get<real>("energyTime", m_param->time.output);
 
         // cfl
@@ -256,7 +256,7 @@ namespace sph
         // GSPH
         if (m_param->type == SPHType::GSPH)
         {
-            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", true);
+            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
         }
         // heating/cooling
         m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", false);
