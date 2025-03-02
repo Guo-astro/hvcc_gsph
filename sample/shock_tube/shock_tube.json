@@ -1,6 +1,6 @@
 {
   "outputDirectory": "sample/shock_tube/results",
-  "endTime": 0.2,
+  "endTime": 0.5,
   "cflSound": 0.3,
   "cflForce": 0.125,
   "avAlpha": 1.0,
@@ -8,11 +8,13 @@
   "gamma": 1.4,
   "kernel": "cubic_spline",
   "N": 50,
-  "periodic": false,
+  "periodic": true,
   "iterativeSmoothingLength": true,
+
   "rangeMax": [1.5],
   "rangeMin": [-0.5],
   "useTimeDependentAV": false,
-  "SPHType": "gsph",
+  "forceCorrection": true,
+  "SPHType": "disph",
   "unitConfig": "./units.json"
 }

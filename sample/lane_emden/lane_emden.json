@@ -1,12 +1,12 @@
 {
   "outputDirectory": "sample/lane_emden/results",
-  "endTime": 30.0,
+  "endTime": 300.0,
   "avAlpha": 1.0,
-  "neighborNumber": 32,
+  "neighborNumber": 64,
   "useBalsaraSwitch": false,
   "useTimeDependentAV": false,
   "useArtificialConductivity": false,
-  "leafParticleNumber": 32,
+  "leafParticleNumber": 64,
   "gamma": 1.6666666666666667,
   "kernel": "wendland",
   "N": 30,
@@ -14,5 +14,5 @@
   "useGravity": true,
   "iterativeSml": true,
   "G": 0.00043,
-  "SPHType": "gsph"
+  "SPHType": "disph"
 }
