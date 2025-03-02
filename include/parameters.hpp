@@ -95,6 +95,8 @@ namespace sph
         struct GSPH
         {
             bool is_2nd_order;
+            bool force_correction; // new field; when true, symmetric (pairwise) force correction is applied
+
         } gsph;
 
         // ADDED: For Heating & Cooling

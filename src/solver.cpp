@@ -257,6 +257,9 @@ namespace sph
         if (m_param->type == SPHType::GSPH)
         {
             m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", true);
+            m_param->gsph.force_correction = root.get<bool>("forceCorrection", true);
+            WRITE_LOG << "use2ndOrderGSPH: " << m_param->gsph.is_2nd_order;
+            WRITE_LOG << "forceCorrection: " << m_param->gsph.force_correction;
         }
         // heating/cooling
         m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", false);

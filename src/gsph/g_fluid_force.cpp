@@ -20,6 +20,7 @@ namespace sph
             sph::FluidForce::initialize(param);
             m_is_2nd_order = param->gsph.is_2nd_order;
             m_gamma = param->physics.gamma;
+            m_forceCorrection = param->gsph.force_correction;
 
             hll_solver();
         }
@@ -38,7 +39,7 @@ namespace sph
             }
         }
 
-        // Cha & Whitworth (2003)
+        // Cha & Whitworth (2003) method with optional force correction
         void FluidForce::calculation(std::shared_ptr<Simulation> sim)
         {
             auto &particles = sim->get_particles();
@@ -46,9 +47,10 @@ namespace sph
             const int num = sim->get_particle_num();
             auto *kernel = sim->get_kernel().get();
             auto *tree = sim->get_tree().get();
+
             const real dt = sim->get_dt();
 
-            // for MUSCL
+            // for MUSCL reconstruction
             auto &grad_d = sim->get_vector_array("grad_density");
             auto &grad_p = sim->get_vector_array("grad_pressure");
             vec_t *grad_v[DIM] = {
@@ -74,7 +76,7 @@ namespace sph
                 int const n_neighbor = tree->neighbor_search(p_i, neighbor_list, particles, true);
 #endif
 
-                // fluid force
+                // Fluid force for particle i.
                 const vec_t &r_i = p_i.pos;
                 const vec_t &v_i = p_i.vel;
                 const real h_i = p_i.sml;
@@ -102,28 +104,26 @@ namespace sph
                     real vstar, pstar;
                     const real du = std::abs(ve_i - ve_j);
                     const real avg_sound = 0.5 * (p_i.sound + p_j.sound);
-
                     const real threshold = 0.1 * avg_sound;
 
                     if (du < threshold)
                     {
-                        // In smooth regions, fall back to a symmetric averaging.
+                        // In smooth regions, use symmetric average.
                         vstar = 0.5 * (ve_i + ve_j);
                         pstar = 0.5 * (p_i.pres + p_j.pres);
                     }
                     else
                     {
+                        // Start with symmetric averages.
                         vstar = 0.5 * (ve_i + ve_j);
                         pstar = 0.5 * (p_i.pres + p_j.pres);
                         if (m_is_2nd_order)
                         {
-                            // Murante et al. (2011)
-
                             real right[4], left[4];
                             const real delta_i = 0.5 * (1.0 - p_i.sound * dt * r_inv);
                             const real delta_j = 0.5 * (1.0 - p_j.sound * dt * r_inv);
 
-                            // velocity
+                            // Velocity reconstruction.
                             const real dv_ij = ve_i - ve_j;
                             vec_t dv_i, dv_j;
                             for (int k = 0; k < DIM; ++k)
@@ -136,21 +136,21 @@ namespace sph
                             right[0] = ve_i - limiter(dv_ij, dve_i) * delta_i;
                             left[0] = ve_j + limiter(dv_ij, dve_j) * delta_j;
 
-                            // density
+                            // Density reconstruction.
                             const real dd_ij = p_i.dens - p_j.dens;
                             const real dd_i = inner_product(grad_d[i], e_ij) * r;
                             const real dd_j = inner_product(grad_d[j], e_ij) * r;
                             right[1] = p_i.dens - limiter(dd_ij, dd_i) * delta_i;
                             left[1] = p_j.dens + limiter(dd_ij, dd_j) * delta_j;
 
-                            // pressure
+                            // Pressure reconstruction.
                             const real dp_ij = p_i.pres - p_j.pres;
                             const real dp_i = inner_product(grad_p[i], e_ij) * r;
                             const real dp_j = inner_product(grad_p[j], e_ij) * r;
                             right[2] = p_i.pres - limiter(dp_ij, dp_i) * delta_i;
                             left[2] = p_j.pres + limiter(dp_ij, dp_j) * delta_j;
 
-                            // sound speed
+                            // Sound speed from reconstructed pressure and density.
                             right[3] = std::sqrt(m_gamma * right[2] / right[1]);
                             left[3] = std::sqrt(m_gamma * left[2] / left[1]);
 
@@ -158,28 +158,42 @@ namespace sph
                         }
                         else
                         {
-                            const real right[4] = {
-                                ve_i,
-                                p_i.dens,
-                                p_i.pres,
-                                p_i.sound,
-                            };
-                            const real left[4] = {
-                                ve_j,
-                                p_j.dens,
-                                p_j.pres,
-                                p_j.sound,
-                            };
-
+                            const real right[4] = {ve_i, p_i.dens, p_i.pres, p_i.sound};
+                            const real left[4] = {ve_j, p_j.dens, p_j.pres, p_j.sound};
                             m_solver(left, right, pstar, vstar);
                         }
                     }
 
+                    // Compute kernel gradients.
                     const vec_t dw_i = kernel->dw(r_ij, r, h_i);
                     const vec_t dw_j = kernel->dw(r_ij, r, p_j.sml);
-                    const vec_t v_ij = e_ij * vstar;
                     const real rho2_inv_j = 1.0 / sqr(p_j.dens);
-                    const vec_t f = dw_i * (p_j.mass * pstar * rho2_inv_i) + dw_j * (p_j.mass * pstar * rho2_inv_j);
+
+                    // Compute the raw force flux.
+                    const vec_t f_raw = dw_i * (p_j.mass * pstar * rho2_inv_i) +
+                                        dw_j * (p_j.mass * pstar * rho2_inv_j);
+
+                    // If force correction is enabled, compute correction.
+                    vec_t f;
+                    if (m_forceCorrection)
+                    {
+                        // Compute the symmetric pressure value.
+                        const real p_common = 0.5 * (p_i.pres + p_j.pres);
+                        // The reconstruction error in pressure.
+                        const real dP = pstar - p_common;
+                        // Correction term using the same kernel gradients.
+                        const vec_t f_corr = dw_i * (p_j.mass * dP * rho2_inv_i) +
+                                             dw_j * (p_j.mass * dP * rho2_inv_j);
+                        // Correct the raw force.
+                        f = f_raw - f_corr;
+                    }
+                    else
+                    {
+                        f = f_raw;
+                    }
+
+                    // Energy update using vstar.
+                    const vec_t v_ij = e_ij * vstar;
 
                     acc -= f;
                     dene -= inner_product(f, v_ij - v_i);
@@ -224,5 +238,5 @@ namespace sph
             };
         }
 
-    }
-}
+    } // namespace gsph
+} // namespace sph
