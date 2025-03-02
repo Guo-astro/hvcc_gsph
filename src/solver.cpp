@@ -256,7 +256,7 @@ namespace sph
         // GSPH
         if (m_param->type == SPHType::GSPH)
         {
-            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
+            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", true);
         }
         // heating/cooling
         m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", false);
@@ -298,8 +298,8 @@ namespace sph
         initialize();
         assert(m_sim->get_particles().size() == m_sim->get_particle_num());
 
-        m_output->output_particle(m_sim);
-        m_output->output_energy(m_sim);
+        // NOTE: Initial condition already output in initialize()
+
         const real t_end = m_param->time.end;
         real t_out = m_param->time.output;
         real t_ene = m_param->time.energy;
@@ -363,6 +363,10 @@ namespace sph
             THROW_ERROR("No recognized sample named ", m_sample_name,
                         " (and no code to fill from JSON-based ICs).");
         }
+
+        // *** Output the untouched initial condition immediately after sample creation ***
+        m_output->output_particle(m_sim);
+        m_output->output_energy(m_sim);
 
         m_timestep = std::make_shared<TimeStep>();
         if (m_param->type == SPHType::SSPH)
@@ -437,8 +441,7 @@ namespace sph
         {
             m_hcool->calculation(m_sim);
         }
-        WRITE_LOG << "Initialization complete. Particle count="
-                  << m_sim->get_particle_num();
+        WRITE_LOG << "Initialization complete. Particle count=" << m_sim->get_particle_num();
     }
 
     void Solver::integrate()

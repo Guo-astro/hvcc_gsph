@@ -100,64 +100,79 @@ namespace sph
                     const real ve_i = inner_product(v_i, e_ij);
                     const real ve_j = inner_product(p_j.vel, e_ij);
                     real vstar, pstar;
+                    const real du = std::abs(ve_i - ve_j);
+                    const real avg_sound = 0.5 * (p_i.sound + p_j.sound);
 
-                    if (m_is_2nd_order)
+                    const real threshold = 0.1 * avg_sound;
+
+                    if (du < threshold)
                     {
-                        // Murante et al. (2011)
-
-                        real right[4], left[4];
-                        const real delta_i = 0.5 * (1.0 - p_i.sound * dt * r_inv);
-                        const real delta_j = 0.5 * (1.0 - p_j.sound * dt * r_inv);
-
-                        // velocity
-                        const real dv_ij = ve_i - ve_j;
-                        vec_t dv_i, dv_j;
-                        for (int k = 0; k < DIM; ++k)
-                        {
-                            dv_i[k] = inner_product(grad_v[k][i], e_ij);
-                            dv_j[k] = inner_product(grad_v[k][j], e_ij);
-                        }
-                        const real dve_i = inner_product(dv_i, e_ij) * r;
-                        const real dve_j = inner_product(dv_j, e_ij) * r;
-                        right[0] = ve_i - limiter(dv_ij, dve_i) * delta_i;
-                        left[0] = ve_j + limiter(dv_ij, dve_j) * delta_j;
-
-                        // density
-                        const real dd_ij = p_i.dens - p_j.dens;
-                        const real dd_i = inner_product(grad_d[i], e_ij) * r;
-                        const real dd_j = inner_product(grad_d[j], e_ij) * r;
-                        right[1] = p_i.dens - limiter(dd_ij, dd_i) * delta_i;
-                        left[1] = p_j.dens + limiter(dd_ij, dd_j) * delta_j;
-
-                        // pressure
-                        const real dp_ij = p_i.pres - p_j.pres;
-                        const real dp_i = inner_product(grad_p[i], e_ij) * r;
-                        const real dp_j = inner_product(grad_p[j], e_ij) * r;
-                        right[2] = p_i.pres - limiter(dp_ij, dp_i) * delta_i;
-                        left[2] = p_j.pres + limiter(dp_ij, dp_j) * delta_j;
-
-                        // sound speed
-                        right[3] = std::sqrt(m_gamma * right[2] / right[1]);
-                        left[3] = std::sqrt(m_gamma * left[2] / left[1]);
-
-                        m_solver(left, right, pstar, vstar);
+                        // In smooth regions, fall back to a symmetric averaging.
+                        vstar = 0.5 * (ve_i + ve_j);
+                        pstar = 0.5 * (p_i.pres + p_j.pres);
                     }
                     else
                     {
-                        const real right[4] = {
-                            ve_i,
-                            p_i.dens,
-                            p_i.pres,
-                            p_i.sound,
-                        };
-                        const real left[4] = {
-                            ve_j,
-                            p_j.dens,
-                            p_j.pres,
-                            p_j.sound,
-                        };
+                        vstar = 0.5 * (ve_i + ve_j);
+                        pstar = 0.5 * (p_i.pres + p_j.pres);
+                        if (m_is_2nd_order)
+                        {
+                            // Murante et al. (2011)
 
-                        m_solver(left, right, pstar, vstar);
+                            real right[4], left[4];
+                            const real delta_i = 0.5 * (1.0 - p_i.sound * dt * r_inv);
+                            const real delta_j = 0.5 * (1.0 - p_j.sound * dt * r_inv);
+
+                            // velocity
+                            const real dv_ij = ve_i - ve_j;
+                            vec_t dv_i, dv_j;
+                            for (int k = 0; k < DIM; ++k)
+                            {
+                                dv_i[k] = inner_product(grad_v[k][i], e_ij);
+                                dv_j[k] = inner_product(grad_v[k][j], e_ij);
+                            }
+                            const real dve_i = inner_product(dv_i, e_ij) * r;
+                            const real dve_j = inner_product(dv_j, e_ij) * r;
+                            right[0] = ve_i - limiter(dv_ij, dve_i) * delta_i;
+                            left[0] = ve_j + limiter(dv_ij, dve_j) * delta_j;
+
+                            // density
+                            const real dd_ij = p_i.dens - p_j.dens;
+                            const real dd_i = inner_product(grad_d[i], e_ij) * r;
+                            const real dd_j = inner_product(grad_d[j], e_ij) * r;
+                            right[1] = p_i.dens - limiter(dd_ij, dd_i) * delta_i;
+                            left[1] = p_j.dens + limiter(dd_ij, dd_j) * delta_j;
+
+                            // pressure
+                            const real dp_ij = p_i.pres - p_j.pres;
+                            const real dp_i = inner_product(grad_p[i], e_ij) * r;
+                            const real dp_j = inner_product(grad_p[j], e_ij) * r;
+                            right[2] = p_i.pres - limiter(dp_ij, dp_i) * delta_i;
+                            left[2] = p_j.pres + limiter(dp_ij, dp_j) * delta_j;
+
+                            // sound speed
+                            right[3] = std::sqrt(m_gamma * right[2] / right[1]);
+                            left[3] = std::sqrt(m_gamma * left[2] / left[1]);
+
+                            m_solver(left, right, pstar, vstar);
+                        }
+                        else
+                        {
+                            const real right[4] = {
+                                ve_i,
+                                p_i.dens,
+                                p_i.pres,
+                                p_i.sound,
+                            };
+                            const real left[4] = {
+                                ve_j,
+                                p_j.dens,
+                                p_j.pres,
+                                p_j.sound,
+                            };
+
+                            m_solver(left, right, pstar, vstar);
+                        }
                     }
 
                     const vec_t dw_i = kernel->dw(r_ij, r, h_i);
