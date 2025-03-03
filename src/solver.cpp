@@ -478,6 +478,8 @@ namespace sph
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
+            if (p[i].is_wall)
+                continue;
             p[i].vel_p = p[i].vel + p[i].acc * (0.5 * dt);
             p[i].ene_p = p[i].ene + p[i].dene * (0.5 * dt);
 
@@ -501,6 +503,8 @@ namespace sph
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
+            if (p[i].is_wall)
+                continue;
             p[i].vel = p[i].vel_p + p[i].acc * (0.5 * dt);
             p[i].ene = p[i].ene_p + p[i].dene * (0.5 * dt);
             p[i].sound = std::sqrt(c_sound * p[i].ene);
