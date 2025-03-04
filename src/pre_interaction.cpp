@@ -93,11 +93,9 @@ namespace sph
                 const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
                 const real r = std::abs(r_ij);
 
-                if (r < p_i.sml)
+                if (r >= p_i.sml)
                 {
-                    dens_i += p_j.mass * kernel->w(r, p_i.sml);
-                    dh_dens_i += p_j.mass * kernel->dhw(r, p_i.sml);
-                    ++n_neighbor;
+                    continue; // Instead of breaking, simply skip this neighbor.
                 }
 
                 ++n_neighbor;
@@ -223,10 +221,12 @@ namespace sph
                 const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
                 const real r = std::abs(r_ij);
 
-                if (r < p_i.sml)
+                if (r >= p_i.sml)
                 {
-                    dens_i += p_j.mass * kernel->w(r, p_i.sml);
+                    break;
                 }
+
+                dens_i += p_j.mass * kernel->w(r, p_i.sml);
             }
 
             p_i.dens = dens_i;
@@ -252,7 +252,6 @@ namespace sph
         const Periodic *periodic,
         const KernelFunction *kernel)
     {
-
         real h_i = p_i.sml / m_kernel_ratio;
         constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
                                                      : 4.0 * M_PI / 3.0;
@@ -261,8 +260,8 @@ namespace sph
         // f = rho h^d - b
         // f' = drho/dh h^d + d rho h^{d-1}
 
-        constexpr real epsilon = 1e-3;
-        constexpr int max_iter = 100;
+        constexpr real epsilon = 1e-4;
+        constexpr int max_iter = 10;
         const auto &r_i = p_i.pos;
         for (int i = 0; i < max_iter; ++i)
         {
@@ -277,11 +276,13 @@ namespace sph
                 const vec_t r_ij = periodic->calc_r_ij(r_i, p_j.pos);
                 const real r = std::abs(r_ij);
 
-                if (r < h_i)
+                if (r >= h_i)
                 {
-                    dens += p_j.mass * kernel->w(r, h_i);
-                    ddens += p_j.mass * kernel->dhw(r, h_i);
+                    break;
                 }
+
+                dens += p_j.mass * kernel->w(r, h_i);
+                ddens += p_j.mass * kernel->dhw(r, h_i);
             }
 
             const real f = dens * powh(h_i) - b;
