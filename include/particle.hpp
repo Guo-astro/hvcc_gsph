@@ -32,6 +32,9 @@ namespace sph
         int neighbor;
         SPHParticle *next = nullptr;
         bool is_wall = false; // <<-- NEW: flag indicating a wall particle
+        real shockSensor;     // dimensionless measure of compression
+        int shockMode;        // 1 = currently in shock mode, 0 = not
+        int oldShockMode;
     };
 
 }

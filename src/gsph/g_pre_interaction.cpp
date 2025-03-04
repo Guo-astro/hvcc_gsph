@@ -78,6 +78,7 @@ namespace sph
 
                 // density etc.
                 real dens_i = 0.0;
+                real dh_dens_i = 0.0;
                 real v_sig_max = p_i.sound * 2.0;
                 const vec_t &pos_i = p_i.pos;
                 int n_neighbor = 0;
@@ -90,11 +91,12 @@ namespace sph
 
                     if (r >= p_i.sml)
                     {
-                        break;
+                        continue; // Instead of breaking, simply skip this neighbor.
                     }
 
                     ++n_neighbor;
                     dens_i += p_j.mass * kernel->w(r, p_i.sml);
+                    dh_dens_i += p_j.mass * kernel->dhw(r, p_i.sml);
 
                     if (i != j)
                     {
@@ -108,6 +110,8 @@ namespace sph
 
                 p_i.dens = dens_i;
                 p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
+                p_i.gradh = 1.0 / (1.0 + p_i.sml / (DIM * dens_i) * dh_dens_i);
+
                 p_i.neighbor = n_neighbor;
 
                 const real h_per_v_sig_i = p_i.sml / v_sig_max;
@@ -116,11 +120,11 @@ namespace sph
                     h_per_v_sig.get() = h_per_v_sig_i;
                 }
 
-                // MUSCL法のための勾配計算
-                if (!m_is_2nd_order)
-                {
-                    continue;
-                }
+                // // MUSCL法のための勾配計算
+                // if (!m_is_2nd_order)
+                // {
+                //     continue;
+                // }
 
                 vec_t dd, du; // dP = (gamma - 1) * (rho * du + drho * u)
                 vec_t dv[DIM];

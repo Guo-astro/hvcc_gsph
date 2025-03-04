@@ -14,5 +14,5 @@
   "useGravity": true,
   "iterativeSml": true,
   "G": 0.0043,
-  "SPHType": "ssph"
+  "SPHType": "gsph"
 }

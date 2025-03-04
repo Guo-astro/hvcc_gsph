@@ -191,3 +191,5 @@ SPH粒子それぞれの人工粘性係数を時間変化させます。圧縮�
 * Springel, V., & Hernquist, L. (2002). Cosmological smoothed particle hydrodynamics simulations: the entropy equation. Monthly Notices of the Royal Astronomical Society, 333(3), 649–664. https://doi.org/10.1046/j.1365-8711.2002.05445.x
 * Wadsley, J. W., Veeravalli, G., & Couchman, H. M. P. (2008). On the treatment of entropy mixing in numerical cosmology. Monthly Notices of the Royal Astronomical Society, 387(1), 427–438. https://doi.org/10.1111/j.1365-2966.2008.13260.x
 * Wendland, H. (1995). Piecewise polynomial, positive definite and compactly supported radial functions of minimal degree. Advances in Computational Mathematics, 4(1), 389–396. https://doi.org/10.1007/BF02123482
+
+
