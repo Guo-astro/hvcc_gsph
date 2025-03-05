@@ -35,6 +35,7 @@ namespace sph
         real shockSensor;     // dimensionless measure of compression
         int shockMode;        // 1 = currently in shock mode, 0 = not
         int oldShockMode;
+        bool switch_to_no_shock_region = false; // True if DISPH will be used
     };
 
 }

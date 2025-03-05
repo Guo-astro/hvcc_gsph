@@ -68,6 +68,12 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
+                if (p_i.is_wall)
+                {
+                    p_i.vel = -p_i.vel;
+                    p_i.acc = -p_i.acc;
+                    continue;
+                }
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // neighbor search
@@ -102,7 +108,7 @@ namespace sph
                     const vec_t e_ij = r_ij * r_inv;
                     const real ve_i = inner_product(v_i, e_ij);
                     const real ve_j = inner_product(p_j.vel, e_ij);
-
+                    const vec_t v_ij = v_i - p_j.vel;
                     // Compute kernel gradients
                     const vec_t dw_i = kernel->dw(r_ij, r, h_i);
                     const vec_t dw_j = kernel->dw(r_ij, r, p_j.sml);
@@ -123,7 +129,6 @@ namespace sph
                     const real dve_j = inner_product(dv_j, e_ij);
                     const real dynamic_threshold = 0.1 * avg_sound;
 
-                    // WRITE_LOG << "dve_i: " << dve_i << " dve_j: " << dve_j;
                     if ((dve_i < divergenceThreshold && std::abs(dve_i) > dynamic_threshold) || (dve_j < divergenceThreshold && std::abs(dve_j) > dynamic_threshold))
                     {
                         // GSPH with HLL solver
@@ -184,38 +189,23 @@ namespace sph
                     }
                     else
                     {
-                        // Standard SPH calculation
-
-                        const vec_t v_ij = v_i - p_j.vel;
+                        // DISPH fallback
+                        p_i.switch_to_no_shock_region = true; // Mark for next pre-interaction
+                        p_j.switch_to_no_shock_region = true; // Symmetric for pair
+                        // Switch to DISPH calculation
                         const vec_t dw_ij = (dw_i + dw_j) * 0.5;
-                        real pstar, vstar;
+                        const real gamma2_u_i = sqr(m_gamma - 1.0) * p_i.ene;
+                        const real gamma2_u_per_pres_i = gamma2_u_i / p_i.pres;
+                        const real u_per_pres_j = p_j.ene / p_j.pres;
+                        const real f_ij = 1.0 - p_i.gradh / (p_j.mass * p_j.ene);
+                        const real f_ji = 1.0 - p_j.gradh / (p_i.mass * p_i.ene);
+                        const real pi_ij = artificial_viscosity(p_i, p_j, r_ij);
+                        const real dene_ac = m_use_ac ? artificial_conductivity(p_i, p_j, r_ij, dw_ij) : 0.0;
 
-                        // // const real dene_ac = artificial_conductivity(p_i, p_j, r_ij, dw_ij);
-                        const real right[4] = {ve_i, p_i.dens, p_i.pres, p_i.sound};
-                        const real left[4] = {ve_j, p_j.dens, p_j.pres, p_j.sound};
-                        m_solver(left, right, pstar, vstar);
-
-                        real pi_ij = 0;
-
-                        const real vr = inner_product(v_ij, e_ij);
-
-                        if (vr < 0)
-                        {
-                            const real w_ij = vr / std::abs(r_ij);
-                            // const real v_sig = p_i.sound + p_j.sound - 3.0 * w_ij;
-                            const real rho_ij_inv = 2.0 / (p_i.dens + p_j.dens);
-                            pi_ij = -0.5 * vstar * vr * rho_ij_inv;
-                        }
-                        else
-                        {
-                            pi_ij = 0;
-                        }
-                        const real p_per_rho2_i = pstar / sqr(p_i.dens);
-                        const real p_per_rho2_j = pstar / sqr(p_j.dens);
-                        acc -= dw_i * (p_j.mass * (p_per_rho2_i * p_i.gradh + 0.5 * pi_ij)) +
-                               dw_j * (p_i.mass * (p_per_rho2_j * p_j.gradh + 0.5 * pi_ij));
-                        dene += p_j.mass * p_per_rho2_i * p_i.gradh * inner_product(v_ij, dw_i) +
-                                0.5 * p_j.mass * pi_ij * inner_product(v_ij, dw_ij);
+                        acc -= dw_i * (p_j.mass * (gamma2_u_per_pres_i * p_j.ene * f_ij + 0.5 * pi_ij)) +
+                               dw_j * (p_j.mass * (gamma2_u_i * u_per_pres_j * f_ji + 0.5 * pi_ij));
+                        dene += p_j.mass * gamma2_u_per_pres_i * p_j.ene * f_ij * inner_product(v_ij, dw_i) +
+                                0.5 * p_j.mass * pi_ij * inner_product(v_ij, dw_ij) + dene_ac;
                     }
                 }
                 p_i.acc = acc;

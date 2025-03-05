@@ -43,17 +43,17 @@ namespace sph
         out << p.id << " " << p.neighbor << " " << p.alpha << " " << p.gradh << " ";
     }
 
-    Output::Output(int count, const UnitSystem &unit)
-        : m_count(count), m_unit(unit)
+    Output::Output(const std::string &dir, int count, const UnitSystem &unit)
+        : m_dir(dir), m_count(count), m_unit(unit)
     {
-        const std::string dir_name = Logger::get_dir_name();
-        const std::string file_name = dir_name + "/energy.dat";
-        m_out_energy.open(file_name);
-        m_out_energy << "# time [" << m_unit.time_unit << "] "
-                     << "kinetic [" << m_unit.energy_unit << "] "
-                     << "thermal [" << m_unit.energy_unit << "] "
-                     << "potential [" << m_unit.energy_unit << "] "
-                     << "total [" << m_unit.energy_unit << "]\n";
+        // const std::string dir_name = Logger::get_dir_name();
+        // const std::string file_name = dir_name + "/energy.dat";
+        // m_out_energy.open(file_name);
+        // m_out_energy << "# time [" << m_unit.time_unit << "] "
+        //              << "kinetic [" << m_unit.energy_unit << "] "
+        //              << "thermal [" << m_unit.energy_unit << "] "
+        //              << "potential [" << m_unit.energy_unit << "] "
+        //              << "total [" << m_unit.energy_unit << "]\n";
     }
 
     Output::~Output()
@@ -67,8 +67,8 @@ namespace sph
         const int num = sim->get_particle_num();
         const real time = sim->get_time();
 
-        const std::string dir_name = Logger::get_dir_name();
-        const std::string file_name = dir_name + (boost::format("/%05d.dat") % m_count).str();
+        // Use m_dir instead of Logger::get_dir_name()
+        const std::string file_name = m_dir + (boost::format("/%05d.dat") % m_count).str();
         std::ofstream out(file_name);
 
         // Header

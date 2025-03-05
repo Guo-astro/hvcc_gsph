@@ -8,11 +8,12 @@
   "gamma": 1.66666666,
   "kernel": "cubic_spline",
   "N": 1000,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
   "periodic": false,
   "iterativeSmoothingLength": true,
   "rangeMax": [8],
   "rangeMin": [-4],
-  "useTimeDependentAV": false,
   "forceCorrection": false,
   "SPHType": "gsph",
   "unitConfig": "./units.json"

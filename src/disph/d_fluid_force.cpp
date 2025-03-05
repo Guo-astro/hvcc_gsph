@@ -35,6 +35,12 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
+                if (p_i.is_wall)
+                {
+                    p_i.vel = -p_i.vel;
+                    p_i.acc = -p_i.acc;
+                    continue;
+                }
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // neighbor search
@@ -62,11 +68,6 @@ namespace sph
                     auto &p_j = particles[j];
                     const vec_t r_ij = periodic->calc_r_ij(r_i, p_j.pos);
                     const real r = std::abs(r_ij);
-                    if (p_j.is_wall)
-                    {
-                        p_j.vel = -p_j.vel;
-                        p_j.acc = -p_j.acc;
-                    }
 
                     if (r >= std::max(h_i, p_j.sml) || r == 0.0)
                     {

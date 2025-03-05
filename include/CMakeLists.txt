@@ -18,6 +18,7 @@ target_sources(sph
     solver.hpp
     timestep.hpp
     vector_type.hpp
+    module_factory.hpp
   )
 
 add_subdirectory(disph)

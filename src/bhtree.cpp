@@ -206,6 +206,7 @@ namespace sph
         {
             if (remaind < 0)
             {
+
                 THROW_ERROR("There is no free node.");
             }
             childs[index] = nodes;

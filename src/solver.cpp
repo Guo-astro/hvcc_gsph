@@ -3,10 +3,13 @@
 #include <chrono>
 #include <cstdlib>
 #include <omp.h>
+#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/any.hpp>
+#include <boost/filesystem.hpp>
 
+#include "module_factory.hpp"
 #include "solver.hpp"
 #include "parameters.hpp"
 #include "particle.hpp"
@@ -38,6 +41,33 @@
 
 namespace sph
 {
+    // **Added Module Registrations**
+    namespace
+    {
+        struct ModuleRegistrations
+        {
+            ModuleRegistrations()
+            {
+                auto &factory = ModuleFactory::instance();
+                // Register SSPH modules
+                factory.register_module(SPHType::SSPH, "PreInteraction", []()
+                                        { return std::make_shared<sph::PreInteraction>(); });
+                factory.register_module(SPHType::SSPH, "FluidForce", []()
+                                        { return std::make_shared<sph::FluidForce>(); });
+                // Register DISPH modules
+                factory.register_module(SPHType::DISPH, "PreInteraction", []()
+                                        { return std::make_shared<sph::disph::PreInteraction>(); });
+                factory.register_module(SPHType::DISPH, "FluidForce", []()
+                                        { return std::make_shared<sph::disph::FluidForce>(); });
+                // Register GSPH modules
+                factory.register_module(SPHType::GSPH, "PreInteraction", []()
+                                        { return std::make_shared<sph::gsph::PreInteraction>(); });
+                factory.register_module(SPHType::GSPH, "FluidForce", []()
+                                        { return std::make_shared<sph::gsph::FluidForce>(); });
+            }
+        } g_moduleRegistrations;
+    }
+
     std::string sphTypeToString(SPHType type)
     {
         switch (type)
@@ -56,51 +86,39 @@ namespace sph
     Solver::Solver(int argc, char *argv[])
         : m_unit(),
           m_param(std::make_shared<SPHParameters>()),
-          m_output_dir("results"), // Default output directory
+          m_output_dir("results"),
           m_num_threads(1),
           m_sample_recognized(false)
     {
         std::cout << "--------------SPH simulation-------------\n\n";
 
-        // 1) Parse command-line arguments
-        // We expect:
-        //   argv[1] = sampleName (e.g. "shock_tube")
-        //   argv[2] = optional .json or threads
-        //   argv[3] = optional threads
         if (argc < 2)
         {
             std::cerr << "Usage: " << argv[0] << " <sampleName> [jsonFile] [numThreads]\n";
             std::exit(EXIT_FAILURE);
         }
 
-        // The first argument is the sample name:
         m_sample_name = argv[1];
-        // The second argument, if present, might be a .json or an integer:
         if (argc >= 3)
         {
             std::string arg2 = argv[2];
             if (arg2.size() > 5 && arg2.substr(arg2.size() - 5) == ".json")
             {
-                // This is a JSON file
                 m_json_file = arg2;
             }
             else
             {
-                // interpret as an integer for threads
                 m_num_threads = std::atoi(arg2.c_str());
             }
         }
 
-        // The third argument, if present, is threads:
         if (argc >= 4)
         {
             m_num_threads = std::atoi(argv[3]);
         }
-        // safety clamp:
         if (m_num_threads < 1)
             m_num_threads = 1;
 
-        // 2) Start up the logger
         Logger::open(m_output_dir);
 
 #ifdef _OPENMP
@@ -111,13 +129,46 @@ namespace sph
         WRITE_LOG << "OpenMP is disabled.";
 #endif
 
-        //    so the sample can fill in param defaults (like param->physics.gamma).
         WRITE_LOG << "app_name: " << m_sample_name;
+    }
+
+    // **New Type-Specific Parser Functions**
+    namespace
+    {
+        using ParserFunc = std::function<void(const boost::property_tree::ptree &, SPHParameters &)>;
+
+        // Parser for SSPH (default type, no extra fields currently)
+        void parseSSPH(const boost::property_tree::ptree &root, SPHParameters &param)
+        {
+            // No type-specific parameters for SSPH in the current setup
+            // Add any future SSPH-specific fields here
+        }
+
+        // Parser for DISPH (no extra fields currently)
+        void parseDISPH(const boost::property_tree::ptree &root, SPHParameters &param)
+        {
+            // No type-specific parameters for DISPH in the current setup
+            // Add any future DISPH-specific fields here
+        }
+
+        // Parser for GSPH
+        void parseGSPH(const boost::property_tree::ptree &root, SPHParameters &param)
+        {
+            param.gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
+            param.gsph.force_correction = root.get<bool>("forceCorrection", false);
+            WRITE_LOG << "use2ndOrderGSPH: " << param.gsph.is_2nd_order;
+            WRITE_LOG << "forceCorrection: " << param.gsph.force_correction;
+        }
+
+        // Dictionary mapping SPHType to parser functions
+        const std::unordered_map<SPHType, ParserFunc> type_specific_parsers = {
+            {SPHType::SSPH, parseSSPH},
+            {SPHType::DISPH, parseDISPH},
+            {SPHType::GSPH, parseGSPH}};
     }
 
     void Solver::parseJsonOverrides()
     {
-        // If we have no JSON file, skip
         if (m_json_file.empty())
         {
             return;
@@ -134,8 +185,7 @@ namespace sph
             THROW_ERROR("Cannot read JSON file: ", m_json_file, " => ", e.what());
         }
 
-        // Now override fields in m_param as needed:
-        // Example:
+        // Common parameters (applicable to all SPH types)
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
 
         m_param->time.start = root.get<real>("startTime", real(0));
@@ -147,11 +197,9 @@ namespace sph
         m_param->time.output = root.get<real>("outputTime", (m_param->time.end - m_param->time.start) / 1000);
         m_param->time.energy = root.get<real>("energyTime", m_param->time.output);
 
-        // cfl
         m_param->cfl.sound = root.get<real>("cflSound", 0.3);
         m_param->cfl.force = root.get<real>("cflForce", 0.125);
 
-        // Artificial Viscosity
         m_param->av.alpha = root.get<real>("avAlpha", 1.0);
         m_param->av.use_balsara_switch = root.get<bool>("useBalsaraSwitch", true);
         m_param->av.use_time_dependent_av = root.get<bool>("useTimeDependentAV", false);
@@ -165,21 +213,19 @@ namespace sph
             }
             m_param->av.epsilon = root.get<real>("epsilonAV", 0.2);
         }
-        // Artificial Conductivity
+
         m_param->ac.is_valid = root.get<bool>("useArtificialConductivity", false);
         if (m_param->ac.is_valid)
         {
             m_param->ac.alpha = root.get<real>("alphaAC", 1.0);
         }
 
-        // Tree
         m_param->tree.max_level = root.get<int>("maxTreeLevel", 20);
         m_param->tree.leaf_particle_num = root.get<int>("leafParticleNumber", 1);
 
-        // Physics
         m_param->physics.neighbor_number = root.get<int>("neighborNumber", 32);
         m_param->physics.gamma = root.get<real>("gamma");
-        // kernel
+
         std::string kernel_name = root.get<std::string>("kernel", "");
         if (!kernel_name.empty())
         {
@@ -191,42 +237,36 @@ namespace sph
                 THROW_ERROR("kernel is unknown: ", kernel_name);
         }
 
-        // iterative smoothing length
         m_param->iterative_sml = root.get<bool>("iterativeSmoothingLength", true);
 
-        // periodic
         m_param->periodic.is_valid = root.get<bool>("periodic", false);
         if (m_param->periodic.is_valid)
         {
+            auto &range_max = root.get_child("rangeMax");
+            if (range_max.size() != DIM)
             {
-                auto &range_max = root.get_child("rangeMax");
-                if (range_max.size() != DIM)
-                {
-                    THROW_ERROR("rangeMax != DIM");
-                }
-                int i = 0;
-                for (auto &v : range_max)
-                {
-                    m_param->periodic.range_max[i] = std::stod(v.second.data());
-                    ++i;
-                }
+                THROW_ERROR("rangeMax != DIM");
+            }
+            int i = 0;
+            for (auto &v : range_max)
+            {
+                m_param->periodic.range_max[i] = std::stod(v.second.data());
+                ++i;
             }
 
+            auto &range_min = root.get_child("rangeMin");
+            if (range_min.size() != DIM)
             {
-                auto &range_min = root.get_child("rangeMin");
-                if (range_min.size() != DIM)
-                {
-                    THROW_ERROR("rangeMax != DIM");
-                }
-                int i = 0;
-                for (auto &v : range_min)
-                {
-                    m_param->periodic.range_min[i] = std::stod(v.second.data());
-                    ++i;
-                }
+                THROW_ERROR("rangeMin != DIM");
+            }
+            i = 0;
+            for (auto &v : range_min)
+            {
+                m_param->periodic.range_min[i] = std::stod(v.second.data());
+                ++i;
             }
         }
-        // gravity
+
         m_param->gravity.is_valid = root.get<bool>("useGravity", false);
         if (m_param->gravity.is_valid)
         {
@@ -234,8 +274,8 @@ namespace sph
             WRITE_LOG << "G = " << m_param->gravity.constant;
             m_param->gravity.theta = root.get<real>("theta", 0.5);
         }
-        std::string sph_type = root.get<std::string>("SPHType", "ssph");
 
+        std::string sph_type = root.get<std::string>("SPHType", "ssph");
         if (sph_type == "ssph")
         {
             m_param->type = SPHType::SSPH;
@@ -253,20 +293,18 @@ namespace sph
             THROW_ERROR("Unknown SPH type");
         }
         WRITE_LOG << "Using algorithm: " << sph::sphTypeToString(m_param->type);
-        // GSPH
-        if (m_param->type == SPHType::GSPH)
+
+        // **Type-Specific Parsing Using Dictionary**
+        auto it = type_specific_parsers.find(m_param->type);
+        if (it != type_specific_parsers.end())
         {
-            m_param->gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
-            m_param->gsph.force_correction = root.get<bool>("forceCorrection", false);
-            WRITE_LOG << "use2ndOrderGSPH: " << m_param->gsph.is_2nd_order;
-            WRITE_LOG << "forceCorrection: " << m_param->gsph.force_correction;
+            it->second(root, *m_param);
         }
-        // heating/cooling
+
         m_param->heating_cooling.is_valid = root.get<bool>("useHeatingCooling", false);
         m_param->heating_cooling.heating_rate = root.get<real>("heatingRate", m_param->heating_cooling.heating_rate);
         m_param->heating_cooling.cooling_rate = root.get<real>("coolingRate", m_param->heating_cooling.cooling_rate);
 
-        // unitConfig
         std::string unitFile = root.get<std::string>("unitConfig", "");
         if (!unitFile.empty())
         {
@@ -301,8 +339,6 @@ namespace sph
         initialize();
         assert(m_sim->get_particles().size() == m_sim->get_particle_num());
 
-        // NOTE: Initial condition already output in initialize()
-
         const real t_end = m_param->time.end;
         real t_out = m_param->time.output;
         real t_ene = m_param->time.energy;
@@ -321,7 +357,6 @@ namespace sph
             m_sim->update_time();
             t = m_sim->get_time();
 
-            // Output to console every ~1 second
             const auto t_cout_f = std::chrono::system_clock::now();
             const real t_cout_s = std::chrono::duration_cast<std::chrono::seconds>(t_cout_f - t_cout_i).count();
             if (t_cout_s >= 1.0)
@@ -356,10 +391,19 @@ namespace sph
     void Solver::initialize()
     {
         parseJsonOverrides();
-        m_output = std::make_shared<Output>(0, m_unit);
+        std::string sph_type_str = sphTypeToString(m_param->type);
+        std::string dim_str = std::to_string(DIM) + "D";
+        boost::filesystem::path output_path(m_output_dir);
+        output_path /= sph_type_str;
+        output_path /= m_sample_name;
+        output_path /= dim_str;
+        std::string full_output_dir = output_path.string();
+        WRITE_LOG << "Output directory: " << full_output_dir;
+        boost::filesystem::create_directories(output_path);
+
+        m_output = std::make_shared<Output>(full_output_dir, 0, m_unit);
 
         m_sim = std::make_shared<Simulation>(m_param);
-        // 3) If the sample was recognized, fill actual particles now
         bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
         if (!recognized)
         {
@@ -367,37 +411,28 @@ namespace sph
                         " (and no code to fill from JSON-based ICs).");
         }
 
-        // *** Output the untouched initial condition immediately after sample creation ***
         m_output->output_particle(m_sim);
         m_output->output_energy(m_sim);
 
+        ModuleFactory &factory = ModuleFactory::instance();
         m_timestep = std::make_shared<TimeStep>();
-        if (m_param->type == SPHType::SSPH)
-        {
-            m_pre = std::make_shared<PreInteraction>();
-            m_fforce = std::make_shared<FluidForce>();
-        }
-        else if (m_param->type == SPHType::DISPH)
-        {
-            m_pre = std::make_shared<disph::PreInteraction>();
-            m_fforce = std::make_shared<disph::FluidForce>();
-        }
-        else if (m_param->type == SPHType::GSPH)
-        {
-            m_pre = std::make_shared<gsph::PreInteraction>();
-            m_fforce = std::make_shared<gsph::FluidForce>();
-        }
+        m_pre = factory.create_module(m_param->type, "PreInteraction");
+        m_fforce = factory.create_module(m_param->type, "FluidForce");
         m_gforce = std::make_shared<GravityForce>();
-
-        // ADDED: If heating_cooling is valid, create that module
         if (m_param->heating_cooling.is_valid)
         {
-            auto hc = std::make_shared<HeatingCoolingModule>();
-            hc->initialize(m_param);
-            m_hcool = hc;
+            m_hcool = std::make_shared<HeatingCoolingModule>();
         }
 
-        // For GSPH additional arrays
+        m_timestep->initialize(m_param);
+        m_pre->initialize(m_param);
+        m_fforce->initialize(m_param);
+        m_gforce->initialize(m_param);
+        if (m_hcool)
+        {
+            m_hcool->initialize(m_param);
+        }
+
         if (m_param->type == SPHType::GSPH)
         {
             std::vector<std::string> names;
@@ -412,11 +447,6 @@ namespace sph
 #endif
             m_sim->add_vector_array(names);
         }
-
-        m_timestep->initialize(m_param);
-        m_pre->initialize(m_param);
-        m_fforce->initialize(m_param);
-        m_gforce->initialize(m_param);
 
         auto &p = m_sim->get_particles();
         const int num = m_sim->get_particle_num();
@@ -459,7 +489,6 @@ namespace sph
         m_fforce->calculation(m_sim);
         m_gforce->calculation(m_sim);
 
-        // ADDED: call heating/cooling if present
         if (m_hcool)
             m_hcool->calculation(m_sim);
 
