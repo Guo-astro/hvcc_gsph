@@ -3,18 +3,18 @@
   "endTime": 0.05,
   "cflSound": 0.3,
   "cflForce": 0.125,
-  "avAlpha": 1.0,
+  "avAlpha": 2.0,
   "neighborNumber": 32,
   "gamma": 1.66666666,
   "kernel": "cubic_spline",
   "N": 1000,
-  "useBalsaraSwitch": false,
-  "useTimeDependentAV": false,
+  "useBalsaraSwitch": true,
+  "useTimeDependentAV": true,
   "periodic": false,
   "iterativeSmoothingLength": true,
   "rangeMax": [8],
   "rangeMin": [-4],
   "forceCorrection": false,
-  "SPHType": "gsph",
-  "unitConfig": "./units.json"
+  "SPHType": "ssph",
+  "unitConfig": "./sample/shock_tube_strong_shock/units.json"
 }

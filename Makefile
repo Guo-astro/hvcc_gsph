@@ -27,10 +27,14 @@ run:
 	# ./build/sph shock_tube ./sample/shock_tube/shock_tube.json 8
 	# ./build/sph evrard ./sample/evrard/evrard.json 8
 	# ./build/sph lane_emden ./sample/lane_emden/lane_emden.json 8
-	./build/sph khi ./sample/khi/khi.json 8
+	# ./build/sph khi ./sample/khi/khi.json 8
 	# ./build/sph shock_tube_2d ./sample/shock_tube_2d/shock_tube_2d.json 8
 	# ./build/sph shock_tube_2p5d ./sample/shock_tube_2p5d/shock_tube_2p5d.json 8
-	# ./build/sph shock_tube_strong_shock ./sample/shock_tube_strong_shock/shock_tube_strong_shock.json 8
+	./build/sph shock_tube_strong_shock ./sample/shock_tube_strong_shock/shock_tube_strong_shock.json 8
+	# ./build/sph sedov_taylor ./sample/sedov_taylor/sedov_taylor.json 8
+	# ./build/sph vacuum_test ./sample/vacuum_test/vacuum_test.json 8
+
+
 
 
 

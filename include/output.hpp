@@ -25,6 +25,7 @@ namespace sph
         ~Output();
         void output_particle(std::shared_ptr<Simulation> sim);
         void output_energy(std::shared_ptr<Simulation> sim);
+        void read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim);
     };
 
 }

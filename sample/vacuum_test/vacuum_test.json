@@ -1,0 +1,20 @@
+{
+  "outputDirectory": "sample/vacuum_test/results",
+  "endTime": 4,
+  "cflSound": 0.3,
+  "cflForce": 0.125,
+  "avAlpha": 2.0,
+  "neighborNumber": 32,
+  "gamma": 1.66666666,
+  "kernel": "cubic_spline",
+  "N": 1000,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
+  "periodic": false,
+  "iterativeSmoothingLength": true,
+  "rangeMax": [4.0],
+  "rangeMin": [-4.0],
+  "forceCorrection": false,
+  "SPHType": "gsph",
+  "unitConfig": "./units.json"
+}

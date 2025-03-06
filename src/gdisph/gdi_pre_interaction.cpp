@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include "parameters.hpp"
-#include "gdisph/gdi_pre_interaction.hpp"
+#include "gsph/g_pre_interaction.hpp"
 #include "simulation.hpp"
 #include "periodic.hpp"
 #include "openmp.hpp"
@@ -37,10 +37,11 @@ namespace sph
             const int num = sim->get_particle_num();
             auto *kernel = sim->get_kernel().get();
             auto *tree = sim->get_tree().get();
+            const real dt = sim->get_dt();
 
             omp_real h_per_v_sig(std::numeric_limits<real>::max());
 
-            // for MUSCL
+            // For MUSCL and divergence check
             auto &grad_d = sim->get_vector_array("grad_density");
             auto &grad_p = sim->get_vector_array("grad_pressure");
             vec_t *grad_v[DIM] = {
@@ -57,44 +58,60 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
+
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
-                // guess smoothing length
+                // Guess smoothing length
                 constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
                                                              : 4.0 * M_PI / 3.0;
                 p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A), 1.0 / DIM) * m_kernel_ratio;
 
-                // neighbor search
+                // Neighbor search
 #ifdef EXHAUSTIVE_SEARCH
                 const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list, m_neighbor_number * neighbor_list_size, periodic, false);
 #else
                 const int n_neighbor_tmp = tree->neighbor_search(p_i, neighbor_list, particles, false);
 #endif
-                // smoothing length
+                // Smoothing length
                 if (m_iteration)
                 {
                     p_i.sml = newton_raphson(p_i, particles, neighbor_list, n_neighbor_tmp, periodic, kernel);
                 }
 
-                // density etc.
+                // Density and related quantities
                 real dens_i = 0.0;
+                real dh_dens_i = 0.0;
+                real pres_i = 0.0;    // DISPH pressure accumulator
+                real dh_pres_i = 0.0; // DISPH gradh term
+                real n_i = 0.0;       // DISPH neighbor count
+                real dh_n_i = 0.0;    // DISPH gradh derivative
                 real v_sig_max = p_i.sound * 2.0;
-                const vec_t &pos_i = p_i.pos;
                 int n_neighbor = 0;
                 for (int n = 0; n < n_neighbor_tmp; ++n)
                 {
                     int const j = neighbor_list[n];
                     auto &p_j = particles[j];
-                    const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
+                    const vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
                     const real r = std::abs(r_ij);
 
                     if (r >= p_i.sml)
                     {
-                        break;
+                        continue;
                     }
 
                     ++n_neighbor;
-                    dens_i += p_j.mass * kernel->w(r, p_i.sml);
+                    const real w_ij = kernel->w(r, p_i.sml);
+                    const real dhw_ij = kernel->dhw(r, p_i.sml);
+
+                    // GSPH computations
+                    dens_i += p_j.mass * w_ij;
+                    dh_dens_i += p_j.mass * dhw_ij;
+
+                    // DISPH computations
+                    pres_i += p_j.mass * p_j.ene * w_ij;
+                    dh_pres_i += p_j.mass * p_j.ene * dhw_ij;
+                    n_i += w_ij;
+                    dh_n_i += dhw_ij;
 
                     if (i != j)
                     {
@@ -104,46 +121,108 @@ namespace sph
                             v_sig_max = v_sig;
                         }
                     }
+                    const real r_inv = 1.0 / r;
+                    const vec_t e_ij = r_ij * r_inv;
+                    vec_t dv_i, dv_j;
+                    for (int k = 0; k < DIM; ++k)
+                    {
+                        dv_i[k] = inner_product(grad_v[k][i], e_ij);
+                    }
+                    const real dve_i = inner_product(dv_i, e_ij);
+                    const real dve_j = inner_product(dv_j, e_ij);
+                    const real avg_sound = std::max(p_i.sound, p_j.sound);
+                    const real dynamic_threshold = 0.1 * avg_sound;
+                    const real divergenceThreshold = 0.0;
+
+                    if ((dve_i < divergenceThreshold && std::abs(dve_i) > dynamic_threshold) || (dve_j < divergenceThreshold && std::abs(dve_j) > dynamic_threshold))
+                    {
+                        p_i.switch_to_no_shock_region = false; // Mark for next pre-interaction
+                        p_j.switch_to_no_shock_region = false; // Symmetric for pair
+                    }
+                    else
+                    {
+                        p_i.switch_to_no_shock_region = true; // Mark for next pre-interaction
+                        p_j.switch_to_no_shock_region = true; // Symmetric for pair
+                    }
                 }
 
                 p_i.dens = dens_i;
-                p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
+
+                // Divergence condition from g_fluid_force.cpp
+                if (p_i.switch_to_no_shock_region)
+                {
+                    // DISPH-style properties
+                    p_i.pres = (m_gamma - 1.0) * pres_i;
+                    p_i.gradh = p_i.sml / (DIM * n_i) * dh_pres_i / (1.0 + p_i.sml / (DIM * n_i) * dh_n_i);
+                    // Artificial viscosity
+                    if (m_use_balsara_switch && DIM != 1)
+                    {
+#if DIM != 1
+                        // balsara switch
+                        real div_v = 0.0;
+#if DIM == 2
+                        real rot_v = 0.0;
+#else
+                        vec_t rot_v = 0.0;
+#endif
+                        for (int n = 0; n < n_neighbor; ++n)
+                        {
+                            int const j = neighbor_list[n];
+                            auto &p_j = particles[j];
+                            const vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
+                            const real r = std::abs(r_ij);
+                            const vec_t dw = kernel->dw(r_ij, r, p_i.sml);
+                            const vec_t v_ij = p_i.vel - p_j.vel;
+                            div_v -= p_j.mass * p_j.ene * inner_product(v_ij, dw);
+                            rot_v += vector_product(v_ij, dw) * (p_j.mass * p_j.ene);
+                        }
+                        const real p_inv = (m_gamma - 1.0) / p_i.pres;
+                        div_v *= p_inv;
+                        rot_v *= p_inv;
+                        p_i.balsara = std::abs(div_v) / (std::abs(div_v) + std::abs(rot_v) + 1e-4 * p_i.sound / p_i.sml);
+                        // time dependent alpha
+                        if (m_use_time_dependent_av)
+                        {
+                            const real tau_inv = m_epsilon * p_i.sound / p_i.sml;
+                            const real dalpha = (-(p_i.alpha - m_alpha_min) * tau_inv + std::max(-div_v, (real)0.0) * (m_alpha_max - p_i.alpha)) * dt;
+                            p_i.alpha += dalpha;
+                        }
+
+#endif
+                    }
+                    else if (m_use_time_dependent_av)
+                    {
+                        real div_v = 0.0;
+                        for (int n = 0; n < n_neighbor; ++n)
+                        {
+                            int const j = neighbor_list[n];
+                            auto &p_j = particles[j];
+                            const vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
+                            const real r = std::abs(r_ij);
+                            const vec_t dw = kernel->dw(r_ij, r, p_i.sml);
+                            const vec_t v_ij = p_i.vel - p_j.vel;
+                            div_v -= p_j.mass * p_j.ene * inner_product(v_ij, dw);
+                        }
+                        const real p_inv = (m_gamma - 1.0) / p_i.pres;
+                        div_v *= p_inv;
+                        const real tau_inv = m_epsilon * p_i.sound / p_i.sml;
+                        const real s_i = std::max(-div_v, (real)0.0);
+                        p_i.alpha = (p_i.alpha + dt * tau_inv * m_alpha_min + s_i * dt * m_alpha_max) / (1.0 + dt * tau_inv + s_i * dt);
+                    }
+                }
+                else
+                {
+                    // GSPH defaults
+                    p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
+                    p_i.gradh = 1.0 / (1.0 + p_i.sml / (DIM * dens_i) * dh_dens_i);
+                }
+
                 p_i.neighbor = n_neighbor;
 
                 const real h_per_v_sig_i = p_i.sml / v_sig_max;
                 if (h_per_v_sig.get() > h_per_v_sig_i)
                 {
                     h_per_v_sig.get() = h_per_v_sig_i;
-                }
-
-                // MUSCL法のための勾配計算
-                if (!m_is_2nd_order)
-                {
-                    continue;
-                }
-
-                vec_t dd, du; // dP = (gamma - 1) * (rho * du + drho * u)
-                vec_t dv[DIM];
-                for (int n = 0; n < n_neighbor; ++n)
-                {
-                    int const j = neighbor_list[n];
-                    auto &p_j = particles[j];
-                    const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
-                    const real r = std::abs(r_ij);
-                    const vec_t dw_ij = kernel->dw(r_ij, r, p_i.sml);
-                    dd += dw_ij * p_j.mass;
-                    du += dw_ij * (p_j.mass * (p_j.ene - p_i.ene));
-                    for (int k = 0; k < DIM; ++k)
-                    {
-                        dv[k] += dw_ij * (p_j.mass * (p_j.vel[k] - p_i.vel[k]));
-                    }
-                }
-                grad_d[i] = dd;
-                grad_p[i] = (dd * p_i.ene + du) * (m_gamma - 1.0);
-                const real rho_inv = 1.0 / p_i.dens;
-                for (int k = 0; k < DIM; ++k)
-                {
-                    grad_v[k][i] = dv[k] * rho_inv;
                 }
             }
 
@@ -154,5 +233,5 @@ namespace sph
 #endif
         }
 
-    }
-}
+    } // namespace gsph
+} // namespace sph

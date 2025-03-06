@@ -77,7 +77,7 @@ namespace sph
 
                     if (r >= p_i.sml)
                     {
-                        break;
+                        continue;
                     }
 
                     ++n_neighbor;

@@ -1,6 +1,7 @@
 #include <ctime>
 #include <boost/format.hpp>
 #include <fstream>
+#include "exception.hpp"
 #include "output.hpp"
 #include "logger.hpp"
 #include "defines.hpp"
@@ -10,39 +11,183 @@
 
 namespace sph
 {
-    // Helper function: outputs one particle's data using conversion factors from the UnitSystem.
-    void output_particle_data(const SPHParticle &p, std::ofstream &out, const UnitSystem &units)
+    void output_particle_data_csv(const SPHParticle &p, std::ostringstream &line, const UnitSystem &units)
     {
 #if DIM == 1
-        out << p.pos[0] * units.length_factor << " ";
-        out << p.vel[0] * (units.length_factor / units.time_factor) << " ";
-        out << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << " ";
+        line << p.pos[0] * units.length_factor << ","
+             << p.vel[0] * (units.length_factor / units.time_factor) << ","
+             << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << ",";
 #elif DIM == 2
-        out << p.pos[0] * units.length_factor << " "
-            << p.pos[1] * units.length_factor << " ";
-        out << p.vel[0] * (units.length_factor / units.time_factor) << " "
-            << p.vel[1] * (units.length_factor / units.time_factor) << " ";
-        out << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << " "
-            << p.acc[1] * (units.length_factor / (units.time_factor * units.time_factor)) << " ";
+        line << p.pos[0] * units.length_factor << ","
+             << p.pos[1] * units.length_factor << ","
+             << p.vel[0] * (units.length_factor / units.time_factor) << ","
+             << p.vel[1] * (units.length_factor / units.time_factor) << ","
+             << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << ","
+             << p.acc[1] * (units.length_factor / (units.time_factor * units.time_factor)) << ",";
 #elif DIM == 3
-        out << p.pos[0] * units.length_factor << " "
-            << p.pos[1] * units.length_factor << " "
-            << p.pos[2] * units.length_factor << " ";
-        out << p.vel[0] * (units.length_factor / units.time_factor) << " "
-            << p.vel[1] * (units.length_factor / units.time_factor) << " "
-            << p.vel[2] * (units.length_factor / units.time_factor) << " ";
-        out << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << " "
-            << p.acc[1] * (units.length_factor / (units.time_factor * units.time_factor)) << " "
-            << p.acc[2] * (units.length_factor / (units.time_factor * units.time_factor)) << " ";
+        line << p.pos[0] * units.length_factor << ","
+             << p.pos[1] * units.length_factor << ","
+             << p.pos[2] * units.length_factor << ","
+             << p.vel[0] * (units.length_factor / units.time_factor) << ","
+             << p.vel[1] * (units.length_factor / units.time_factor) << ","
+             << p.vel[2] * (units.length_factor / units.time_factor) << ","
+             << p.acc[0] * (units.length_factor / (units.time_factor * units.time_factor)) << ","
+             << p.acc[1] * (units.length_factor / (units.time_factor * units.time_factor)) << ","
+             << p.acc[2] * (units.length_factor / (units.time_factor * units.time_factor)) << ",";
 #endif
-        out << p.mass * units.mass_factor << " ";
-        out << p.dens * units.density_factor << " ";
-        out << p.pres * units.pressure_factor << " ";
-        out << p.ene * units.energy_factor << " ";
-        out << p.sml * units.length_factor << " ";
-        out << p.id << " " << p.neighbor << " " << p.alpha << " " << p.gradh << " ";
+        line << p.mass * units.mass_factor << ","
+             << p.dens * units.density_factor << ","
+             << p.pres * units.pressure_factor << ","
+             << p.ene * units.energy_factor << ","
+             << p.sml * units.length_factor << ","
+             << p.id << ","
+             << p.neighbor << ","
+             << p.alpha << ","
+             << p.gradh;
     }
+    // Modified output_particle function: write in CSV format with a header line.
+    void Output::output_particle(std::shared_ptr<Simulation> sim)
+    {
+        const auto &particles = sim->get_particles();
+        const int num = sim->get_particle_num();
+        const real time = sim->get_time();
 
+        // Use .csv extension and create file name using m_count.
+        const std::string file_name = m_dir + (boost::format("/%05d.csv") % m_count).str();
+        std::ofstream out(file_name);
+
+        // Build CSV header
+        std::ostringstream header;
+        header << "time,";
+#if DIM == 1
+        header << "pos_x,vel_x,acc_x,";
+#elif DIM == 2
+        header << "pos_x,pos_y,vel_x,vel_y,acc_x,acc_y,";
+#elif DIM == 3
+        header << "pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,acc_x,acc_y,acc_z,";
+#endif
+        header << "mass,dens,pres,ene,sml,id,neighbor,alpha,gradh";
+
+        // Append additional arrays (if any)
+        auto &scalar_map = sim->get_scalar_map();
+        auto &vector_map = sim->get_vector_map();
+        for (auto &kv : scalar_map)
+        {
+            header << "," << kv.first;
+        }
+        for (auto &kv : vector_map)
+        {
+#if DIM == 1
+            header << "," << kv.first;
+#elif DIM == 2
+            header << "," << kv.first << "_x," << kv.first << "_y";
+#elif DIM == 3
+            header << "," << kv.first << "_x," << kv.first << "_y," << kv.first << "_z";
+#endif
+        }
+        out << header.str() << "\n";
+
+        // Write one line per particle (each line includes simulation time)
+        for (int i = 0; i < num; ++i)
+        {
+            std::ostringstream line;
+            line << time * m_unit.time_factor << ",";
+            output_particle_data_csv(particles[i], line, m_unit);
+
+            // Write additional scalar arrays
+            for (auto &[name, arr] : scalar_map)
+            {
+                line << "," << arr[i];
+            }
+            // Write additional vector arrays
+            for (auto &[name, arrv] : vector_map)
+            {
+#if DIM == 1
+                line << "," << arrv[i][0];
+#elif DIM == 2
+                line << "," << arrv[i][0] << "," << arrv[i][1];
+#elif DIM == 3
+                line << "," << arrv[i][0] << "," << arrv[i][1] << "," << arrv[i][2];
+#endif
+            }
+            out << line.str() << "\n";
+        }
+        WRITE_LOG << "write " << file_name;
+        ++m_count;
+    }
+    void Output::read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim)
+    {
+        std::ifstream in(file_name);
+        if (!in.is_open())
+        {
+            THROW_ERROR("Cannot open checkpoint file: ", file_name);
+        }
+        std::string headerLine;
+        std::getline(in, headerLine);
+        // (Optionally, you can parse headerLine to verify the column order.)
+
+        std::vector<SPHParticle> particles;
+        std::string line;
+        double checkpointTime = 0.0;
+        while (std::getline(in, line))
+        {
+            std::istringstream ss(line);
+            std::string field;
+            std::vector<std::string> fields;
+            while (std::getline(ss, field, ','))
+            {
+                fields.push_back(field);
+            }
+            // Create a particle from the fields. The order is assumed to be:
+            // time, pos (DIM), vel (DIM), acc (DIM), mass, dens, pres, ene, sml, id, neighbor, alpha, gradh, [additional...]
+            int idx = 0;
+            double timeVal = std::stod(fields[idx++]);
+            // For now we set the simulation time to that in the first row.
+            if (particles.empty())
+            {
+                checkpointTime = timeVal / m_unit.time_factor;
+            }
+            SPHParticle p;
+#if DIM == 1
+            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+#elif DIM == 2
+            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.vel[1] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+            p.acc[1] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+#elif DIM == 3
+            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.pos[2] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.vel[1] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.vel[2] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
+            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+            p.acc[1] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+            p.acc[2] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+#endif
+            p.mass = std::stod(fields[idx++]) / m_unit.mass_factor;
+            p.dens = std::stod(fields[idx++]) / m_unit.density_factor;
+            p.pres = std::stod(fields[idx++]) / m_unit.pressure_factor;
+            p.ene = std::stod(fields[idx++]) / m_unit.energy_factor;
+            p.sml = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.id = std::stoi(fields[idx++]);
+            p.neighbor = std::stoi(fields[idx++]);
+            p.alpha = std::stod(fields[idx++]);
+            p.gradh = std::stod(fields[idx++]);
+
+            // (For now we ignore any additional arrays; add similar parsing here if needed.)
+            particles.push_back(p);
+        }
+        // Now update the simulation state with the loaded particles and time.
+        sim->set_particles(particles);
+        sim->set_time(checkpointTime);
+        WRITE_LOG << "Loaded checkpoint from " << file_name << " with " << particles.size() << " particles and time " << checkpointTime;
+    }
     Output::Output(const std::string &dir, int count, const UnitSystem &unit)
         : m_dir(dir), m_count(count), m_unit(unit)
     {
@@ -59,100 +204,6 @@ namespace sph
     Output::~Output()
     {
         m_out_energy.close();
-    }
-
-    void Output::output_particle(std::shared_ptr<Simulation> sim)
-    {
-        const auto &particles = sim->get_particles();
-        const int num = sim->get_particle_num();
-        const real time = sim->get_time();
-
-        // Use m_dir instead of Logger::get_dir_name()
-        const std::string file_name = m_dir + (boost::format("/%05d.dat") % m_count).str();
-        std::ofstream out(file_name);
-
-        // Header
-        out << "# Time [" << m_unit.time_unit << "]: " << time * m_unit.time_factor << "\n";
-
-#if DIM == 1
-        out << "# Columns: pos [" << m_unit.length_unit << "], vel ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "], acc ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
-            << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
-            << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
-#elif DIM == 2
-        out << "# Columns: pos_x [" << m_unit.length_unit << "], pos_y [" << m_unit.length_unit
-            << "], vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_y ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "], acc_x ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], acc_y ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
-            << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
-            << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
-#elif DIM == 3
-        out << "# Columns: pos_x [" << m_unit.length_unit << "], pos_y [" << m_unit.length_unit
-            << "], pos_z [" << m_unit.length_unit << "], vel_x ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_y ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "], vel_z ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "], acc_x ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], acc_y ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], acc_z ["
-            << m_unit.length_unit << "/" << m_unit.time_unit << "^2], mass ["
-            << m_unit.mass_unit << "], dens [" << m_unit.density_unit << "], pres ["
-            << m_unit.pressure_unit << "], ene [" << m_unit.energy_unit << "], sml ["
-            << m_unit.length_unit << "], id, neighbor, alpha, gradh, ...additional?\n";
-#endif
-
-        // ADDED: Let's gather the additional scalar and vector arrays
-        // We'll print them after the standard columns, each array in columns.
-        auto &scalar_map = sim->get_scalar_map();
-        auto &vector_map = sim->get_vector_map();
-
-        // For clarity, we can write a short header line for them:
-        if (!scalar_map.empty() || !vector_map.empty())
-        {
-            out << "# Additional arrays: ";
-            for (auto &kv : scalar_map)
-            {
-                out << kv.first << "(scalar) ";
-            }
-            for (auto &kv : vector_map)
-            {
-                out << kv.first << "(vector) ";
-            }
-            out << "\n";
-        }
-
-        // Now output data
-        for (int i = 0; i < num; ++i)
-        {
-            // standard columns
-            output_particle_data(particles[i], out, m_unit);
-
-            // ADDED: Dump additional arrays
-            for (auto &[name, arr] : scalar_map)
-            {
-                // arr[i] is a real
-                out << arr[i] << " ";
-            }
-            for (auto &[name, arrv] : vector_map)
-            {
-                // arrv[i] is a vec_t
-#if DIM == 1
-                out << arrv[i][0] << " ";
-#elif DIM == 2
-                out << arrv[i][0] << " " << arrv[i][1] << " ";
-#elif DIM == 3
-                out << arrv[i][0] << " " << arrv[i][1] << " " << arrv[i][2] << " ";
-#endif
-            }
-
-            out << "\n";
-        }
-
-        WRITE_LOG << "write " << file_name;
-        ++m_count;
     }
 
     void Output::output_energy(std::shared_ptr<Simulation> sim)
