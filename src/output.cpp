@@ -11,6 +11,7 @@
 
 namespace sph
 {
+    // Helper function: outputs one particle's data in CSV format.
     void output_particle_data_csv(const SPHParticle &p, std::ostringstream &line, const UnitSystem &units)
     {
 #if DIM == 1
@@ -45,7 +46,8 @@ namespace sph
              << p.alpha << ","
              << p.gradh;
     }
-    // Modified output_particle function: write in CSV format with a header line.
+
+    // Modified output_particle function: writes CSV with a header line showing units.
     void Output::output_particle(std::shared_ptr<Simulation> sim)
     {
         const auto &particles = sim->get_particles();
@@ -56,17 +58,37 @@ namespace sph
         const std::string file_name = m_dir + (boost::format("/%05d.csv") % m_count).str();
         std::ofstream out(file_name);
 
-        // Build CSV header
+        // Build CSV header with explicit units
         std::ostringstream header;
-        header << "time,";
+        header << "time [" << m_unit.time_unit << "],";
 #if DIM == 1
-        header << "pos_x,vel_x,acc_x,";
+        header << "pos_x [" << m_unit.length_unit << "],"
+               << "vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "acc_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],";
 #elif DIM == 2
-        header << "pos_x,pos_y,vel_x,vel_y,acc_x,acc_y,";
+        header << "pos_x [" << m_unit.length_unit << "],"
+               << "pos_y [" << m_unit.length_unit << "],"
+               << "vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "vel_y [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "acc_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],"
+               << "acc_y [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],";
 #elif DIM == 3
-        header << "pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,acc_x,acc_y,acc_z,";
+        header << "pos_x [" << m_unit.length_unit << "],"
+               << "pos_y [" << m_unit.length_unit << "],"
+               << "pos_z [" << m_unit.length_unit << "],"
+               << "vel_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "vel_y [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "vel_z [" << m_unit.length_unit << "/" << m_unit.time_unit << "],"
+               << "acc_x [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],"
+               << "acc_y [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],"
+               << "acc_z [" << m_unit.length_unit << "/" << m_unit.time_unit << "^2],";
 #endif
-        header << "mass,dens,pres,ene,sml,id,neighbor,alpha,gradh";
+        header << "mass [" << m_unit.mass_unit << "],"
+               << "dens [" << m_unit.density_unit << "],"
+               << "pres [" << m_unit.pressure_unit << "],"
+               << "ene [" << m_unit.energy_unit << "],"
+               << "sml [" << m_unit.length_unit << "],"
+               << "id,neighbor,alpha,gradh";
 
         // Append additional arrays (if any)
         auto &scalar_map = sim->get_scalar_map();
@@ -115,6 +137,8 @@ namespace sph
         WRITE_LOG << "write " << file_name;
         ++m_count;
     }
+
+    // Modified checkpoint reader remains the same.
     void Output::read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim)
     {
         std::ifstream in(file_name);
@@ -188,17 +212,11 @@ namespace sph
         sim->set_time(checkpointTime);
         WRITE_LOG << "Loaded checkpoint from " << file_name << " with " << particles.size() << " particles and time " << checkpointTime;
     }
+
     Output::Output(const std::string &dir, int count, const UnitSystem &unit)
         : m_dir(dir), m_count(count), m_unit(unit)
     {
-        // const std::string dir_name = Logger::get_dir_name();
-        // const std::string file_name = dir_name + "/energy.dat";
-        // m_out_energy.open(file_name);
-        // m_out_energy << "# time [" << m_unit.time_unit << "] "
-        //              << "kinetic [" << m_unit.energy_unit << "] "
-        //              << "thermal [" << m_unit.energy_unit << "] "
-        //              << "potential [" << m_unit.energy_unit << "] "
-        //              << "total [" << m_unit.energy_unit << "]\n";
+        // energy output code omitted...
     }
 
     Output::~Output()
@@ -232,5 +250,4 @@ namespace sph
                      << (potential * m_unit.energy_factor) << " "
                      << (total * m_unit.energy_factor) << std::endl;
     }
-
 } // namespace sph
