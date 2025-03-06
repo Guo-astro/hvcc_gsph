@@ -12,6 +12,7 @@
   "useTimeDependentAV": false,
   "periodic": false,
   "iterativeSmoothingLength": true,
+  "use2ndOrderGSPH": true,
   "rangeMax": [8],
   "rangeMin": [-4],
   "forceCorrection": false,
