@@ -12,10 +12,10 @@
   "useTimeDependentAV": false,
   "periodic": false,
   "iterativeSmoothingLength": true,
-  "use2ndOrderGSPH": true,
+  "use2ndOrderGSPH": false,
   "rangeMax": [8],
   "rangeMin": [-4],
   "forceCorrection": false,
-  "SPHType": "disph",
+  "SPHType": "gdisph",
   "unitConfig": "./sample/shock_tube_strong_shock/units.json"
 }

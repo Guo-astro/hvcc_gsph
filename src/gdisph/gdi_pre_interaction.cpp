@@ -137,7 +137,7 @@ namespace sph
                         h_per_v_sig.get() = h_per_v_sig_i;
                     }
                     // Artificial viscosity
-                    if (m_use_balsara_switch && DIM != 1)
+                    if (m_use_balsara_switch)
                     {
 #if DIM != 1
                         // balsara switch
