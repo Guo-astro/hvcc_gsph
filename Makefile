@@ -33,6 +33,9 @@ run:
 	./build/sph shock_tube_strong_shock ./sample/shock_tube_strong_shock/shock_tube_strong_shock.json 8
 	# ./build/sph sedov_taylor ./sample/sedov_taylor/sedov_taylor.json 8
 	# ./build/sph vacuum_test ./sample/vacuum_test/vacuum_test.json 8
+	# ./build/sph purtabation_damping ./sample/purtabation_damping/purtabation_damping.json 8
+
+	
 
 
 

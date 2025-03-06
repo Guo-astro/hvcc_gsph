@@ -4,7 +4,7 @@
   "avAlpha": 2.0,
   "neighborNumber": 32,
   "useBalsaraSwitch": true,
-  "useTimeDependentAV": true,
+  "useTimeDependentAV": false,
   "useArtificialConductivity": false,
   "leafParticleNumber": 32,
   "gamma": 1.6666666666666667,
@@ -14,5 +14,5 @@
   "useGravity": true,
   "iterativeSml": true,
   "G": 0.0043,
-  "SPHType": "gsph"
+  "SPHType": "gdisph"
 }

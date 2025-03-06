@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include "parameters.hpp"
-#include "gsph/g_pre_interaction.hpp"
+#include "gdisph/gdi_pre_interaction.hpp"
 #include "simulation.hpp"
 #include "periodic.hpp"
 #include "openmp.hpp"
@@ -21,7 +21,6 @@ namespace sph
         void PreInteraction::initialize(std::shared_ptr<SPHParameters> param)
         {
             sph::PreInteraction::initialize(param);
-            m_is_2nd_order = param->gsph.is_2nd_order;
         }
 
         void PreInteraction::calculation(std::shared_ptr<Simulation> sim)
@@ -121,39 +120,22 @@ namespace sph
                             v_sig_max = v_sig;
                         }
                     }
-                    const real r_inv = 1.0 / r;
-                    const vec_t e_ij = r_ij * r_inv;
-                    vec_t dv_i, dv_j;
-                    for (int k = 0; k < DIM; ++k)
-                    {
-                        dv_i[k] = inner_product(grad_v[k][i], e_ij);
-                    }
-                    const real dve_i = inner_product(dv_i, e_ij);
-                    const real dve_j = inner_product(dv_j, e_ij);
-                    const real avg_sound = std::max(p_i.sound, p_j.sound);
-                    const real dynamic_threshold = 0.1 * avg_sound;
-                    const real divergenceThreshold = 0.0;
-
-                    if ((dve_i < divergenceThreshold && std::abs(dve_i) > dynamic_threshold) || (dve_j < divergenceThreshold && std::abs(dve_j) > dynamic_threshold))
-                    {
-                        p_i.switch_to_no_shock_region = false; // Mark for next pre-interaction
-                        p_j.switch_to_no_shock_region = false; // Symmetric for pair
-                    }
-                    else
-                    {
-                        p_i.switch_to_no_shock_region = true; // Mark for next pre-interaction
-                        p_j.switch_to_no_shock_region = true; // Symmetric for pair
-                    }
                 }
 
                 p_i.dens = dens_i;
 
                 // Divergence condition from g_fluid_force.cpp
-                if (p_i.switch_to_no_shock_region)
+                if (true)
                 {
-                    // DISPH-style properties
+
                     p_i.pres = (m_gamma - 1.0) * pres_i;
                     p_i.gradh = p_i.sml / (DIM * n_i) * dh_pres_i / (1.0 + p_i.sml / (DIM * n_i) * dh_n_i);
+                    p_i.neighbor = n_neighbor;
+                    const real h_per_v_sig_i = p_i.sml / v_sig_max;
+                    if (h_per_v_sig.get() > h_per_v_sig_i)
+                    {
+                        h_per_v_sig.get() = h_per_v_sig_i;
+                    }
                     // Artificial viscosity
                     if (m_use_balsara_switch && DIM != 1)
                     {
@@ -216,7 +198,29 @@ namespace sph
                     p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
                     p_i.gradh = 1.0 / (1.0 + p_i.sml / (DIM * dens_i) * dh_dens_i);
                 }
-
+                vec_t dd, du; // dP = (gamma - 1) * (rho * du + drho * u)
+                vec_t dv[DIM];
+                for (int n = 0; n < n_neighbor; ++n)
+                {
+                    int const j = neighbor_list[n];
+                    auto &p_j = particles[j];
+                    const vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
+                    const real r = std::abs(r_ij);
+                    const vec_t dw_ij = kernel->dw(r_ij, r, p_i.sml);
+                    dd += dw_ij * p_j.mass;
+                    du += dw_ij * (p_j.mass * (p_j.ene - p_i.ene));
+                    for (int k = 0; k < DIM; ++k)
+                    {
+                        dv[k] += dw_ij * (p_j.mass * (p_j.vel[k] - p_i.vel[k]));
+                    }
+                }
+                grad_d[i] = dd;
+                grad_p[i] = (dd * p_i.ene + du) * (m_gamma - 1.0);
+                const real rho_inv = 1.0 / p_i.dens;
+                for (int k = 0; k < DIM; ++k)
+                {
+                    grad_v[k][i] = dv[k] * rho_inv;
+                }
                 p_i.neighbor = n_neighbor;
 
                 const real h_per_v_sig_i = p_i.sml / v_sig_max;

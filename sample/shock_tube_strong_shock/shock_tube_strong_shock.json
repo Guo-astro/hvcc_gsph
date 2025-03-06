@@ -9,12 +9,12 @@
   "kernel": "cubic_spline",
   "N": 1000,
   "useBalsaraSwitch": true,
-  "useTimeDependentAV": true,
+  "useTimeDependentAV": false,
   "periodic": false,
   "iterativeSmoothingLength": true,
   "rangeMax": [8],
   "rangeMin": [-4],
   "forceCorrection": false,
-  "SPHType": "ssph",
+  "SPHType": "disph",
   "unitConfig": "./sample/shock_tube_strong_shock/units.json"
 }

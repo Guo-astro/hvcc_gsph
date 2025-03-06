@@ -16,7 +16,6 @@ target_sources(sph
     )
 
 add_subdirectory(disph)
+add_subdirectory(gdisph)
 add_subdirectory(gsph)
 add_subdirectory(sample)
-file(COPY ${CMAKE_SOURCE_DIR}/sample
-     DESTINATION ${CMAKE_BINARY_DIR})

@@ -10,6 +10,7 @@ namespace sph
         SSPH,
         DISPH,
         GSPH,
+        GDISPH,
     };
 
     enum struct KernelType

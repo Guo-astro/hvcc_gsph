@@ -4,7 +4,7 @@
 #include "simulation.hpp"
 #include "bhtree.hpp"
 #include "kernel/kernel_function.hpp"
-#include "gsph/g_fluid_force.hpp"
+#include "gdisph/gdi_fluid_force.hpp"
 
 #ifdef EXHAUSTIVE_SEARCH
 #include "exhaustive_search.hpp"
@@ -21,7 +21,6 @@ namespace sph
             sph::FluidForce::initialize(param);
             m_is_2nd_order = param->gsph.is_2nd_order;
             m_gamma = param->physics.gamma;
-            m_forceCorrection = param->gsph.force_correction;
 
             hll_solver();
         }
@@ -68,13 +67,6 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
-                if (p_i.is_wall)
-                {
-                    p_i.vel = -p_i.vel;
-                    p_i.acc = -p_i.acc;
-                    continue;
-                }
-
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // neighbor search
@@ -109,7 +101,7 @@ namespace sph
                     const vec_t e_ij = r_ij * r_inv;
                     const real ve_i = inner_product(v_i, e_ij);
                     const real ve_j = inner_product(p_j.vel, e_ij);
-                    const vec_t v_ij = v_i - p_j.vel;
+
                     // Compute kernel gradients
                     const vec_t dw_i = kernel->dw(r_ij, r, h_i);
                     const vec_t dw_j = kernel->dw(r_ij, r, p_j.sml);
@@ -129,87 +121,28 @@ namespace sph
                     const real dve_i = inner_product(dv_i, e_ij);
                     const real dve_j = inner_product(dv_j, e_ij);
                     const real dynamic_threshold = 0.1 * avg_sound;
+                    // HLL solver
+                    real pstar, vstar;
 
-                    if ((dve_i < divergenceThreshold && std::abs(dve_i) > dynamic_threshold) || (dve_j < divergenceThreshold && std::abs(dve_j) > dynamic_threshold))
-                    {
-                        p_i.switch_to_no_shock_region = false; // Mark for next pre-interaction
-                        p_j.switch_to_no_shock_region = false; // Symmetric for pair
-                        // GSPH with HLL solver
-                        real pstar, vstar;
-                        if (m_is_2nd_order)
-                        {
-                            real right[4], left[4];
-                            const real delta_i = 0.5 * (1.0 - p_i.sound * dt * r_inv);
-                            const real delta_j = 0.5 * (1.0 - p_j.sound * dt * r_inv);
+                    const real right[4] = {ve_i, p_i.dens, p_i.pres, p_i.sound};
+                    const real left[4] = {ve_j, p_j.dens, p_j.pres, p_j.sound};
+                    m_solver(left, right, pstar, vstar);
+                    const vec_t v_ij = v_i - p_j.vel;
+                    const vec_t dw_ij = (dw_i + dw_j) * 0.5;
 
-                            // Velocity reconstruction
-                            const real dv_ij = ve_i - ve_j;
-                            vec_t dv_i, dv_j;
-                            for (int k = 0; k < DIM; ++k)
-                            {
-                                dv_i[k] = inner_product(grad_v[k][i], e_ij);
-                                dv_j[k] = inner_product(grad_v[k][j], e_ij);
-                            }
-                            const real dve_i = inner_product(dv_i, e_ij) * r;
-                            const real dve_j = inner_product(dv_j, e_ij) * r;
-                            right[0] = ve_i - limiter(dv_ij, dve_i) * delta_i;
-                            left[0] = ve_j + limiter(dv_ij, dve_j) * delta_j;
+                    real pi_ij = 0;
 
-                            // Density reconstruction
-                            const real dd_ij = p_i.dens - p_j.dens;
-                            const real dd_i = inner_product(grad_d[i], e_ij) * r;
-                            const real dd_j = inner_product(grad_d[j], e_ij) * r;
-                            right[1] = p_i.dens - limiter(dd_ij, dd_i) * delta_i;
-                            left[1] = p_j.dens + limiter(dd_ij, dd_j) * delta_j;
+                    vec_t f_vis = dw_ij * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i) + dw_ij * (p_j.mass * (pstar - p_j.pres) * rho2_inv_j);
+                    vec_t f_invis = dw_ij * (p_i.mass * (p_i.pres) * rho2_inv_i) +
+                                    dw_ij * (p_j.mass * (p_j.pres) * rho2_inv_j);
+                    acc -= f_invis + f_vis * 0.5 * (p_i.balsara + p_j.balsara);
 
-                            // Pressure reconstruction
-                            const real dp_ij = p_i.pres - p_j.pres;
-                            const real dp_i = inner_product(grad_p[i], e_ij) * r;
-                            const real dp_j = inner_product(grad_p[j], e_ij) * r;
-                            right[2] = p_i.pres - limiter(dp_ij, dp_i) * delta_i;
-                            left[2] = p_j.pres + limiter(dp_ij, dp_j) * delta_j;
-
-                            // Sound speed
-                            right[3] = std::sqrt(m_gamma * right[2] / right[1]);
-                            left[3] = std::sqrt(m_gamma * left[2] / left[1]);
-
-                            m_solver(left, right, pstar, vstar);
-                        }
-                        else
-                        {
-                            const real right[4] = {ve_i, p_i.dens, p_i.pres, p_i.sound};
-                            const real left[4] = {ve_j, p_j.dens, p_j.pres, p_j.sound};
-                            m_solver(left, right, pstar, vstar);
-                        }
-
-                        // Compute force and energy update using HLL results
-                        vec_t f = dw_i * (p_j.mass * pstar * rho2_inv_i) +
-                                  dw_j * (p_j.mass * pstar * rho2_inv_j);
-                        acc -= f;
-
-                        const vec_t v_ij_gsph = e_ij * vstar;
-                        dene -= inner_product(f, v_ij_gsph - v_i);
-                    }
-                    else
-                    {
-                        // DISPH fallback
-                        p_i.switch_to_no_shock_region = true; // Mark for next pre-interaction
-                        p_j.switch_to_no_shock_region = true; // Symmetric for pair
-                        // Switch to DISPH calculation
-                        const vec_t dw_ij = (dw_i + dw_j) * 0.5;
-                        const real gamma2_u_i = sqr(m_gamma - 1.0) * p_i.ene;
-                        const real gamma2_u_per_pres_i = gamma2_u_i / p_i.pres;
-                        const real u_per_pres_j = p_j.ene / p_j.pres;
-                        const real f_ij = 1.0 - p_i.gradh / (p_j.mass * p_j.ene);
-                        const real f_ji = 1.0 - p_j.gradh / (p_i.mass * p_i.ene);
-                        const real pi_ij = artificial_viscosity(p_i, p_j, r_ij);
-                        const real dene_ac = m_use_ac ? artificial_conductivity(p_i, p_j, r_ij, dw_ij) : 0.0;
-
-                        acc -= dw_i * (p_j.mass * (gamma2_u_per_pres_i * p_j.ene * f_ij + 0.5 * pi_ij)) +
-                               dw_j * (p_j.mass * (gamma2_u_i * u_per_pres_j * f_ji + 0.5 * pi_ij));
-                        dene += p_j.mass * gamma2_u_per_pres_i * p_j.ene * f_ij * inner_product(v_ij, dw_i) +
-                                0.5 * p_j.mass * pi_ij * inner_product(v_ij, dw_ij) + dene_ac;
-                    }
+                    vec_t ene_vis = dw_ij * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
+                    const vec_t v_ij_gsph = e_ij * vstar;
+                    vec_t ene_invis = dw_ij * (p_i.mass * (p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
+                    dene += inner_product(
+                                ene_invis, v_ij) +
+                            inner_product(ene_vis, v_ij) * 0.5 * (p_i.balsara + p_j.balsara);
                 }
                 p_i.acc = acc;
                 p_i.dene = dene;

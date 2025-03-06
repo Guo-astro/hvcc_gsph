@@ -20,7 +20,7 @@ target_sources(sph
     vector_type.hpp
     module_factory.hpp
   )
-
+add_subdirectory(gdisph)
 add_subdirectory(disph)
 add_subdirectory(gsph)
 add_subdirectory(kernel)

@@ -33,6 +33,10 @@
 #include "gsph/g_pre_interaction.hpp"
 #include "gsph/g_fluid_force.hpp"
 
+// gdisph
+#include "gdisph/gdi_pre_interaction.hpp"
+#include "gdisph/gdi_fluid_force.hpp"
+
 // ADDED: our new HeatingCooling module
 #include "heating_cooling.hpp"
 
@@ -64,6 +68,11 @@ namespace sph
                                         { return std::make_shared<sph::gsph::PreInteraction>(); });
                 factory.register_module(SPHType::GSPH, "FluidForce", []()
                                         { return std::make_shared<sph::gsph::FluidForce>(); });
+                // Register GDISPH modules
+                factory.register_module(SPHType::GDISPH, "PreInteraction", []()
+                                        { return std::make_shared<sph::gdisph::PreInteraction>(); });
+                factory.register_module(SPHType::GDISPH, "FluidForce", []()
+                                        { return std::make_shared<sph::gdisph::FluidForce>(); });
             }
         } g_moduleRegistrations;
     }
@@ -78,6 +87,8 @@ namespace sph
             return "SSPH";
         case SPHType::DISPH:
             return "DISPH";
+        case SPHType::GDISPH:
+            return "GDISPH";
         default:
             return "UNKNOWN";
         }
@@ -159,11 +170,19 @@ namespace sph
             WRITE_LOG << "use2ndOrderGSPH: " << param.gsph.is_2nd_order;
             WRITE_LOG << "forceCorrection: " << param.gsph.force_correction;
         }
+        void parseGDISPH(const boost::property_tree::ptree &root, SPHParameters &param)
+        {
+            param.gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
+            param.gsph.force_correction = root.get<bool>("forceCorrection", false);
+            WRITE_LOG << "use2ndOrderGSPH: " << param.gsph.is_2nd_order;
+            WRITE_LOG << "forceCorrection: " << param.gsph.force_correction;
+        }
 
         // Dictionary mapping SPHType to parser functions
         const std::unordered_map<SPHType, ParserFunc> type_specific_parsers = {
             {SPHType::SSPH, parseSSPH},
             {SPHType::DISPH, parseDISPH},
+            {SPHType::GDISPH, parseGDISPH},
             {SPHType::GSPH, parseGSPH}};
     }
 
@@ -287,6 +306,10 @@ namespace sph
         else if (sph_type == "gsph")
         {
             m_param->type = SPHType::GSPH;
+        }
+        else if (sph_type == "gdisph")
+        {
+            m_param->type = SPHType::GDISPH;
         }
         else
         {
@@ -434,6 +457,20 @@ namespace sph
         }
 
         if (m_param->type == SPHType::GSPH)
+        {
+            std::vector<std::string> names;
+            names.push_back("grad_density");
+            names.push_back("grad_pressure");
+            names.push_back("grad_velocity_0");
+#if DIM == 2
+            names.push_back("grad_velocity_1");
+#elif DIM == 3
+            names.push_back("grad_velocity_1");
+            names.push_back("grad_velocity_2");
+#endif
+            m_sim->add_vector_array(names);
+        }
+        if (m_param->type == SPHType::GDISPH)
         {
             std::vector<std::string> names;
             names.push_back("grad_density");
