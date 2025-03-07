@@ -34,7 +34,7 @@ namespace sph
         const real alpha = R_fluid / xi1;    // Radial scaling factor
 
         // Grid setup
-        int Nx = 30, Ny = 30, Nz = 5;
+        int Nx = 50, Ny = 50, Nz = 5;
         const real dx = (2.0 * R_fluid) / Nx;
         const real dy = (2.0 * R_fluid) / Ny;
         const real dz = (2.0 * z_max) / Nz;
