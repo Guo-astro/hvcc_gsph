@@ -14,6 +14,7 @@ target_sources(sph
         sample_registry.cpp
         heating_cooling.cpp
         inplane_integration.cpp
+        density_relaxation.cpp
     )
 
 add_subdirectory(disph)

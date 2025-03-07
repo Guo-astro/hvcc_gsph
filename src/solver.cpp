@@ -42,6 +42,7 @@
 
 // for unit system
 #include "unit_system.hpp"
+#include "density_relaxation.hpp"
 
 namespace sph
 {
@@ -195,7 +196,16 @@ namespace sph
         // NEW: Read the flag for 2.5D simulation.
         m_param->two_and_half_sim = root.get<bool>("two_and_half_sim", false);
 
-        // ... rest of your JSON parsing code remains unchanged ...
+        m_param->density_relaxation.is_valid = root.get<bool>("useDensityRelaxation", false);
+        if (m_param->density_relaxation.is_valid)
+        {
+            m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
+            m_param->density_relaxation.tolerance = root.get<real>("densityRelaxationTolerance", 1e-3);
+            m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
+            WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
+                      << ", tolerance=" << m_param->density_relaxation.tolerance
+                      << ", damping=" << m_param->density_relaxation.damping_factor;
+        }
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
         m_param->time.start = root.get<real>("startTime", real(0));
         m_param->time.end = root.get<real>("endTime");
@@ -499,6 +509,7 @@ namespace sph
         {
             m_hcool->calculation(m_sim);
         }
+
         WRITE_LOG << "Initialization complete. Particle count=" << m_sim->get_particle_num();
     }
 
@@ -519,7 +530,15 @@ namespace sph
             m_fforce->calculation(m_sim);
             m_gforce->calculation(m_sim);
             if (m_hcool)
+            {
                 m_hcool->calculation(m_sim);
+            }
+            if (m_param->density_relaxation.is_valid)
+
+            {
+                sph::perform_density_relaxation(m_sim, *m_param);
+            }
+
             correct(); // Modified correct() below.
         }
         else
@@ -533,7 +552,15 @@ namespace sph
             m_fforce->calculation(m_sim);
             m_gforce->calculation(m_sim);
             if (m_hcool)
+            {
                 m_hcool->calculation(m_sim);
+            }
+            if (m_param->density_relaxation.is_valid)
+
+            {
+                sph::perform_density_relaxation(m_sim, *m_param);
+            }
+
             correct();
         }
     }
@@ -573,6 +600,10 @@ namespace sph
                 p[i].pos[2] = 0.0;
                 p[i].vel[2] = 0.0;
             }
+            if (m_param->density_relaxation.is_valid)
+            {
+                sph::perform_density_relaxation(m_sim, *m_param);
+            }
         }
     }
 
@@ -599,5 +630,11 @@ namespace sph
                 p[i].vel[2] = 0.0;
             }
         }
+        if (m_param->density_relaxation.is_valid)
+
+        {
+            sph::perform_density_relaxation(m_sim, *m_param);
+        }
     }
+
 } // namespace sph

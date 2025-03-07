@@ -104,6 +104,13 @@ namespace sph
         HeatingCooling heating_cooling;
         real boundary_radius;
         bool two_and_half_sim = false; // Set to true in JSON to force 2.5D integration.
+        struct DensityRelaxation
+        {
+            bool is_valid = false;     // Enable/disable density relaxation
+            int max_iterations = 100;  // Maximum number of relaxation iterations
+            real tolerance = 1e-3;     // Convergence tolerance (relative density error)
+            real damping_factor = 0.1; // Damping factor for position updates
+        } density_relaxation;
     };
 
 } // namespace sph

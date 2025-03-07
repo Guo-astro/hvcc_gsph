@@ -29,7 +29,6 @@ namespace sph
         void integrate();
         void predict();
         void correct();
-
         std::shared_ptr<SPHParameters> m_param;
         std::shared_ptr<Output> m_output;
         std::shared_ptr<Simulation> m_sim;
