@@ -600,10 +600,10 @@ namespace sph
                 p[i].pos[2] = 0.0;
                 p[i].vel[2] = 0.0;
             }
-            if (m_param->density_relaxation.is_valid)
-            {
-                sph::perform_density_relaxation(m_sim, *m_param);
-            }
+        }
+        if (m_param->density_relaxation.is_valid)
+        {
+            sph::perform_density_relaxation(m_sim, *m_param);
         }
     }
 
