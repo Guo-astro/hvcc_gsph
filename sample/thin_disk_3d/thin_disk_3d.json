@@ -1,0 +1,18 @@
+{
+  "outputDirectory": "sample/thin_disk_3d/results",
+  "endTime": 0.8,
+  "avAlpha": 1.0,
+  "neighborNumber": 512,
+  "useBalsaraSwitch": true,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  "leafParticleNumber": 64,
+  "gamma": 1.6666666666666667,
+  "kernel": "cubic_spline",
+  "N": 100000,
+  "periodic": false,
+  "useGravity": true,
+  "iterativeSml": true,
+  "G": 1.0,
+  "SPHType": "disph"
+}

@@ -10,6 +10,7 @@
 #include "exception.hpp"
 #include "defines.hpp"
 #include "lane_emden.hpp"
+
 namespace sph
 {
 
@@ -99,10 +100,9 @@ namespace sph
         }
         sim->set_particle_num(static_cast<int>(p.size()));
         outputSimulationCSV(sim->get_particles());
-
 #endif
     }
 
     REGISTER_SAMPLE("lane_emden", load_lane_emden);
 
-} // end namespace sph
+} // namespace sph

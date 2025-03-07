@@ -375,7 +375,6 @@ namespace sph
         const real l2 = edge * edge;
         const vec_t d = periodic->calc_r_ij(r_i, m_center);
         const real d2 = abs2(d);
-
         if (l2 > theta2 * d2)
         {
             if (is_leaf)

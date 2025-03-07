@@ -9,7 +9,6 @@
 #ifdef EXHAUSTIVE_SEARCH
 #include "exhaustive_search.hpp"
 #endif
-#include <logger.hpp>
 
 namespace sph
 {
@@ -39,7 +38,7 @@ namespace sph
             }
         }
 
-        // Cha & Whitworth (2003) method with optional force correction
+        // Cha & Whitworth (2003)
         void FluidForce::calculation(std::shared_ptr<Simulation> sim)
         {
             auto &particles = sim->get_particles();
@@ -47,10 +46,9 @@ namespace sph
             const int num = sim->get_particle_num();
             auto *kernel = sim->get_kernel().get();
             auto *tree = sim->get_tree().get();
-
             const real dt = sim->get_dt();
 
-            // for MUSCL reconstruction
+            // for MUSCL
             auto &grad_d = sim->get_vector_array("grad_density");
             auto &grad_p = sim->get_vector_array("grad_pressure");
             vec_t *grad_v[DIM] = {
@@ -76,7 +74,7 @@ namespace sph
                 int const n_neighbor = tree->neighbor_search(p_i, neighbor_list, particles, true);
 #endif
 
-                // Fluid force for particle i.
+                // fluid force
                 const vec_t &r_i = p_i.pos;
                 const vec_t &v_i = p_i.vel;
                 const real h_i = p_i.sml;
@@ -101,28 +99,7 @@ namespace sph
                     const vec_t e_ij = r_ij * r_inv;
                     const real ve_i = inner_product(v_i, e_ij);
                     const real ve_j = inner_product(p_j.vel, e_ij);
-
-                    // Compute kernel gradients
-                    const vec_t dw_i = kernel->dw(r_ij, r, h_i);
-                    const vec_t dw_j = kernel->dw(r_ij, r, p_j.sml);
-                    const real rho2_inv_j = 1.0 / sqr(p_j.dens);
-
-                    // Shock detection parameters
-                    const real du = std::abs(ve_i - ve_j);
-                    const real avg_sound = std::max(p_i.sound, p_j.sound);
-                    const real shockThreshold = 0.15 * avg_sound;
-                    const real divergenceThreshold = 0.0;
-                    vec_t dv_i, dv_j;
-                    for (int k = 0; k < DIM; ++k)
-                    {
-                        dv_i[k] = inner_product(grad_v[k][i], e_ij);
-                        dv_j[k] = inner_product(grad_v[k][j], e_ij);
-                    }
-                    const real dve_i = inner_product(dv_i, e_ij);
-                    const real dve_j = inner_product(dv_j, e_ij);
-                    const real dynamic_threshold = 0.1 * avg_sound;
-                    // HLL solver
-                    real pstar, vstar;
+                    real vstar, pstar;
 
                     if (m_is_2nd_order)
                     {
@@ -182,23 +159,38 @@ namespace sph
 
                         m_solver(left, right, pstar, vstar);
                     }
-                    const vec_t v_ij = v_i - p_j.vel;
-                    const vec_t dw_ij = (dw_i + dw_j) * 0.5;
 
-                    real pi_ij = 0;
+                    const vec_t dw_i = kernel->dw(r_ij, r, h_i);
+                    const real rho_j = p_j.dens;
+                    const real rho_i = p_i.dens;
+                    const real rho2_inv_j = 1.0 / sqr(rho_j);
+                    const real balsara_avg = 0.5 * (p_i.balsara + p_j.balsara);
 
-                    vec_t f_vis = dw_ij * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i) + dw_ij * (p_j.mass * (pstar - p_j.pres) * rho2_inv_j);
-                    vec_t f_invis = dw_ij * (p_i.mass * (p_i.pres) * rho2_inv_i) +
-                                    dw_ij * (p_j.mass * (p_j.pres) * rho2_inv_j);
-                    acc -= f_invis + f_vis * 0.5 * (p_i.balsara + p_j.balsara);
+                    // Total force (GSPH)
+                    const real f_total_term = p_j.mass * pstar * (rho2_inv_i + rho2_inv_j);
+                    const vec_t f_total = dw_i * f_total_term;
 
-                    vec_t ene_vis = dw_ij * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
-                    const vec_t v_ij_gsph = e_ij * vstar;
-                    vec_t ene_invis = dw_ij * (p_i.mass * (p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
-                    dene += inner_product(
-                                ene_invis, v_ij) +
-                            inner_product(ene_vis, v_ij) * 0.5 * (p_i.balsara + p_j.balsara);
+                    // Inviscid force (using local pressures)
+                    const real f_invis_term = p_j.mass * (p_i.pres * rho2_inv_i + p_j.pres * rho2_inv_j);
+                    const vec_t f_invis = dw_i * f_invis_term;
+
+                    // Viscous force (difference)
+                    const vec_t f_vis = f_total - f_invis;
+
+                    // Apply Balsara switch to viscous part
+                    acc -= f_invis + f_vis * balsara_avg;
+
+                    // Energy change
+                    const real v_ij_dot_dw = vstar * inner_product(e_ij, dw_i);
+                    const real v_ij_dot_dw_invis = inner_product(p_i.vel - p_j.vel, dw_i);
+
+                    const real ene_total_term = (p_j.mass * pstar / (rho_i * rho_j)) * v_ij_dot_dw;
+                    const real ene_invis_term = (p_j.mass * p_i.pres / (rho_i * rho_j)) * v_ij_dot_dw_invis; // Approximate with p_i.pres
+                    const real ene_vis_term = ene_total_term - ene_invis_term;
+
+                    dene -= ene_invis_term + ene_vis_term * balsara_avg;
                 }
+
                 p_i.acc = acc;
                 p_i.dene = dene;
             }
@@ -238,5 +230,5 @@ namespace sph
             };
         }
 
-    } // namespace gsph
-} // namespace sph
+    }
+}

@@ -37,10 +37,12 @@ namespace sph
                 auto &p_i = particles[i];
                 if (p_i.is_wall)
                 {
-                    p_i.vel = -p_i.vel;
-                    p_i.acc = -p_i.acc;
-                    continue;
+                    // Optionally zero out or keep old p_i.acc
+                    p_i.acc = 0.0;
+                    p_i.dene = 0.0;
+                    continue; // skip fluid force calculations
                 }
+
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // neighbor search

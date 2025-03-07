@@ -103,6 +103,7 @@ namespace sph
         // ADDED: For Heating & Cooling
         HeatingCooling heating_cooling;
         real boundary_radius;
+        bool two_and_half_sim = false; // Set to true in JSON to force 2.5D integration.
     };
 
 } // namespace sph

@@ -266,6 +266,7 @@ namespace sph
         for (int i = 0; i < max_iter; ++i)
         {
             const real h_b = h_i;
+            const real h_prev = h_i;
 
             real dens = 0.0;
             real ddens = 0.0;
@@ -289,6 +290,7 @@ namespace sph
             const real df = ddens * powh(h_i) + DIM * dens * powh_(h_i);
 
             h_i -= f / df;
+            // For particles with a low id, log each iteration.
 
             if (std::abs(h_i - h_b) < (h_i + h_b) * epsilon)
             {

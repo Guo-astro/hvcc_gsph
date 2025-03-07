@@ -209,6 +209,7 @@ namespace sph
             for (int i = 0; i < max_iter; ++i)
             {
                 const real h_b = h_i;
+                const real h_prev = h_i;
 
                 real dens = 0.0;
                 real ddens = 0.0;

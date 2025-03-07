@@ -147,22 +147,13 @@ namespace sph
     namespace
     {
         using ParserFunc = std::function<void(const boost::property_tree::ptree &, SPHParameters &)>;
-
-        // Parser for SSPH (default type, no extra fields currently)
+        // (parsers omitted for brevity, unchanged from your code)
         void parseSSPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
-            // No type-specific parameters for SSPH in the current setup
-            // Add any future SSPH-specific fields here
         }
-
-        // Parser for DISPH (no extra fields currently)
         void parseDISPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
-            // No type-specific parameters for DISPH in the current setup
-            // Add any future DISPH-specific fields here
         }
-
-        // Parser for GSPH
         void parseGSPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
             param.gsph.is_2nd_order = root.get<bool>("use2ndOrderGSPH", false);
@@ -177,8 +168,6 @@ namespace sph
             WRITE_LOG << "use2ndOrderGSPH: " << param.gsph.is_2nd_order;
             WRITE_LOG << "forceCorrection: " << param.gsph.force_correction;
         }
-
-        // Dictionary mapping SPHType to parser functions
         const std::unordered_map<SPHType, ParserFunc> type_specific_parsers = {
             {SPHType::SSPH, parseSSPH},
             {SPHType::DISPH, parseDISPH},
@@ -203,10 +192,11 @@ namespace sph
         {
             THROW_ERROR("Cannot read JSON file: ", m_json_file, " => ", e.what());
         }
+        // NEW: Read the flag for 2.5D simulation.
+        m_param->two_and_half_sim = root.get<bool>("two_and_half_sim", false);
 
-        // Common parameters (applicable to all SPH types)
+        // ... rest of your JSON parsing code remains unchanged ...
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
-
         m_param->time.start = root.get<real>("startTime", real(0));
         m_param->time.end = root.get<real>("endTime");
         if (m_param->time.end < m_param->time.start)
@@ -317,7 +307,6 @@ namespace sph
         }
         WRITE_LOG << "Using algorithm: " << sph::sphTypeToString(m_param->type);
 
-        // **Type-Specific Parsing Using Dictionary**
         auto it = type_specific_parsers.find(m_param->type);
         if (it != type_specific_parsers.end())
         {
@@ -487,8 +476,7 @@ namespace sph
 
         auto &p = m_sim->get_particles();
         const int num = m_sim->get_particle_num();
-        const real gamma = m_param->physics.gamma;
-        const real c_sound = gamma * (gamma - 1.0);
+        const real c_sound = m_param->physics.gamma * (m_param->physics.gamma - 1.0);
 
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
@@ -514,24 +502,43 @@ namespace sph
         WRITE_LOG << "Initialization complete. Particle count=" << m_sim->get_particle_num();
     }
 
+    // Modified integrate: If two_and_half_sim flag is set, use in-plane integration.
     void Solver::integrate()
     {
         m_timestep->calculation(m_sim);
-
-        predict();
+        // NEW: Check flag and choose integration routine.
+        if (m_param->two_and_half_sim)
+        {
+            // Use in-plane predict and correct routines.
+            // Here we perform the standard force and tree update between steps.
+            predict(); // We call our modified predict() below.
 #ifndef EXHAUSTIVE_SEARCH
-        m_sim->make_tree();
+            m_sim->make_tree();
 #endif
-        m_pre->calculation(m_sim);
-        m_fforce->calculation(m_sim);
-        m_gforce->calculation(m_sim);
-
-        if (m_hcool)
-            m_hcool->calculation(m_sim);
-
-        correct();
+            m_pre->calculation(m_sim);
+            m_fforce->calculation(m_sim);
+            m_gforce->calculation(m_sim);
+            if (m_hcool)
+                m_hcool->calculation(m_sim);
+            correct(); // Modified correct() below.
+        }
+        else
+        {
+            // Standard integration routine
+            predict();
+#ifndef EXHAUSTIVE_SEARCH
+            m_sim->make_tree();
+#endif
+            m_pre->calculation(m_sim);
+            m_fforce->calculation(m_sim);
+            m_gforce->calculation(m_sim);
+            if (m_hcool)
+                m_hcool->calculation(m_sim);
+            correct();
+        }
     }
 
+    // Modified predict(): If two_and_half_sim flag is true, clamp z and vz to zero.
     void Solver::predict()
     {
         auto &p = m_sim->get_particles();
@@ -545,7 +552,11 @@ namespace sph
         for (int i = 0; i < num; ++i)
         {
             if (p[i].is_wall)
+            {
+                p[i].vel_p = p[i].vel;
+                p[i].ene_p = p[i].ene;
                 continue;
+            }
             p[i].vel_p = p[i].vel + p[i].acc * (0.5 * dt);
             p[i].ene_p = p[i].ene + p[i].dene * (0.5 * dt);
 
@@ -555,9 +566,17 @@ namespace sph
             p[i].sound = std::sqrt(c_sound * p[i].ene);
 
             periodic->apply(p[i].pos);
+
+            // NEW: If two_and_half_sim flag is true, enforce in-plane motion.
+            if (m_param->two_and_half_sim)
+            {
+                p[i].pos[2] = 0.0;
+                p[i].vel[2] = 0.0;
+            }
         }
     }
 
+    // Modified correct(): If two_and_half_sim flag is true, clamp z and vz.
     void Solver::correct()
     {
         auto &p = m_sim->get_particles();
@@ -574,7 +593,11 @@ namespace sph
             p[i].vel = p[i].vel_p + p[i].acc * (0.5 * dt);
             p[i].ene = p[i].ene_p + p[i].dene * (0.5 * dt);
             p[i].sound = std::sqrt(c_sound * p[i].ene);
+            if (m_param->two_and_half_sim)
+            {
+                p[i].pos[2] = 0.0;
+                p[i].vel[2] = 0.0;
+            }
         }
     }
-
 } // namespace sph
