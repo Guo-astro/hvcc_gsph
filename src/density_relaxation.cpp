@@ -1,110 +1,124 @@
+// src/density_relaxation.cpp
+#include "density_relaxation.hpp"
 #include "simulation.hpp"
 #include "parameters.hpp"
-#include <vector>
-#include <cmath>
-#include <algorithm>
-#include <omp.h>
-#include <logger.hpp>
+#include "logger.hpp"
+#include "lane_emden.hpp" // to use getTheta() and the laneEmden_x/table
 
-// For PreInteraction dependency
-#include "pre_interaction.hpp"
-#include "bhtree.hpp"
-#include "kernel/kernel_function.hpp"
-#include "periodic.hpp"
-#include "density_relaxation.hpp"
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <cmath>
+#include <omp.h>
 
 namespace sph
 {
-    // Changed to shared_ptr and fixed '¶ms' typo
-    void perform_density_relaxation(std::shared_ptr<Simulation> sim, const SPHParameters &params)
+    // Helper: compute dθ/dξ at a given ξ using the Lane–Emden lookup table.
+    real dTheta_dXi(real xi)
     {
-        // Check if density relaxation is enabled
-        if (!params.density_relaxation.is_valid)
+        // Ensure the table is loaded.
+        if (laneEmden_x.empty())
+            loadLaneEmdenTableFromCSV(); // uses default filename
+
+        if (xi <= laneEmden_x.front())
         {
-            WRITE_LOG << "Density relaxation disabled.";
-            return;
+            if (laneEmden_x.size() >= 2)
+                return (laneEmden_theta[1] - laneEmden_theta[0]) / (laneEmden_x[1] - laneEmden_x[0]);
+            else
+                return 0.0;
         }
-
-        // Access particle data and parameters
-        auto &particles = sim->get_particles();
-        const int num_particles = sim->get_particle_num();
-        const real damping = params.density_relaxation.damping_factor;
-        const real tolerance = params.density_relaxation.tolerance;
-        const int max_iter = params.density_relaxation.max_iterations;
-
-        // Log start of density relaxation
-        WRITE_LOG << "Starting density relaxation with max_iter=" << max_iter
-                  << ", tolerance=" << tolerance << ", damping=" << damping;
-
-        // Store initial densities as target values
-        std::vector<real> target_dens(num_particles);
-#pragma omp parallel for
-        for (int i = 0; i < num_particles; ++i)
+        if (xi >= laneEmden_x.back())
         {
-            target_dens[i] = particles[i].dens;
+            size_t n = laneEmden_x.size();
+            return (laneEmden_theta[n - 1] - laneEmden_theta[n - 2]) / (laneEmden_x[n - 1] - laneEmden_x[n - 2]);
         }
-
-        // Iterative relaxation process
-        int iter = 0;
-        real max_error = 0.0;
-        do
+        size_t i = 0;
+        for (; i < laneEmden_x.size() - 1; ++i)
         {
-            // Update densities using a temporary PreInteraction object
-            // Since Simulation doesn’t have update_densities(), simulate it
-            PreInteraction pre;
-            pre.initialize(std::make_shared<SPHParameters>(params));
-            pre.calculation(sim);
-
-            // Compute density errors and displacements
-            max_error = 0.0;
-#pragma omp parallel for reduction(max : max_error)
-            for (int i = 0; i < num_particles; ++i)
-            {
-                if (particles[i].is_wall)
-                    continue; // Skip wall particles
-
-                // Calculate density error
-                real rho = particles[i].dens;
-                real rho_target = target_dens[i];
-                real error = (rho - rho_target) / rho_target;
-                max_error = std::max(max_error, std::abs(error));
-
-                // Compute displacement based on density gradient
-                vec_t disp(0.0);
-                std::vector<int> neighbor_list(params.physics.neighbor_number * neighbor_list_size);
-                int n_neighbor = sim->get_tree()->neighbor_search(particles[i], neighbor_list, particles, false);
-                const vec_t &r_i = particles[i].pos;
-                real h_i = particles[i].sml;
-
-                for (int n = 0; n < n_neighbor; ++n)
-                {
-                    int j = neighbor_list[n];
-                    const vec_t r_ij = sim->get_periodic()->calc_r_ij(r_i, particles[j].pos);
-                    real r = std::abs(r_ij);
-                    if (r >= h_i || r == 0.0)
-                        continue;
-
-                    real w = sim->get_kernel()->w(r, h_i);
-                    disp += r_ij * (particles[j].mass * w / (rho * rho_target));
-                }
-
-                // Update position with damping and apply periodic boundaries
-                particles[i].pos -= disp * damping;
-                sim->get_periodic()->apply(particles[i].pos);
-            }
-
-            // Log progress
-            WRITE_LOG << "Relaxation iter " << iter + 1 << ", max density error = " << max_error;
-            iter++;
-        } while (iter < max_iter && max_error > tolerance);
-
-        // Perform final density update
-        PreInteraction pre_final;
-        pre_final.initialize(std::make_shared<SPHParameters>(params));
-        pre_final.calculation(sim);
-
-        // Log completion
-        WRITE_LOG << "Density relaxation completed after " << iter << " iterations, final max error = " << max_error;
+            if (xi < laneEmden_x[i + 1])
+                break;
+        }
+        return (laneEmden_theta[i + 1] - laneEmden_theta[i]) / (laneEmden_x[i + 1] - laneEmden_x[i]);
     }
 
+    // compute_relaxation_force computes the extra acceleration based on the pressure gradient
+    // derived from the Lane–Emden solution. Here we assume a polytropic equation of state:
+    //
+    //   P_target = K * (rho_c)^gamma * theta^(n+1)    with gamma = 1+1/n
+    //
+    // so that:
+    //
+    //   dP_target/dξ = K * (rho_c)^gamma * (n+1)* theta^n * (dθ/dξ)
+    //   dP_target/dr  = (1/α)* dP_target/dξ      (since r = αξ)
+    //
+    // Then the acceleration correction is:
+    //
+    //   a_r = - (1/ρ) * (dP_target/dr)
+    //
+    // and we add that in the radial direction.
+    vec_t compute_relaxation_force(const SPHParticle &p, const SPHParameters &params)
+    {
+        vec_t force{}; // Initialize all components to zero
+
+        // --- Model parameters (adjust these as needed) ---
+        const real n = 1.5;                   // Polytropic index
+        const real gamma_val = 1.0 + 1.0 / n; // For n=1.5, gamma=5/3
+        const real rho_c = 1.0;               // Central density (set from your problem)
+        const real K = 1.0;                   // Polytropic constant (set from your problem)
+        const real alpha_scaling = 1.0;       // Scale factor, so that r = α ξ
+
+        // --- Compute radial coordinate r ---
+        real r_phys = std::sqrt(inner_product(p.pos, p.pos));
+        // Avoid division by zero for particles at center.
+        if (r_phys < 1e-12)
+            return force;
+
+        // Compute the dimensionless coordinate ξ.
+        real xi = r_phys / alpha_scaling;
+
+        // Get θ(ξ) from the lookup table.
+        real theta_val = getTheta(xi);
+        // Compute dθ/dξ.
+        real dtheta = dTheta_dXi(xi);
+
+        // Compute dP/dξ = K * (rho_c)^gamma * (n+1)* theta^n * (dθ/dξ)
+        real dP_dxi = K * std::pow(rho_c, gamma_val) * (n + 1.0) * std::pow(theta_val, n) * dtheta;
+        // Then, dP/dr = dP/dξ / α.
+        real dP_dr = dP_dxi / alpha_scaling;
+
+        // Compute the relaxation acceleration: a_r = -(1/ρ) * dP/dr.
+        real a_r = -(1.0 / p.dens) * dP_dr;
+
+        // Compute the radial unit vector e_r = p.pos / |p.pos|.
+        vec_t e_r;
+        for (int i = 0; i < DIM; ++i)
+        {
+            e_r[i] = p.pos[i] / r_phys;
+        }
+
+        // Set the relaxation force vector: a_r * e_r.
+        for (int i = 0; i < DIM; ++i)
+        {
+            force[i] = a_r * e_r[i];
+        }
+        return force;
+    }
+
+    // Loop over all (non-wall) particles and add the computed relaxation acceleration
+    // (from the Lane–Emden pressure gradient) to each particle’s acceleration.
+    void add_relaxation_force(std::shared_ptr<Simulation> sim, const SPHParameters &params)
+    {
+        auto &particles = sim->get_particles();
+        int num_p = sim->get_particle_num();
+#pragma omp parallel for
+        for (int i = 0; i < num_p; ++i)
+        {
+            if (particles[i].is_wall)
+                continue;
+            vec_t relax_force = compute_relaxation_force(particles[i], params);
+            particles[i].acc += relax_force;
+        }
+        WRITE_LOG << "Added relaxation force (derived from Lane–Emden pressure gradient) to particle accelerations.";
+    }
 } // namespace sph

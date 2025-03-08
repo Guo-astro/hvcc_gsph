@@ -1,4 +1,5 @@
-﻿#include <cassert>
+﻿// src/solver.cpp
+#include <cassert>
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
@@ -25,28 +26,28 @@
 #include "gravity_force.hpp"
 #include "sample_registry.hpp"
 
-// disph
+// DISPH
 #include "disph/d_pre_interaction.hpp"
 #include "disph/d_fluid_force.hpp"
 
-// gsph
+// GSPH
 #include "gsph/g_pre_interaction.hpp"
 #include "gsph/g_fluid_force.hpp"
 
-// gdisph
+// GDISPH
 #include "gdisph/gdi_pre_interaction.hpp"
 #include "gdisph/gdi_fluid_force.hpp"
 
-// ADDED: our new HeatingCooling module
+// Heating and Cooling module
 #include "heating_cooling.hpp"
 
-// for unit system
+// Unit system and density relaxation helper
 #include "unit_system.hpp"
 #include "density_relaxation.hpp"
 
 namespace sph
 {
-    // **Added Module Registrations**
+    // **Module Registrations**
     namespace
     {
         struct ModuleRegistrations
@@ -54,22 +55,22 @@ namespace sph
             ModuleRegistrations()
             {
                 auto &factory = ModuleFactory::instance();
-                // Register SSPH modules
+                // SSPH modules
                 factory.register_module(SPHType::SSPH, "PreInteraction", []()
                                         { return std::make_shared<sph::PreInteraction>(); });
                 factory.register_module(SPHType::SSPH, "FluidForce", []()
                                         { return std::make_shared<sph::FluidForce>(); });
-                // Register DISPH modules
+                // DISPH modules
                 factory.register_module(SPHType::DISPH, "PreInteraction", []()
                                         { return std::make_shared<sph::disph::PreInteraction>(); });
                 factory.register_module(SPHType::DISPH, "FluidForce", []()
                                         { return std::make_shared<sph::disph::FluidForce>(); });
-                // Register GSPH modules
+                // GSPH modules
                 factory.register_module(SPHType::GSPH, "PreInteraction", []()
                                         { return std::make_shared<sph::gsph::PreInteraction>(); });
                 factory.register_module(SPHType::GSPH, "FluidForce", []()
                                         { return std::make_shared<sph::gsph::FluidForce>(); });
-                // Register GDISPH modules
+                // GDISPH modules
                 factory.register_module(SPHType::GDISPH, "PreInteraction", []()
                                         { return std::make_shared<sph::gdisph::PreInteraction>(); });
                 factory.register_module(SPHType::GDISPH, "FluidForce", []()
@@ -144,16 +145,17 @@ namespace sph
         WRITE_LOG << "app_name: " << m_sample_name;
     }
 
-    // **New Type-Specific Parser Functions**
+    // **Type-Specific Parser Functions**
     namespace
     {
         using ParserFunc = std::function<void(const boost::property_tree::ptree &, SPHParameters &)>;
-        // (parsers omitted for brevity, unchanged from your code)
         void parseSSPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
+            // No specific parameters for SSPH in this example
         }
         void parseDISPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
+            // No specific parameters for DISPH in this example
         }
         void parseGSPH(const boost::property_tree::ptree &root, SPHParameters &param)
         {
@@ -193,19 +195,28 @@ namespace sph
         {
             THROW_ERROR("Cannot read JSON file: ", m_json_file, " => ", e.what());
         }
-        // NEW: Read the flag for 2.5D simulation.
+
+        m_param->checkpoint_file = root.get<std::string>("checkpointFile", "");
+        if (!m_param->checkpoint_file.empty())
+        {
+            WRITE_LOG << "Checkpoint file specified: " << m_param->checkpoint_file;
+        }
         m_param->two_and_half_sim = root.get<bool>("two_and_half_sim", false);
 
+        // Updated Density Relaxation Parsing
         m_param->density_relaxation.is_valid = root.get<bool>("useDensityRelaxation", false);
         if (m_param->density_relaxation.is_valid)
         {
             m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
-            m_param->density_relaxation.tolerance = root.get<real>("densityRelaxationTolerance", 1e-3);
             m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
+            m_param->density_relaxation.velocity_threshold = root.get<real>("velocityThreshold", 1e-3);
+            m_param->density_relaxation.target_density_csv = root.get<std::string>("targetDensityCSV", "");
             WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
-                      << ", tolerance=" << m_param->density_relaxation.tolerance
-                      << ", damping=" << m_param->density_relaxation.damping_factor;
+                      << ", damping=" << m_param->density_relaxation.damping_factor
+                      << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold
+                      << ", target_density_csv=" << m_param->density_relaxation.target_density_csv;
         }
+
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
         m_param->time.start = root.get<real>("startTime", real(0));
         m_param->time.end = root.get<real>("endTime");
@@ -426,15 +437,22 @@ namespace sph
         m_output = std::make_shared<Output>(full_output_dir, 0, m_unit);
 
         m_sim = std::make_shared<Simulation>(m_param);
-        bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
-        if (!recognized)
+        if (!m_param->checkpoint_file.empty())
         {
-            THROW_ERROR("No recognized sample named ", m_sample_name,
-                        " (and no code to fill from JSON-based ICs).");
+            m_output->read_checkpoint(m_param->checkpoint_file, m_sim);
+            WRITE_LOG << "Initialized simulation from checkpoint: " << m_param->checkpoint_file;
         }
-
-        m_output->output_particle(m_sim);
-        m_output->output_energy(m_sim);
+        else
+        {
+            bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
+            if (!recognized)
+            {
+                THROW_ERROR("No recognized sample named ", m_sample_name,
+                            " (and no code to fill from JSON-based ICs).");
+            }
+            m_output->output_particle(m_sim);
+            m_output->output_energy(m_sim);
+        }
 
         ModuleFactory &factory = ModuleFactory::instance();
         m_timestep = std::make_shared<TimeStep>();
@@ -455,30 +473,20 @@ namespace sph
             m_hcool->initialize(m_param);
         }
 
-        if (m_param->type == SPHType::GSPH)
+        // If useDensityRelaxation is enabled in JSON, update target densities.
+        if (m_param->density_relaxation.is_valid)
         {
-            std::vector<std::string> names;
-            names.push_back("grad_density");
-            names.push_back("grad_pressure");
-            names.push_back("grad_velocity_0");
-#if DIM == 2
-            names.push_back("grad_velocity_1");
-#elif DIM == 3
-            names.push_back("grad_velocity_1");
-            names.push_back("grad_velocity_2");
-#endif
-            m_sim->add_vector_array(names);
+            sph::add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
         }
-        if (m_param->type == SPHType::GDISPH)
+
+        if (m_param->type == SPHType::GSPH || m_param->type == SPHType::GDISPH)
         {
-            std::vector<std::string> names;
-            names.push_back("grad_density");
-            names.push_back("grad_pressure");
-            names.push_back("grad_velocity_0");
-#if DIM == 2
+            std::vector<std::string> names = {"grad_density", "grad_pressure", "grad_velocity_0"};
+#if DIM >= 2
             names.push_back("grad_velocity_1");
-#elif DIM == 3
-            names.push_back("grad_velocity_1");
+#endif
+#if DIM == 3
             names.push_back("grad_velocity_2");
 #endif
             m_sim->add_vector_array(names);
@@ -513,59 +521,23 @@ namespace sph
         WRITE_LOG << "Initialization complete. Particle count=" << m_sim->get_particle_num();
     }
 
-    // Modified integrate: If two_and_half_sim flag is set, use in-plane integration.
     void Solver::integrate()
     {
         m_timestep->calculation(m_sim);
-        // NEW: Check flag and choose integration routine.
-        if (m_param->two_and_half_sim)
-        {
-            // Use in-plane predict and correct routines.
-            // Here we perform the standard force and tree update between steps.
-            predict(); // We call our modified predict() below.
+        predict();
 #ifndef EXHAUSTIVE_SEARCH
-            m_sim->make_tree();
+        m_sim->make_tree();
 #endif
-            m_pre->calculation(m_sim);
-            m_fforce->calculation(m_sim);
-            m_gforce->calculation(m_sim);
-            if (m_hcool)
-            {
-                m_hcool->calculation(m_sim);
-            }
-            if (m_param->density_relaxation.is_valid)
-
-            {
-                sph::perform_density_relaxation(m_sim, *m_param);
-            }
-
-            correct(); // Modified correct() below.
-        }
-        else
+        m_pre->calculation(m_sim);
+        m_fforce->calculation(m_sim);
+        m_gforce->calculation(m_sim);
+        if (m_hcool)
         {
-            // Standard integration routine
-            predict();
-#ifndef EXHAUSTIVE_SEARCH
-            m_sim->make_tree();
-#endif
-            m_pre->calculation(m_sim);
-            m_fforce->calculation(m_sim);
-            m_gforce->calculation(m_sim);
-            if (m_hcool)
-            {
-                m_hcool->calculation(m_sim);
-            }
-            if (m_param->density_relaxation.is_valid)
-
-            {
-                sph::perform_density_relaxation(m_sim, *m_param);
-            }
-
-            correct();
+            m_hcool->calculation(m_sim);
         }
+        correct();
     }
 
-    // Modified predict(): If two_and_half_sim flag is true, clamp z and vz to zero.
     void Solver::predict()
     {
         auto &p = m_sim->get_particles();
@@ -594,7 +566,6 @@ namespace sph
 
             periodic->apply(p[i].pos);
 
-            // NEW: If two_and_half_sim flag is true, enforce in-plane motion.
             if (m_param->two_and_half_sim)
             {
                 p[i].pos[2] = 0.0;
@@ -603,11 +574,11 @@ namespace sph
         }
         if (m_param->density_relaxation.is_valid)
         {
-            sph::perform_density_relaxation(m_sim, *m_param);
+            sph::add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
         }
     }
 
-    // Modified correct(): If two_and_half_sim flag is true, clamp z and vz.
     void Solver::correct()
     {
         auto &p = m_sim->get_particles();
@@ -631,10 +602,9 @@ namespace sph
             }
         }
         if (m_param->density_relaxation.is_valid)
-
         {
-            sph::perform_density_relaxation(m_sim, *m_param);
+            sph::add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
         }
     }
-
 } // namespace sph

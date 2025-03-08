@@ -26,7 +26,7 @@ inline real pow4(real x) { return x * x * x * x; }
 inline real pow5(real x) { return x * x * x * x * x; }
 inline real pow6(real x) { return x * x * x * x * x * x; }
 
-constexpr int neighbor_list_size = 20;
+constexpr int neighbor_list_size = 100;
 
 // for debug
 // #define EXHAUSTIVE_SEARCH

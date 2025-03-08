@@ -1,6 +1,7 @@
 #pragma once
 
 #include "defines.hpp"
+#include <string>
 
 namespace sph
 {
@@ -106,11 +107,15 @@ namespace sph
         bool two_and_half_sim = false; // Set to true in JSON to force 2.5D integration.
         struct DensityRelaxation
         {
-            bool is_valid = false;     // Enable/disable density relaxation
-            int max_iterations = 100;  // Maximum number of relaxation iterations
-            real tolerance = 1e-3;     // Convergence tolerance (relative density error)
-            real damping_factor = 0.1; // Damping factor for position updates
+            bool is_valid = false;          // Enable/disable density relaxation
+            int max_iterations = 100;       // Maximum number of relaxation iterations
+            real tolerance = 1e-3;          // Convergence tolerance (relative density error)
+            real damping_factor = 0.1;      // Damping factor for position updates
+            real velocity_threshold = 1e-3; // Stop when max velocity < this (new)
+            std::string target_density_csv; // New field for CSV path
+
         } density_relaxation;
+        std::string checkpoint_file; // Path to the previous output file (e.g., "results/20250306141324/00000.csv")
     };
 
 } // namespace sph

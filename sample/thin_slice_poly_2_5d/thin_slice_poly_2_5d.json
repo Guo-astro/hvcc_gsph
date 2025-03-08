@@ -15,9 +15,6 @@
   "iterativeSml": true,
   "G": 0.0043,
   "SPHType": "disph",
-  "two_and_half_sim": true,
-  "useDensityRelaxation": false,
-  "densityRelaxationMaxIter": 1,
-  "densityRelaxationTolerance": 0.01,
-  "densityRelaxationDamping": 0.05
+
+  "two_and_half_sim": true
 }

@@ -6,7 +6,7 @@
 
 namespace sph
 {
-    void perform_density_relaxation(std::shared_ptr<Simulation> sim, const SPHParameters &params);
+    void add_relaxation_force(std::shared_ptr<Simulation> sim, const SPHParameters &params);
 }
 
 #endif // DENSITY_RELAXATION_HPP

@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "sample/thin_slice_poly_2_5d/results",
+  "outputDirectory": "sample/thin_slice_poly_2_5d_relax/results",
   "endTime": 1000.0,
   "avAlpha": 2.0,
   "neighborNumber": 1024,
@@ -17,7 +17,8 @@
   "SPHType": "disph",
   "two_and_half_sim": true,
   "useDensityRelaxation": true,
-  "densityRelaxationMaxIter": 1,
-  "densityRelaxationTolerance": 0.01,
-  "densityRelaxationDamping": 0.05
+  "densityRelaxationMaxIter": 1000,
+  "densityRelaxationTolerance": 0.1,
+  "densityRelaxationDamping": 0.2,
+  "targetDensityCSV": "./sample/thin_slice_poly_2_5d_relax/00000.csv"
 }
