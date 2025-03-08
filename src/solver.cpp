@@ -210,11 +210,9 @@ namespace sph
             m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
             m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
             m_param->density_relaxation.velocity_threshold = root.get<real>("velocityThreshold", 1e-3);
-            m_param->density_relaxation.target_density_csv = root.get<std::string>("targetDensityCSV", "");
             WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
                       << ", damping=" << m_param->density_relaxation.damping_factor
-                      << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold
-                      << ", target_density_csv=" << m_param->density_relaxation.target_density_csv;
+                      << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold;
         }
 
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);

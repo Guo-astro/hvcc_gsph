@@ -21,7 +21,7 @@ namespace sph
     inline std::string laneEmdenCSVFileLoaded = "";
 
     // Load the Lane–Emden solution from CSV.
-    inline void loadLaneEmdenTableFromCSV(const std::string &filename = "./sample/lane_emden/lane_emden_data_5_3.csv")
+    inline void loadLaneEmdenTableFromCSV(const std::string &filename = "")
     {
         // If already loaded from this file, do nothing.
         if (laneEmdenCSVFileLoaded == filename)

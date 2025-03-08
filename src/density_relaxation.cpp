@@ -159,7 +159,7 @@ namespace sph
             if (particles[i].is_wall)
                 continue;
             vec_t relax_force = compute_relaxation_force(particles[i], params);
-            particles[i].acc -= relax_force;
+            particles[i].acc += relax_force;
             particles[i].vel = 0.0;
         }
         WRITE_LOG << "Added relaxation force (derived from Lane–Emden pressure gradient) to particle accelerations.";

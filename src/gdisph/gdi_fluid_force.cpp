@@ -78,6 +78,7 @@ namespace sph
                 const vec_t &r_i = p_i.pos;
                 const vec_t &v_i = p_i.vel;
                 const real h_i = p_i.sml;
+
                 const real rho2_inv_i = 1.0 / sqr(p_i.dens);
 
                 vec_t acc(0.0);
@@ -87,6 +88,8 @@ namespace sph
                 {
                     int const j = neighbor_list[n];
                     auto &p_j = particles[j];
+                    const real h_j = p_j.sml;
+
                     const vec_t r_ij = periodic->calc_r_ij(r_i, p_j.pos);
                     const real r = std::abs(r_ij);
 
@@ -161,34 +164,52 @@ namespace sph
                     }
 
                     const vec_t dw_i = kernel->dw(r_ij, r, h_i);
+                    const vec_t dw_j = kernel->dw(r_ij, r, h_j);
+
                     const real rho_j = p_j.dens;
                     const real rho_i = p_i.dens;
                     const real rho2_inv_j = 1.0 / sqr(rho_j);
                     const real balsara_avg = 0.5 * (p_i.balsara + p_j.balsara);
 
-                    // Total force (GSPH)
-                    const real f_total_term = p_j.mass * pstar * (rho2_inv_i + rho2_inv_j);
-                    const vec_t f_total = dw_i * f_total_term;
+                    // // Total force (GSPH)
+                    // const real f_total_term = p_j.mass * pstar * (rho2_inv_i + rho2_inv_j);
+                    // const vec_t f_total = dw_i * f_total_term;
 
-                    // Inviscid force (using local pressures)
-                    const real f_invis_term = p_j.mass * (p_i.pres * rho2_inv_i + p_j.pres * rho2_inv_j);
-                    const vec_t f_invis = dw_i * f_invis_term;
+                    // // Inviscid force (using local pressures)
+                    // const real f_invis_term = p_j.mass * (p_i.pres * rho2_inv_i + p_j.pres * rho2_inv_j);
+                    // const vec_t f_invis = dw_i * f_invis_term;
 
-                    // Viscous force (difference)
-                    const vec_t f_vis = f_total - f_invis;
+                    // // Viscous force (difference)
+                    // const vec_t f_vis = f_total - f_invis;
 
-                    // Apply Balsara switch to viscous part
-                    acc -= f_invis + f_vis * balsara_avg;
+                    // // Apply Balsara switch to viscous part
+                    // acc -= f_invis + f_vis * balsara_avg;
 
-                    // Energy change
-                    const real v_ij_dot_dw = vstar * inner_product(e_ij, dw_i);
-                    const real v_ij_dot_dw_invis = inner_product(p_i.vel - p_j.vel, dw_i);
+                    // // Energy change
+                    // const real v_ij_dot_dw = vstar * inner_product(e_ij, dw_i);
+                    // const real v_ij_dot_dw_invis = inner_product(p_i.vel - p_j.vel, dw_i);
 
-                    const real ene_total_term = (p_j.mass * pstar / (rho_i * rho_j)) * v_ij_dot_dw;
-                    const real ene_invis_term = (p_j.mass * p_i.pres / (rho_i * rho_j)) * v_ij_dot_dw_invis; // Approximate with p_i.pres
-                    const real ene_vis_term = ene_total_term - ene_invis_term;
+                    // const real ene_total_term = (p_j.mass * pstar / (rho_i * rho_j)) * v_ij_dot_dw;
+                    // const real ene_invis_term = (p_j.mass * p_i.pres / (rho_i * rho_j)) * v_ij_dot_dw_invis; // Approximate with p_i.pres
+                    // const real ene_vis_term = ene_total_term - ene_invis_term;
 
-                    dene -= ene_invis_term + ene_vis_term * balsara_avg;
+                    // dene -= ene_invis_term + ene_vis_term * balsara_avg;
+                    // /////////////////////////////////////////////////////////////////////////////////////////////
+                    const vec_t v_ij = v_i - p_j.vel;
+
+                    real pi_ij = 0;
+
+                    vec_t f_vis = dw_i * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i * p_i.gradh) + dw_j * (p_j.mass * (pstar - p_j.pres) * rho2_inv_j * p_j.gradh);
+                    vec_t f_invis = dw_i * (p_i.mass * (p_i.pres) * rho2_inv_i) +
+                                    dw_j * (p_j.mass * (p_j.pres) * rho2_inv_j);
+                    acc -= f_invis + f_vis * 0.5 * (p_i.balsara + p_j.balsara);
+
+                    vec_t ene_vis = dw_i * (p_i.mass * (pstar - p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
+                    const vec_t v_ij_gsph = e_ij * vstar;
+                    vec_t ene_invis = dw_i * (p_i.mass * (p_i.pres) * rho2_inv_i); // const vec_t v_ij_gsph = e_ij * vstar;
+                    dene += inner_product(
+                                ene_invis, v_ij) +
+                            inner_product(ene_vis, v_ij) * 0.5 * (p_i.balsara + p_j.balsara);
                 }
 
                 p_i.acc = acc;
