@@ -122,16 +122,16 @@ namespace sph
         // Compute the relaxation acceleration: a_r = -(1/ρ) * dP/dr.
         real a_r = -(1.0 / p.dens) * dP_dr;
 
-        // --- Accurate Correction for the Missing Mass ---
-        // We compare the integrated density proxy in the vertical direction
-        // from the midplane (z=0) to z_max with the full column (z=R_fluid).
-        // f = (∫₀^(z_max) θ^n dz) / (∫₀^(R_fluid) θ^n dz)  and we use C = 1/f.
-        real integral_slice = integrate_theta_power(params.z_max, alpha_scaling, n);
-        real integral_full = integrate_theta_power(params.R_fluid, alpha_scaling, n);
-        // Avoid division by zero:
-        real f = (integral_full > 0.0) ? (integral_slice / integral_full) : 1.0;
-        real correction_factor = (f > 1e-12) ? (1.0 / f) : 1.0;
-        a_r *= correction_factor;
+        // // --- Accurate Correction for the Missing Mass ---
+        // // We compare the integrated density proxy in the vertical direction
+        // // from the midplane (z=0) to z_max with the full column (z=R_fluid).
+        // // f = (∫₀^(z_max) θ^n dz) / (∫₀^(R_fluid) θ^n dz)  and we use C = 1/f.
+        // real integral_slice = integrate_theta_power(params.z_max, alpha_scaling, n);
+        // real integral_full = integrate_theta_power(params.R_fluid, alpha_scaling, n);
+        // // Avoid division by zero:
+        // real f = (integral_full > 0.0) ? (integral_slice / integral_full) : 1.0;
+        // real correction_factor = (f > 1e-12) ? (1.0 / f) : 1.0;
+        // a_r *= correction_factor;
 
         // Compute the radial unit vector e_r = p.pos / |p.pos|.
         vec_t e_r;
@@ -152,18 +152,17 @@ namespace sph
     // (from the Lane–Emden pressure gradient) to each particle’s acceleration.
     void add_relaxation_force(std::shared_ptr<Simulation> sim, const SPHParameters &params)
     {
-        //         auto &particles = sim->get_particles();
-        //         int num_p = sim->get_particle_num();
-        // #pragma omp parallel for
-        //         for (int i = 0; i < num_p; ++i)
-        //         {
-        //             if (particles[i].is_wall)
-        //                 continue;
-        //             vec_t relax_force = compute_relaxation_force(particles[i], params);
-        //             particles[i].acc -= relax_force;
-        //             particles[i].vel = 0.0;
-        //         }
-        //         WRITE_LOG << "Added relaxation force (derived from Lane–Emden pressure gradient) to particle accelerations.";
-        WRITE_LOG << "NOTE: Relaxation now uses standard SPH forces with damping instead of custom force.\n";
+        auto &particles = sim->get_particles();
+        int num_p = sim->get_particle_num();
+#pragma omp parallel for
+        for (int i = 0; i < num_p; ++i)
+        {
+            if (particles[i].is_wall)
+                continue;
+            vec_t relax_force = compute_relaxation_force(particles[i], params);
+            particles[i].acc -= relax_force;
+            particles[i].vel = 0.0;
+        }
+        WRITE_LOG << "Added relaxation force (derived from Lane–Emden pressure gradient) to particle accelerations.";
     }
 } // namespace sph
