@@ -32,7 +32,9 @@ namespace sph
         loadLaneEmdenTableFromCSV("./sample/thin_slice_poly_2_5d_relax/lane_emden_2d_data.csv");
         const real xi1 = laneEmden_x.back(); // First zero of θ
         const real alpha = R_fluid / xi1;    // Radial scaling factor
-
+        param->alpha_scaling = alpha;
+        param->R_fluid = R_fluid;
+        param->z_max = z_max;
         // Grid setup
         int Nx = 30, Ny = 30, Nz = 5;
         const real dx = (2.0 * R_fluid) / Nx;

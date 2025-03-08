@@ -99,7 +99,6 @@ namespace sph
 
         // Use the scaling factor from the simulation parameters.
         const real alpha_scaling = params.alpha_scaling; // r = α ξ
-
         // --- Compute radial coordinate r ---
         real r_phys = std::sqrt(inner_product(p.pos, p.pos));
         // Avoid division by zero for particles at center.
