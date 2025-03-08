@@ -13,7 +13,7 @@
   "periodic": false,
   "useGravity": true,
   "iterativeSml": true,
-  "G": 0.0043,
+  "G": 0.167,
   "SPHType": "disph",
 
   "two_and_half_sim": true

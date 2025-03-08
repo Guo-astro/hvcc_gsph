@@ -29,12 +29,12 @@ namespace sph
         const real rho_c = 1.0;       // Central density
 
         // Lane-Emden setup
-        loadLaneEmdenTableFromCSV("./sample/lane_emden/lane_emden_data_5_3.csv");
+        loadLaneEmdenTableFromCSV("./sample/thin_slice_poly_2_5d_relax/lane_emden_2d_data.csv");
         const real xi1 = laneEmden_x.back(); // First zero of θ
         const real alpha = R_fluid / xi1;    // Radial scaling factor
 
         // Grid setup
-        int Nx = 50, Ny = 50, Nz = 5;
+        int Nx = 20, Ny = 20, Nz = 3;
         const real dx = (2.0 * R_fluid) / Nx;
         const real dy = (2.0 * R_fluid) / Ny;
         const real dz = (2.0 * z_max) / Nz;

@@ -105,6 +105,10 @@ namespace sph
         HeatingCooling heating_cooling;
         real boundary_radius;
         bool two_and_half_sim = false; // Set to true in JSON to force 2.5D integration.
+        real alpha_scaling;            // Radial scaling factor from Lane–Emden analysis.
+        real R_fluid;                  // Radial scaling factor from Lane–Emden analysis.
+        real z_max;                    // Radial scaling factor from Lane–Emden analysis.
+
         struct DensityRelaxation
         {
             bool is_valid = false;          // Enable/disable density relaxation

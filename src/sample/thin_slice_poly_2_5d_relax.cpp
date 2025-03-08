@@ -32,9 +32,12 @@ namespace sph
         loadLaneEmdenTableFromCSV("./sample/lane_emden/lane_emden_data_5_3.csv");
         const real xi1 = laneEmden_x.back(); // First zero of θ
         const real alpha = R_fluid / xi1;    // Radial scaling factor
+        param->alpha_scaling = alpha;
+        param->R_fluid = R_fluid;
+        param->z_max = z_max;
 
         // Grid setup
-        int Nx = 50, Ny = 50, Nz = 5;
+        int Nx = 20, Ny = 20, Nz = 5;
         const real dx = (2.0 * R_fluid) / Nx;
         const real dy = (2.0 * R_fluid) / Ny;
         const real dz = (2.0 * z_max) / Nz;
@@ -49,7 +52,7 @@ namespace sph
                 real x = -R_fluid + (ix + 0.5) * dx;
                 real y = -R_fluid + (iy + 0.5) * dy;
                 if (x * x + y * y > R_fluid * R_fluid)
-                    continue; // Within radius
+                    continue; // Only within disk radius
                 for (int iz = 0; iz < Nz; ++iz)
                 {
                     real z = -z_max + (iz + 0.5) * dz;
@@ -73,26 +76,19 @@ namespace sph
             real y = pos[1];
             real z = pos[2];
 
-            // Compute polytropic properties based on position
-            real r_xy = std::sqrt(x * x + y * y);
-            real xi = r_xy / alpha;
+            // Use the full 3D radial coordinate for hydrostatic calculations.
+            real r = std::sqrt(x * x + y * y + z * z);
+            real xi = r / alpha;
             real thetaVal = getTheta(xi);
             if (thetaVal < 0.0)
                 thetaVal = 0.0; // Ensure non-negative
+
             real dens = rho_c * std::pow(thetaVal, n_poly);
             real pres = K * std::pow(dens, 1.0 + 1.0 / n_poly);
             real ene = (dens > 0.0) ? pres / ((gamma - 1.0) * dens) : 0.0;
 
-            // Identify edge (wall) particles
-            bool on_edge = false;
-            if ((x + dx) * (x + dx) + y * y > R_fluid * R_fluid)
-                on_edge = false;
-            else if ((x - dx) * (x - dx) + y * y > R_fluid * R_fluid)
-                on_edge = false;
-            else if (x * x + (y + dy) * (y + dy) > R_fluid * R_fluid)
-                on_edge = false;
-            else if (x * x + (y - dy) * (y - dy) > R_fluid * R_fluid)
-                on_edge = false;
+            // Flag edge (wall) particles in x or y.
+            bool on_edge = (std::abs(x) > (R_fluid - dx)) || (std::abs(y) > (R_fluid - dy));
 
             // Set particle properties
             SPHParticle pp;
@@ -103,18 +99,18 @@ namespace sph
             pp.vel[1] = 0.0;
             pp.vel[2] = 0.0;
             pp.mass = mpp;
-            pp.dens = dens; // Polytropic density
-            pp.pres = pres; // Polytropic pressure
-            pp.ene = ene;   // Polytropic energy
+            pp.dens = dens;
+            pp.pres = pres;
+            pp.ene = ene;
             pp.id = pid++;
-            pp.is_wall = on_edge; // Mark as wall if on edge
+            pp.is_wall = on_edge;
             if (on_edge)
                 wall_count++;
             particles.push_back(pp);
         }
 
         // Output diagnostics
-        std::cout << "Set " << wall_count << " edge particles as walls with polytropic properties.\n";
+        std::cout << "Set " << wall_count << " edge (wall) particles.\n";
         std::cout << "Total: " << (fluid_count - wall_count) << " fluid particles, "
                   << wall_count << " wall particles, " << particles.size() << " total.\n";
         std::cout << "NOTE: Ensure integration clamps z and vz to 0 for non-wall particles.\n";
