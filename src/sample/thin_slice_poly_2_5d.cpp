@@ -23,15 +23,15 @@ namespace sph
         // Fluid parameters
         const real gamma = 5.0 / 3.0; // Polytrope with γ = 5/3
         const real n_poly = 1.5;      // Polytropic index
-        const real R_fluid = 3.0;     // Fluid disk radius
         const real z_max = 0.2;       // Half-thickness (unused since z=0)
-        const real M_total = 1000.0;  // Total fluid mass
         const real K = 1.0;           // Polytropic constant
         const real rho_c = 1.0;       // Central surface density
 
         // Load Lane-Emden solution
         loadLaneEmdenTableFromCSV("./sample/thin_slice_poly_2_5d/lane_emden_2d_3d_gravity.csv");
         const real xi_max = laneEmden_x.back();
+        const real R_fluid = xi_max; // Fluid disk radius
+
         const real theta_max = laneEmden_theta.back();
         if (theta_max > 1e-3)
         {
@@ -59,6 +59,7 @@ namespace sph
         real M_total_lane_emden = M_cum.back();
         // Adjust rho_c to match M_total (optional; here we assume rho_c=1.0 is normalized)
         // real rho_c_adjusted = M_total / (alpha * alpha * M_total_lane_emden);
+        const real M_total = M_total_lane_emden; // Total fluid mass
 
         // Particle placement parameters
         const int N_total = 2500;                              // Target number of particles (approx 50x50 equivalent)
