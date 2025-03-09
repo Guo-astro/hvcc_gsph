@@ -61,7 +61,7 @@ namespace sph
         // real rho_c_adjusted = M_total / (alpha * alpha * M_total_lane_emden);
 
         // Particle placement parameters
-        const int N_total = 1000;                              // Target number of particles (approx 50x50 equivalent)
+        const int N_total = 2500;                              // Target number of particles (approx 50x50 equivalent)
         const real mpp = M_total / static_cast<real>(N_total); // Mass per particle
 
         // Initialize particles
