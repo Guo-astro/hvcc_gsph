@@ -138,7 +138,40 @@ namespace sph
         ++m_count;
     }
 
-    // Modified checkpoint reader remains the same.
+    // Recenter the particle system so that its center-of-mass is at the origin.
+    void Output::recenterParticles(std::vector<SPHParticle> &particles)
+    {
+        double totalMass = 0.0;
+        std::array<double, DIM> com = {0.0};
+        std::array<double, DIM> comVel = {0.0};
+
+        // Sum over particles.
+        for (const auto &p : particles)
+        {
+            totalMass += p.mass;
+            for (int i = 0; i < DIM; ++i)
+            {
+                com[i] += p.mass * p.pos[i];
+                comVel[i] += p.mass * p.vel[i];
+            }
+        }
+        // Compute the averages.
+        for (int i = 0; i < DIM; ++i)
+        {
+            com[i] /= totalMass;
+            comVel[i] /= totalMass;
+        }
+        // Shift each particle.
+        for (auto &p : particles)
+        {
+            for (int i = 0; i < DIM; ++i)
+            {
+                p.pos[i] -= com[i];
+                p.vel[i] -= comVel[i];
+            }
+        }
+    }
+
     void Output::read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim)
     {
         std::ifstream in(file_name);
@@ -162,37 +195,36 @@ namespace sph
             {
                 fields.push_back(field);
             }
-            // Create a particle from the fields. The order is assumed to be:
-            // time, pos (DIM), vel (DIM), acc (DIM), mass, dens, pres, ene, sml, id, neighbor, alpha, gradh, [additional...]
+            // Create a particle from the fields.
             int idx = 0;
             double timeVal = std::stod(fields[idx++]);
-            // For now we set the simulation time to that in the first row.
+            // For the first row, recover the simulation time.
             if (particles.empty())
             {
                 checkpointTime = timeVal / m_unit.time_factor;
             }
             SPHParticle p;
-#if DIM == 1
-            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
-#elif DIM == 2
-            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.vel[1] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
-            p.acc[1] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
-#elif DIM == 3
+#if DIM == 3
             p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
             p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
             p.pos[2] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.vel[1] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.vel[2] = std::stod(fields[idx++]) * m_unit.time_factor / m_unit.length_factor;
-            p.acc[0] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
-            p.acc[1] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
-            p.acc[2] = std::stod(fields[idx++]) * (m_unit.time_factor * m_unit.time_factor) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.vel[1] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.vel[2] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+            p.acc[1] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+            p.acc[2] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+#elif DIM == 2
+            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.vel[1] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+            p.acc[1] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+#elif DIM == 1
+            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
+            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
 #endif
             p.mass = std::stod(fields[idx++]) / m_unit.mass_factor;
             p.dens = std::stod(fields[idx++]) / m_unit.density_factor;
@@ -204,17 +236,27 @@ namespace sph
             p.alpha = std::stod(fields[idx++]);
             p.gradh = std::stod(fields[idx++]);
 
-            // (For now we ignore any additional arrays; add similar parsing here if needed.)
+            // (Ignore any additional arrays for now.)
             particles.push_back(p);
         }
-        // Now update the simulation state with the loaded particles and time.
+        // If recentering is enabled, recenter the particles.
+        if (m_recenterParticles)
+        {
+            recenterParticles(particles);
+            WRITE_LOG << "Checkpoint particles recentered.";
+        }
+        // Update the simulation state with the loaded particles and time.
         sim->set_particles(particles);
         sim->set_time(checkpointTime);
-        WRITE_LOG << "Loaded checkpoint from " << file_name << " with " << particles.size() << " particles and time " << checkpointTime;
+        sim->set_particle_num(particles.size());
+
+        WRITE_LOG << "Loaded checkpoint from " << file_name << " with " << particles.size()
+                  << " particles and time " << checkpointTime;
     }
 
-    Output::Output(const std::string &dir, int count, const UnitSystem &unit)
-        : m_dir(dir), m_count(count), m_unit(unit)
+    // Updated constructor: now accepts a flag to recenter particles.
+    Output::Output(const std::string &dir, int count, const UnitSystem &unit, bool recenterParticles)
+        : m_dir(dir), m_count(count), m_unit(unit), m_recenterParticles(recenterParticles)
     {
         // energy output code omitted...
     }

@@ -108,7 +108,7 @@ namespace sph
         real alpha_scaling;            // Radial scaling factor from Lane–Emden analysis.
         real R_fluid;                  // Radial scaling factor from Lane–Emden analysis.
         real z_max;                    // Radial scaling factor from Lane–Emden analysis.
-
+        bool recenterParticles;
         struct DensityRelaxation
         {
             bool is_valid = false;          // Enable/disable density relaxation

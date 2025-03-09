@@ -15,6 +15,8 @@
   "iterativeSml": true,
   "G": 1.0,
   "SPHType": "disph",
+  "checkpointFile": "./sample/thin_slice_poly_2_5d/results/DISPH/thin_slice_poly_2_5d/3D/00009.csv",
+  "recenterParticles": true,
 
   "two_and_half_sim": true
 }

@@ -201,6 +201,12 @@ namespace sph
         {
             WRITE_LOG << "Checkpoint file specified: " << m_param->checkpoint_file;
         }
+        m_param->recenterParticles = root.get<bool>("recenterParticles", false);
+        if (m_param->recenterParticles)
+        {
+            WRITE_LOG << "Recenter particles enabled.";
+        }
+
         m_param->two_and_half_sim = root.get<bool>("two_and_half_sim", false);
 
         // Updated Density Relaxation Parsing
@@ -432,7 +438,7 @@ namespace sph
         WRITE_LOG << "Output directory: " << full_output_dir;
         boost::filesystem::create_directories(output_path);
 
-        m_output = std::make_shared<Output>(full_output_dir, 0, m_unit);
+        m_output = std::make_shared<Output>(full_output_dir, 0, m_unit, m_param->recenterParticles);
 
         m_sim = std::make_shared<Simulation>(m_param);
         if (!m_param->checkpoint_file.empty())
