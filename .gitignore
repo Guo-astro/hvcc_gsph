@@ -19,5 +19,6 @@ sample/evrard/results/
 sample/pairing_instability/results/
 
 build/
+build_manual/
 codefetch/
 results/
