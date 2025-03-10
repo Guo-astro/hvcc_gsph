@@ -28,8 +28,9 @@ run:
 	# ./build/sph evrard ./sample/evrard/evrard.json 8
 	# ./build/sph lane_emden ./sample/lane_emden/lane_emden.json 8
 	# ./build/sph thin_disk_3d ./sample/thin_disk_3d/thin_disk_3d.json 8
-	./build/sph thin_slice_poly_2_5d ./sample/thin_slice_poly_2_5d/thin_slice_poly_2_5d.json 8
-	# ./build/sph thin_slice_poly_2_5d_relax ./sample/thin_slice_poly_2_5d_relax/thin_slice_poly_2_5d_relax.json 8
+	# ./build/sph thin_slice_poly_2_5d ./sample/thin_slice_poly_2_5d/thin_slice_poly_2_5d.json 8
+	# ./build/sph thin_slice_poly_2_5d ./sample/thin_slice_poly_2_5d/thin_slice_poly_2_5d_restart.json 8
+	./build/sph thin_slice_poly_2_5d_relax ./sample/thin_slice_poly_2_5d_relax/thin_slice_poly_2_5d_relax.json 8
 
 
 	# ./build/sph khi ./sample/khi/khi.json 8

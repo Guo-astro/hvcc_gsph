@@ -1,13 +1,16 @@
+// load_thin_slice_poly_2_5d_relax.cpp
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <random>
+#include <algorithm> // for std::lower_bound
 
 #include "sample_registry.hpp"
 #include "simulation.hpp"
 #include "parameters.hpp"
 #include "particle.hpp"
 #include "defines.hpp"
-#include "lane_emden.hpp" // Provides loadLaneEmdenTableFromCSV() and getTheta()
+#include "lane_emden.hpp" // Provides loadLaneEmdenTableFromCSV() + global arrays
 #include "exception.hpp"
 
 namespace sph
@@ -16,87 +19,111 @@ namespace sph
                                          std::shared_ptr<SPHParameters> param)
     {
 #if DIM != 3
-        THROW_ERROR("thin_slice_poly_2_5d requires DIM == 3.");
+        THROW_ERROR("thin_slice_poly_2_5d_relax requires DIM == 3.");
 #endif
 
-        // Fluid parameters
-        const real gamma = 5.0 / 3.0; // Polytrope with γ = 5/3
-        const real n_poly = 1.5;      // Polytropic index
-        const real R_fluid = 3.0;     // Fluid disk radius in x-y
-        const real z_max = 0.2;       // Half-thickness in z
-        const real M_total = 1000.0;  // Total fluid mass
-        const real K = 1.0;           // Polytropic constant
-        const real rho_c = 1.0;       // Central density
+        // Polytropic + disk parameters
+        const real gamma = 5.0 / 3.0;
+        const real n_poly = 1.5; // gamma=1+1/n => n=1.5 => gamma=5/3
+        const real K = 1.0;      // polytropic constant
+        const real Sigma0 = 1.0; // central surface density
+        const real z_max = 0.0;  // strictly razor-thin => z=0
 
-        // Lane-Emden setup
-        loadLaneEmdenTableFromCSV("./sample/thin_slice_poly_2_5d_relax/lane_emden_2d_data.csv");
-        const real xi1 = laneEmden_x.back(); // First zero of θ
-        const real alpha = R_fluid / xi1;    // Radial scaling factor
-        param->alpha_scaling = alpha;
+        // 1) Load the CSV from File #1
+        loadLaneEmdenTableFromCSV("./sample/thin_slice_poly_2_5d/adiabatic_razor_thin_disk_sigma.csv");
+        // Now laneEmden_x and laneEmden_theta store R, Σ(R).
+        // We rename them to avoid confusion with the spherical Lane–Emden usage:
+        //   laneEmden_x[i] = R_i,
+        //   laneEmden_theta[i] = Σ(R_i).
+        // Let's interpret them as "physical" R, not dimensionless.
+
+        // 2) The maximum radius is the last entry
+        const real R_fluid = laneEmden_x.back();
         param->R_fluid = R_fluid;
         param->z_max = z_max;
-        // Grid setup
-        int Nx = 20, Ny = 20, Nz = 5;
-        const real dx = (2.0 * R_fluid) / Nx;
-        const real dy = (2.0 * R_fluid) / Ny;
-        const real dz = (2.0 * z_max) / Nz;
+        param->alpha_scaling = 1.0; // If the CSV is already in physical units, alpha=1
 
-        // Generate fluid particle positions
-        std::vector<vec_t> fluid_positions;
-        fluid_positions.reserve(Nx * Ny * Nz);
-        for (int ix = 0; ix < Nx; ++ix)
+        // 3) Compute total mass by integrating 2π ∫0^R Σ(R') R' dR'
+        std::vector<real> M_cum(laneEmden_x.size(), 0.0);
+        for (size_t i = 1; i < laneEmden_x.size(); i++)
         {
-            for (int iy = 0; iy < Ny; ++iy)
-            {
-                real x = -R_fluid + (ix + 0.5) * dx;
-                real y = -R_fluid + (iy + 0.5) * dy;
-                if (x * x + y * y > R_fluid * R_fluid)
-                    continue; // Within radius
-                for (int iz = 0; iz < Nz; ++iz)
-                {
-                    real z = -z_max + (iz + 0.5) * dz;
-                    fluid_positions.push_back({x, y, z});
-                }
-            }
+            real R0 = laneEmden_x[i - 1];
+            real R1 = laneEmden_x[i];
+            real Sigma0_ = laneEmden_theta[i - 1];
+            real Sigma1_ = laneEmden_theta[i];
+            // trapezoid
+            real dM = 0.5 * (R0 * Sigma0_ + R1 * Sigma1_) * (R1 - R0) * 2.0 * M_PI;
+            M_cum[i] = M_cum[i - 1] + dM;
         }
-        size_t fluid_count = fluid_positions.size();
-        const real mpp = M_total / static_cast<real>(fluid_count); // Mass per particle
+        real M_total = M_cum.back();
 
-        // Initialize particles
+        // 4) Particle sampling
+        const int N_total = 10000; // choose resolution
+        const real mpp = M_total / static_cast<real>(N_total);
+
         auto &particles = sim->get_particles();
         particles.clear();
-        particles.reserve(fluid_count);
+        particles.reserve(N_total);
+
+        std::mt19937 gen(42);
+        std::uniform_real_distribution<real> dist(0.0, 1.0);
 
         int pid = 0;
-        int wall_count = 0;
-        for (const auto &pos : fluid_positions)
+        for (int i = 0; i < N_total; i++)
         {
-            real x = pos[0];
-            real y = pos[1];
-            real z = pos[2];
+            real u = (i + 0.5) / static_cast<real>(N_total);
+            real M_target = u * M_total;
 
-            // Compute polytropic properties based on position
-            real r_xy = std::sqrt(x * x + y * y);
-            real xi = r_xy / alpha;
-            real thetaVal = getTheta(xi);
-            if (thetaVal < 0.0)
-                thetaVal = 0.0; // Ensure non-negative
-            real dens = rho_c * std::pow(thetaVal, n_poly);
-            real pres = K * std::pow(dens, 1.0 + 1.0 / n_poly);
-            real ene = (dens > 0.0) ? pres / ((gamma - 1.0) * dens) : 0.0;
+            // find R s.t. M_cum(R) ~ M_target
+            auto it = std::lower_bound(M_cum.begin(), M_cum.end(), M_target);
+            size_t idx = std::distance(M_cum.begin(), it);
+            real R_star;
+            if (idx == 0)
+                R_star = laneEmden_x[0];
+            else if (idx == M_cum.size())
+                R_star = laneEmden_x.back();
+            else
+            {
+                real M0 = M_cum[idx - 1], M1 = M_cum[idx];
+                real R0 = laneEmden_x[idx - 1], R1 = laneEmden_x[idx];
+                real frac = (M_target - M0) / (M1 - M0);
+                R_star = R0 + frac * (R1 - R0);
+            }
+            // random azimuth
+            real phi = 2.0 * M_PI * dist(gen);
+            real x = R_star * std::cos(phi);
+            real y = R_star * std::sin(phi);
+            real z = 0.0; // razor-thin
 
-            // Identify edge (wall) particles
-            bool on_edge = false;
-            if ((x + dx) * (x + dx) + y * y > R_fluid * R_fluid)
-                on_edge = false;
-            else if ((x - dx) * (x - dx) + y * y > R_fluid * R_fluid)
-                on_edge = false;
-            else if (x * x + (y + dy) * (y + dy) > R_fluid * R_fluid)
-                on_edge = false;
-            else if (x * x + (y - dy) * (y - dy) > R_fluid * R_fluid)
-                on_edge = false;
+            // find Σ(R_star) by interpolation or table lookup
+            // for simplicity, just do nearest
+            // better: do linear interpolation
+            // Here let's do a quick linear interpolation:
+            real Sigma_val = 0.0;
+            if (idx == 0)
+                Sigma_val = laneEmden_theta[0];
+            else if (idx == laneEmden_x.size())
+                Sigma_val = laneEmden_theta.back();
+            else
+            {
+                real R0 = laneEmden_x[idx - 1], R1 = laneEmden_x[idx];
+                real S0 = laneEmden_theta[idx - 1], S1 = laneEmden_theta[idx];
+                real frac = (R_star - R0) / (R1 - R0);
+                Sigma_val = S0 + frac * (S1 - S0);
+            }
 
-            // Set particle properties
+            // polytropic P = K * Σ^(5/3)
+            real pres = K * std::pow(Sigma_val, 5.0 / 3.0);
+            // volumetric "dens" in the code => we are storing Σ as "dens"
+            // if your code truly wants 3D density, you must handle thickness or bridging
+            // For demonstration, we just store Σ in p.dens
+            real dens = Sigma_val;
+
+            // internal energy
+            real ene = 0.0;
+            if (dens > 0.0)
+                ene = pres / ((gamma - 1.0) * dens);
+
             SPHParticle pp;
             pp.pos[0] = x;
             pp.pos[1] = y;
@@ -105,23 +132,17 @@ namespace sph
             pp.vel[1] = 0.0;
             pp.vel[2] = 0.0;
             pp.mass = mpp;
-            pp.dens = dens; // Polytropic density
-            pp.pres = pres; // Polytropic pressure
-            pp.ene = ene;   // Polytropic energy
+            pp.dens = dens; // storing Σ as "dens" for convenience
+            pp.pres = pres;
+            pp.ene = ene;
             pp.id = pid++;
-            pp.is_wall = on_edge; // Mark as wall if on edge
-            if (on_edge)
-                wall_count++;
+            pp.is_wall = false;
             particles.push_back(pp);
         }
 
-        // Output diagnostics
-        std::cout << "Set " << wall_count << " edge particles as walls with polytropic properties.\n";
-        std::cout << "Total: " << (fluid_count - wall_count) << " fluid particles, "
-                  << wall_count << " wall particles, " << particles.size() << " total.\n";
-        std::cout << "NOTE: Ensure integration clamps z and vz to 0 for non-wall particles.\n";
-
-        sim->set_particle_num(static_cast<int>(particles.size()));
+        sim->set_particle_num(N_total);
+        std::cout << "[load_thin_slice_poly_2_5d_relax] Placed " << N_total
+                  << " particles, total mass=" << M_total << "\n";
     }
 
     REGISTER_SAMPLE("thin_slice_poly_2_5d_relax", load_thin_slice_poly_2_5d_relax);

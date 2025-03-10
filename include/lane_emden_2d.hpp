@@ -177,4 +177,5 @@ namespace sph
         out.close();
         std::cout << "Simulation data written to " << filename << std::endl;
     }
+
 } // namespace sph

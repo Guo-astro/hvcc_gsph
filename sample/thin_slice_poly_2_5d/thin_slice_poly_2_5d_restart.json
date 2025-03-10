@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "sample/thin_slice_poly_2_5d/results",
+  "outputDirectory": "sample/thin_slice_poly_2_5d_restart/results",
   "endTime": 1000.0,
   "avAlpha": 2.0,
   "neighborNumber": 2048,
@@ -8,14 +8,14 @@
   "useArtificialConductivity": false,
   "leafParticleNumber": 64,
   "gamma": 1.6666666666666667,
-  "kernel": "cubic_spline",
+  "kernel": "wendland",
   "N": 1000000,
   "periodic": false,
   "useGravity": true,
   "iterativeSml": true,
   "G": 1.0,
   "SPHType": "disph",
-  "checkpointFile": "./sample/thin_slice_poly_2_5d/results/DISPH/thin_slice_poly_2_5d/3D/00009.csv",
+  "checkpointFile": "./sample/thin_slice_poly_2_5d/results/DISPH/thin_slice_poly_2_5d/3D/00764.csv",
   "recenterParticles": true,
 
   "two_and_half_sim": true

@@ -177,10 +177,10 @@ namespace sph
             std::cerr << "Could not open " << filename << " for writing." << std::endl;
             return;
         }
-        out << "pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,acc_x,acc_y,acc_z,mass,dens,pres,ene,sml,id\n";
+        out << "time,pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,acc_x,acc_y,acc_z,mass,dens,pres,ene,sml,id\n";
         for (const auto &p : particles)
         {
-            out << p.pos[0] << "," << p.pos[1] << "," << p.pos[2] << ","
+            out << "0.0" << "," << p.pos[0] << "," << p.pos[1] << "," << p.pos[2] << ","
                 << p.vel[0] << "," << p.vel[1] << "," << p.vel[2] << ","
                 << p.acc[0] << "," << p.acc[1] << "," << p.acc[2] << ","
                 << p.mass << "," << p.dens << "," << p.pres << "," << p.ene << ","
