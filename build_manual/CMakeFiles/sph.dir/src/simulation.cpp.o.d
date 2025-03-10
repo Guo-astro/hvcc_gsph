@@ -856,6 +856,7 @@ CMakeFiles/sph.dir/src/simulation.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/optional \
   /Users/guo/OSS/sphcode/include/particle.hpp \
   /Users/guo/OSS/sphcode/include/vector_type.hpp \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/exception.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/sstream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/istream \

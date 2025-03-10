@@ -858,5 +858,6 @@ CMakeFiles/sph.dir/src/timestep.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/__iterator/ranges_iterator_traits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/__node_handle \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/optional \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/openmp.hpp \
   /opt/homebrew/opt/libomp/include/omp.h

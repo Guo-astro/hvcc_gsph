@@ -1660,6 +1660,7 @@ CMakeFiles/sph.dir/src/solver.cpp.o: \
   /Users/guo/OSS/sphcode/include/simulation.hpp \
   /Users/guo/OSS/sphcode/include/particle.hpp \
   /Users/guo/OSS/sphcode/include/vector_type.hpp \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/relaxation/lane_emden_data.hpp \
   /Users/guo/OSS/sphcode/include/output.hpp \
   /Users/guo/OSS/sphcode/include/periodic.hpp \

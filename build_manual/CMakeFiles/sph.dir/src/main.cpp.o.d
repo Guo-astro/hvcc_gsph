@@ -863,6 +863,7 @@ CMakeFiles/sph.dir/src/main.cpp.o: /Users/guo/OSS/sphcode/src/main.cpp \
   /Users/guo/OSS/sphcode/include/particle.hpp \
   /Users/guo/OSS/sphcode/include/vector_type.hpp \
   /Users/guo/OSS/sphcode/include/defines.hpp \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/parameters.hpp \
   /Users/guo/OSS/sphcode/include/relaxation/lane_emden_data.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/fstream \

@@ -181,7 +181,6 @@ namespace sph
         }
         std::string headerLine;
         std::getline(in, headerLine);
-        // (Optionally, you can parse headerLine to verify the column order.)
 
         std::vector<SPHParticle> particles;
         std::string line;
@@ -195,10 +194,8 @@ namespace sph
             {
                 fields.push_back(field);
             }
-            // Create a particle from the fields.
             int idx = 0;
             double timeVal = std::stod(fields[idx++]);
-            // For the first row, recover the simulation time.
             if (particles.empty())
             {
                 checkpointTime = timeVal / m_unit.time_factor;
@@ -210,7 +207,7 @@ namespace sph
             p.pos[2] = std::stod(fields[idx++]) / m_unit.length_factor;
             p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
             p.vel[1] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.vel[2] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
+            p.vel[2] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
             p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
             p.acc[1] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
             p.acc[2] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
@@ -236,22 +233,31 @@ namespace sph
             p.alpha = std::stod(fields[idx++]);
             p.gradh = std::stod(fields[idx++]);
 
-            // (Ignore any additional arrays for now.)
             particles.push_back(p);
         }
-        // If recentering is enabled, recenter the particles.
+        in.close();
+
+        // Optional recentering
         if (m_recenterParticles)
         {
             recenterParticles(particles);
             WRITE_LOG << "Checkpoint particles recentered.";
         }
-        // Update the simulation state with the loaded particles and time.
+
+        // NEW: Use the Simulation's checkpoint modifier if set.
+        auto modifier = sim->get_checkpoint_modifier();
+        if (modifier)
+        {
+            modifier->modifyParticles(particles, sim);
+            WRITE_LOG << "CheckpointModifier applied custom modifications.";
+        }
+
         sim->set_particles(particles);
         sim->set_time(checkpointTime);
-        sim->set_particle_num(particles.size());
+        sim->set_particle_num((int)particles.size());
 
-        WRITE_LOG << "Loaded checkpoint from " << file_name << " with " << particles.size()
-                  << " particles and time " << checkpointTime;
+        WRITE_LOG << "Loaded checkpoint from " << file_name << " with "
+                  << particles.size() << " particles and time " << checkpointTime;
     }
 
     // Updated constructor: now accepts a flag to recenter particles.

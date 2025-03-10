@@ -13,6 +13,8 @@
 /Users/guo/OSS/sphcode/build_manual/include/kernel/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/include/relaxation/CMakeFiles/edit_cache.dir
 /Users/guo/OSS/sphcode/build_manual/include/relaxation/CMakeFiles/rebuild_cache.dir
+/Users/guo/OSS/sphcode/build_manual/include/utilities/CMakeFiles/edit_cache.dir
+/Users/guo/OSS/sphcode/build_manual/include/utilities/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/CMakeFiles/edit_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/disph/CMakeFiles/edit_cache.dir

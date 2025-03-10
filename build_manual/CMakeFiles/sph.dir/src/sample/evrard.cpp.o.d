@@ -877,6 +877,7 @@ CMakeFiles/sph.dir/src/sample/evrard.cpp.o: \
   /Users/guo/OSS/sphcode/include/simulation.hpp \
   /Users/guo/OSS/sphcode/include/particle.hpp \
   /Users/guo/OSS/sphcode/include/vector_type.hpp \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/exception.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/sstream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/istream \

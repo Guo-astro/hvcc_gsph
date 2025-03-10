@@ -877,6 +877,7 @@ CMakeFiles/sph.dir/src/sample/shock_tube_heating_cooling.cpp.o: \
   /Users/guo/OSS/sphcode/include/simulation.hpp \
   /Users/guo/OSS/sphcode/include/particle.hpp \
   /Users/guo/OSS/sphcode/include/vector_type.hpp \
+  /Users/guo/OSS/sphcode/include/utilities/checkpoint_modifier.hpp \
   /Users/guo/OSS/sphcode/include/solver.hpp \
   /Users/guo/OSS/sphcode/include/unit_system.hpp \
   /Users/guo/OSS/sphcode/include/module.hpp \

@@ -7,7 +7,7 @@ build: build_manual/CMakeCache.txt
 	$(MAKE) -C build_manual
 
 # Only run CMake if the cache is missing.
-build_manual:
+build_manual/CMakeCache.txt:
 	@echo "Creating build directory..."
 	mkdir -p build_manual
 	@echo "Configuring project with CMake..."
@@ -21,6 +21,7 @@ build_manual:
 
 run:
 	@echo "Running shock_tube..."
+	./build_manual/sph test_razor_thin_blast_wave ./production_sims/test_razor_thin_blast_wave/test_razor_thin_blast_wave.json 8
 
 	# ./build_manual/sph shock_tube ./sample/shock_tube/shock_tube.json 8
 	# ./build_manual/sph evrard ./sample/evrard/evrard.json 8
@@ -29,8 +30,6 @@ run:
 	# ./build_manual/sph thin_slice_poly_2_5d ./sample/thin_slice_poly_2_5d/thin_slice_poly_2_5d.json 8
 	# ./build_manual/sph thin_slice_poly_2_5d ./sample/thin_slice_poly_2_5d/thin_slice_poly_2_5d_restart.json 8
 	./build_manual/sph thin_slice_poly_2_5d_relax ./sample/thin_slice_poly_2_5d_relax/thin_slice_poly_2_5d_relax.json 8
-
-
 	# ./build_manual/sph khi ./sample/khi/khi.json 8
 	# ./build_manual/sph shock_tube_2d ./sample/shock_tube_2d/shock_tube_2d.json 8
 	# ./build_manual/sph shock_tube_2p5d ./sample/shock_tube_2p5d/shock_tube_2p5d.json 8

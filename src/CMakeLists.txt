@@ -27,3 +27,9 @@ add_subdirectory(relaxation)
 # Copy sample data to build dir if needed
 file(COPY ${CMAKE_SOURCE_DIR}/sample
      DESTINATION ${CMAKE_BINARY_DIR})
+
+
+file(COPY ${CMAKE_SOURCE_DIR}/production_sims
+     DESTINATION ${CMAKE_BINARY_DIR})
+
+

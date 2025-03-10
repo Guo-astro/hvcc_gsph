@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "particle.hpp"
-
+#include "utilities/checkpoint_modifier.hpp"
 namespace sph
 {
 
@@ -35,6 +35,7 @@ private:                                      \
 
         std::unordered_map<std::string, std::vector<real>> additional_scalar_array;
         std::unordered_map<std::string, std::vector<vec_t>> additional_vector_array;
+        std::shared_ptr<CheckpointModifier> checkpoint_modifier;
 
     public:
         Simulation(std::shared_ptr<SPHParameters> param);
@@ -52,6 +53,14 @@ private:                                      \
         std::unordered_map<std::string, std::vector<vec_t>> &get_vector_map()
         {
             return additional_vector_array;
+        }
+        void set_checkpoint_modifier(std::shared_ptr<CheckpointModifier> mod)
+        {
+            checkpoint_modifier = mod;
+        }
+        std::shared_ptr<CheckpointModifier> get_checkpoint_modifier() const
+        {
+            return checkpoint_modifier;
         }
     };
 
