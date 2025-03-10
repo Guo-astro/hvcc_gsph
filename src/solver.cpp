@@ -216,6 +216,15 @@ namespace sph
             m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
             m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
             m_param->density_relaxation.velocity_threshold = root.get<real>("velocityThreshold", 1e-3);
+            m_param->density_relaxation.table_file = root.get<std::string>("laneEmdenTable", "lane_emden_n15_3d.csv");
+
+            // Allocate the LaneEmdenRelaxation object once
+            m_laneEmdenRelaxation = std::make_unique<LaneEmdenRelaxation>();
+            // Load the table using the file name from JSON (see below)
+            m_laneEmdenRelaxation->load_table(m_param->density_relaxation.table_file);
+            // Then apply the relaxation force
+            m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation: LaneEmden-based force applied.";
             WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
                       << ", damping=" << m_param->density_relaxation.damping_factor
                       << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold;
@@ -477,13 +486,6 @@ namespace sph
             m_hcool->initialize(m_param);
         }
 
-        // If useDensityRelaxation is enabled in JSON, update target densities.
-        if (m_param->density_relaxation.is_valid)
-        {
-            sph::add_relaxation_force(m_sim, *m_param);
-            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
-        }
-
         if (m_param->type == SPHType::GSPH || m_param->type == SPHType::GDISPH)
         {
             std::vector<std::string> names = {"grad_density", "grad_pressure", "grad_velocity_0"};
@@ -576,10 +578,11 @@ namespace sph
                 p[i].vel[2] = 0.0;
             }
         }
-        if (m_param->density_relaxation.is_valid)
+        // Optionally re-apply LaneEmden-based relaxation if user wants it each step:
+        if (m_param->density_relaxation.is_valid && m_laneEmdenRelaxation)
         {
-            sph::add_relaxation_force(m_sim, *m_param);
-            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
+            m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation: LaneEmden-based force (predict step).";
         }
     }
 
@@ -605,10 +608,10 @@ namespace sph
                 p[i].vel[2] = 0.0;
             }
         }
-        if (m_param->density_relaxation.is_valid)
+        if (m_param->density_relaxation.is_valid && m_laneEmdenRelaxation)
         {
-            sph::add_relaxation_force(m_sim, *m_param);
-            WRITE_LOG << "Density relaxation enabled. Updated target densities.";
+            m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
+            WRITE_LOG << "Density relaxation: LaneEmden-based force (predict step).";
         }
     }
 } // namespace sph

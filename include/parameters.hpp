@@ -116,6 +116,7 @@ namespace sph
             real tolerance = 1e-3;          // Convergence tolerance (relative density error)
             real damping_factor = 0.1;      // Damping factor for position updates
             real velocity_threshold = 1e-3; // Stop when max velocity < this (new)
+            std::string table_file;
 
         } density_relaxation;
         std::string checkpoint_file; // Path to the previous output file (e.g., "results/20250306141324/00000.csv")

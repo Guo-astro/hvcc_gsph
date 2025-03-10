@@ -1,4 +1,5 @@
 // load_thin_slice_poly_2_5d_relax.cpp
+#pragma once
 #include <cmath>
 #include <vector>
 #include <iostream>
@@ -10,9 +11,8 @@
 #include "parameters.hpp"
 #include "particle.hpp"
 #include "defines.hpp"
-#include "lane_emden.hpp" // Provides loadLaneEmdenTableFromCSV() + global arrays
 #include "exception.hpp"
-
+#include "density_relaxation.hpp"
 namespace sph
 {
     void load_thin_slice_poly_2_5d_relax(std::shared_ptr<Simulation> sim,
@@ -113,7 +113,7 @@ namespace sph
             }
 
             // polytropic P = K * Σ^(5/3)
-            real pres = K * std::pow(Sigma_val, 5.0 / 3.0);
+            real pres = K * std::pow(Sigma_val, gamma);
             // volumetric "dens" in the code => we are storing Σ as "dens"
             // if your code truly wants 3D density, you must handle thickness or bridging
             // For demonstration, we just store Σ in p.dens

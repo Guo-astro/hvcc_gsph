@@ -4,7 +4,7 @@
 #include <vector>
 #include "unit_system.hpp"
 #include "module.hpp"
-
+#include "relaxation/lane_emden_relaxation.hpp"
 namespace sph
 {
 
@@ -39,6 +39,7 @@ namespace sph
         std::shared_ptr<Module> m_fforce;
         std::shared_ptr<Module> m_gforce;
         std::shared_ptr<Module> m_hcool;
+        std::unique_ptr<LaneEmdenRelaxation> m_laneEmdenRelaxation;
 
         std::string m_sample_name; // e.g. "shock_tube"
         std::string m_json_file;   // e.g. "shock_tube.json" or ""

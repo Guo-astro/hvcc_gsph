@@ -1,0 +1,20 @@
+{
+  "outputDirectory": "sample/shock_tube_2d/results",
+  "endTime": 0.5,
+  "cflSound": 0.3,
+  "cflForce": 0.125,
+  "avAlpha": 1.0,
+  "neighborNumber": 32,
+  "gamma": 1.4,
+  "kernel": "cubic_spline",
+  "N": 50,
+  "periodic": true,
+  "iterativeSmoothingLength": true,
+  "useBalsaraSwitch": false,
+
+  "rangeMax": [1.0, 0.5],
+  "rangeMin": [-1.0, 0.0],
+  "useTimeDependentAV": false,
+  "SPHType": "gdisph",
+  "unitConfig": "./units.json"
+}
