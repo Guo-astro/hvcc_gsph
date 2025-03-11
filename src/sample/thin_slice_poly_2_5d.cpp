@@ -1,7 +1,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-#include <random>
+#include <algorithm> // for std::lower_bound
 
 #include "sample_registry.hpp"
 #include "simulation.hpp"
@@ -43,7 +43,7 @@ namespace sph
         param->R_fluid = R_fluid;
         param->z_max = z_max;
 
-        // Compute cumulative mass M(<xi) using trapezoidal rule
+        // Compute cumulative mass M(<xi) using the trapezoidal rule
         std::vector<real> M_cum(laneEmden_x.size(), 0.0);
         for (size_t i = 1; i < laneEmden_x.size(); ++i)
         {
@@ -53,86 +53,104 @@ namespace sph
             real theta_curr = laneEmden_theta[i];
             real sigma_prev = std::pow(theta_prev, n_poly);
             real sigma_curr = std::pow(theta_curr, n_poly);
-            real dM = 0.5 * (xi_prev * sigma_prev + xi_curr * sigma_curr) * (xi_curr - xi_prev) * 2.0 * M_PI;
+            real dM = 0.5 * (xi_prev * sigma_prev + xi_curr * sigma_curr) *
+                      (xi_curr - xi_prev) * 2.0 * M_PI;
             M_cum[i] = M_cum[i - 1] + dM;
         }
         real M_total_lane_emden = M_cum.back();
-        // Adjust rho_c to match M_total (optional; here we assume rho_c=1.0 is normalized)
-        // real rho_c_adjusted = M_total / (alpha * alpha * M_total_lane_emden);
-        const real M_total = M_total_lane_emden; // Total fluid mass
+        const real M_total = M_total_lane_emden; // Full integrated mass
 
-        // Particle placement parameters
-        const int N_total = 30000;                             // Target number of particles (approx 50x50 equivalent)
-        const real mpp = M_total / static_cast<real>(N_total); // Mass per particle
+        // Truncate the disk to avoid placing particles near the very outer edge.
+        // Here we use only the inner 98% of the mass.
+        const real f = 0.98;
+        const real M_trunc = f * M_total;
 
-        // Initialize particles
+        // Mesh parameters: choose the number of radial bins and angular subdivisions.
+        // For example, 100 rings and 100 particles per ring gives 10,000 particles.
+        const int N_r = 100;     // number of radial bins (rings)
+        const int N_theta = 100; // number of angular divisions per ring
+        int total_particles = N_r * N_theta;
+        // Each particle gets the same mass so that the total mass is M_trunc.
+        real mpp = M_trunc / static_cast<real>(total_particles);
+
+        // Initialize particles container
         auto &particles = sim->get_particles();
         particles.clear();
-        particles.reserve(N_total);
-
-        std::mt19937 gen(42); // Seed for reproducibility
-        std::uniform_real_distribution<real> dist(0.0, 1.0);
+        particles.reserve(total_particles);
 
         int pid = 0;
-        for (int i = 0; i < N_total; ++i)
+        // Loop over radial bins
+        for (int i = 0; i < N_r; ++i)
         {
-            // Sample cumulative mass fraction
-            real u = (i + 0.5) / static_cast<real>(N_total);
-            real M_i = u * M_total_lane_emden;
+            // Compute the cumulative mass at the center of the i-th radial bin.
+            real u = (i + 0.5) / static_cast<real>(N_r);
+            real M_i = u * M_trunc;
 
-            // Interpolate xi for M_i
+            // Invert the cumulative mass function to find xi for the current radial bin.
+            real xi = laneEmden_x.front();
             auto it = std::lower_bound(M_cum.begin(), M_cum.end(), M_i);
             size_t idx = std::distance(M_cum.begin(), it);
-            real xi;
             if (idx == 0)
+            {
                 xi = laneEmden_x[0];
-            else if (idx == M_cum.size())
-                xi = laneEmden_x.back();
+            }
+            else if (idx >= M_cum.size())
+            {
+                xi = xi_max;
+            }
             else
             {
                 real M0 = M_cum[idx - 1], M1 = M_cum[idx];
                 real xi0 = laneEmden_x[idx - 1], xi1 = laneEmden_x[idx];
                 real frac = (M_i - M0) / (M1 - M0);
                 xi = xi0 + frac * (xi1 - xi0);
+                if (xi > xi_max)
+                    xi = xi_max;
             }
-
-            // Convert to physical radius and position
+            // Convert xi to physical radius.
             real r = alpha * xi;
-            real theta = 2.0 * M_PI * dist(gen);
-            real x = r * std::cos(theta);
-            real y = r * std::sin(theta);
-            real z = 0.0; // Razor-thin disk
 
-            // Compute polytropic properties
-            real thetaVal = getTheta(xi);
-            if (thetaVal < 0.0)
-                thetaVal = 0.0;
-            real dens = rho_c * std::pow(thetaVal, n_poly); // Surface density
-            real pres = K * std::pow(dens, 1.0 + 1.0 / n_poly);
-            real ene = (dens > 0.0) ? pres / ((gamma - 1.0) * dens) : 0.0;
+            // Loop over angular subdivisions in this ring.
+            for (int j = 0; j < N_theta; ++j)
+            {
+                real theta_angle = 2.0 * M_PI * (j + 0.5) / N_theta;
+                real x = r * std::cos(theta_angle);
+                real y = r * std::sin(theta_angle);
+                real z = 0.0; // Razor-thin disk
 
-            // Set particle properties
-            SPHParticle pp;
-            pp.pos[0] = x;
-            pp.pos[1] = y;
-            pp.pos[2] = z;
-            pp.vel[0] = 0.0;
-            pp.vel[1] = 0.0;
-            pp.vel[2] = 0.0;
-            pp.mass = mpp;
-            pp.dens = dens;
-            pp.pres = pres;
-            pp.ene = ene;
-            pp.id = pid++;
-            pp.is_wall = false; // All particles are fluid
-            particles.push_back(pp);
+                // Compute local polytropic properties using the Lane-Emden value.
+                real thetaVal = getTheta(xi);
+                if (thetaVal < 0.0)
+                    thetaVal = 0.0;
+                real dens = rho_c * std::pow(thetaVal, n_poly); // Surface density
+                real pres = K * std::pow(dens, 1.0 + 1.0 / n_poly);
+                real ene = (dens > 0.0) ? pres / ((gamma - 1.0) * dens) : 0.0;
+
+                // Create the particle.
+                SPHParticle pp;
+                pp.pos[0] = x;
+                pp.pos[1] = y;
+                pp.pos[2] = z;
+                pp.vel[0] = 0.0;
+                pp.vel[1] = 0.0;
+                pp.vel[2] = 0.0;
+                pp.mass = mpp;
+                pp.dens = dens;
+                pp.pres = pres;
+                pp.ene = ene;
+                pp.id = pid++;
+                pp.is_wall = false;
+                particles.push_back(pp);
+            }
         }
 
-        // Output diagnostics
-        std::cout << "Total: " << N_total << " fluid particles.\n";
+        // Output diagnostics.
+        std::cout << "Mesh method: Placed " << total_particles << " fluid particles using a polar grid mesh.\n";
+        std::cout << "Each particle has mass " << mpp << " and covers " << (100.0 * f)
+                  << "% of the total mass.\n";
         std::cout << "NOTE: Integration should clamp z and vz to 0 for all particles.\n";
 
-        sim->set_particle_num(N_total);
+        sim->set_particle_num(total_particles);
     }
 
     REGISTER_SAMPLE("thin_slice_poly_2_5d", load_thin_slice_poly_2_5d);

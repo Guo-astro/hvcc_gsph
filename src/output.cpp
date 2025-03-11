@@ -44,7 +44,8 @@ namespace sph
              << p.id << ","
              << p.neighbor << ","
              << p.alpha << ","
-             << p.gradh;
+             << p.gradh << ","
+             << p.shockSensor; // Added shock detection result (e.g., Mach number)
     }
 
     // Modified output_particle function: writes CSV with a header line showing units.
@@ -88,7 +89,7 @@ namespace sph
                << "pres [" << m_unit.pressure_unit << "],"
                << "ene [" << m_unit.energy_unit << "],"
                << "sml [" << m_unit.length_unit << "],"
-               << "id,neighbor,alpha,gradh";
+               << "id,neighbor,alpha,gradh,shockSensor";
 
         // Append additional arrays (if any)
         auto &scalar_map = sim->get_scalar_map();
@@ -232,7 +233,8 @@ namespace sph
             p.neighbor = std::stoi(fields[idx++]);
             p.alpha = std::stod(fields[idx++]);
             p.gradh = std::stod(fields[idx++]);
-
+            // Note: The shockSensor value was not saved to the checkpoint file.
+            // You may choose to output it later from the simulation state.
             particles.push_back(p);
         }
         in.close();

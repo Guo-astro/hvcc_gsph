@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named sph_lib
+
+# Build rule for target.
+sph_lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sph_lib
+.PHONY : sph_lib
+
+# fast build rule for target.
+sph_lib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/build
+.PHONY : sph_lib/fast
+
+#=============================================================================
 # Target rules for targets named sph
 
 # Build rule for target.
@@ -129,12 +142,25 @@ sph/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/build
 .PHONY : sph/fast
 
+#=============================================================================
+# Target rules for targets named run_kernel_test
+
+# Build rule for target.
+run_kernel_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 run_kernel_test
+.PHONY : run_kernel_test
+
+# fast build rule for target.
+run_kernel_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_kernel_test.dir/build.make CMakeFiles/run_kernel_test.dir/build
+.PHONY : run_kernel_test/fast
+
 src/bhtree.o: src/bhtree.cpp.o
 .PHONY : src/bhtree.o
 
 # target to build an object file
 src/bhtree.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/bhtree.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/bhtree.cpp.o
 .PHONY : src/bhtree.cpp.o
 
 src/bhtree.i: src/bhtree.cpp.i
@@ -142,7 +168,7 @@ src/bhtree.i: src/bhtree.cpp.i
 
 # target to preprocess a source file
 src/bhtree.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/bhtree.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/bhtree.cpp.i
 .PHONY : src/bhtree.cpp.i
 
 src/bhtree.s: src/bhtree.cpp.s
@@ -150,7 +176,7 @@ src/bhtree.s: src/bhtree.cpp.s
 
 # target to generate assembly for a file
 src/bhtree.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/bhtree.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/bhtree.cpp.s
 .PHONY : src/bhtree.cpp.s
 
 src/disph/d_fluid_force.o: src/disph/d_fluid_force.cpp.o
@@ -158,7 +184,7 @@ src/disph/d_fluid_force.o: src/disph/d_fluid_force.cpp.o
 
 # target to build an object file
 src/disph/d_fluid_force.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_fluid_force.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_fluid_force.cpp.o
 .PHONY : src/disph/d_fluid_force.cpp.o
 
 src/disph/d_fluid_force.i: src/disph/d_fluid_force.cpp.i
@@ -166,7 +192,7 @@ src/disph/d_fluid_force.i: src/disph/d_fluid_force.cpp.i
 
 # target to preprocess a source file
 src/disph/d_fluid_force.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_fluid_force.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_fluid_force.cpp.i
 .PHONY : src/disph/d_fluid_force.cpp.i
 
 src/disph/d_fluid_force.s: src/disph/d_fluid_force.cpp.s
@@ -174,7 +200,7 @@ src/disph/d_fluid_force.s: src/disph/d_fluid_force.cpp.s
 
 # target to generate assembly for a file
 src/disph/d_fluid_force.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_fluid_force.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_fluid_force.cpp.s
 .PHONY : src/disph/d_fluid_force.cpp.s
 
 src/disph/d_pre_interaction.o: src/disph/d_pre_interaction.cpp.o
@@ -182,7 +208,7 @@ src/disph/d_pre_interaction.o: src/disph/d_pre_interaction.cpp.o
 
 # target to build an object file
 src/disph/d_pre_interaction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_pre_interaction.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_pre_interaction.cpp.o
 .PHONY : src/disph/d_pre_interaction.cpp.o
 
 src/disph/d_pre_interaction.i: src/disph/d_pre_interaction.cpp.i
@@ -190,7 +216,7 @@ src/disph/d_pre_interaction.i: src/disph/d_pre_interaction.cpp.i
 
 # target to preprocess a source file
 src/disph/d_pre_interaction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_pre_interaction.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_pre_interaction.cpp.i
 .PHONY : src/disph/d_pre_interaction.cpp.i
 
 src/disph/d_pre_interaction.s: src/disph/d_pre_interaction.cpp.s
@@ -198,7 +224,7 @@ src/disph/d_pre_interaction.s: src/disph/d_pre_interaction.cpp.s
 
 # target to generate assembly for a file
 src/disph/d_pre_interaction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/disph/d_pre_interaction.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/disph/d_pre_interaction.cpp.s
 .PHONY : src/disph/d_pre_interaction.cpp.s
 
 src/exhaustive_search.o: src/exhaustive_search.cpp.o
@@ -206,7 +232,7 @@ src/exhaustive_search.o: src/exhaustive_search.cpp.o
 
 # target to build an object file
 src/exhaustive_search.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/exhaustive_search.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/exhaustive_search.cpp.o
 .PHONY : src/exhaustive_search.cpp.o
 
 src/exhaustive_search.i: src/exhaustive_search.cpp.i
@@ -214,7 +240,7 @@ src/exhaustive_search.i: src/exhaustive_search.cpp.i
 
 # target to preprocess a source file
 src/exhaustive_search.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/exhaustive_search.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/exhaustive_search.cpp.i
 .PHONY : src/exhaustive_search.cpp.i
 
 src/exhaustive_search.s: src/exhaustive_search.cpp.s
@@ -222,7 +248,7 @@ src/exhaustive_search.s: src/exhaustive_search.cpp.s
 
 # target to generate assembly for a file
 src/exhaustive_search.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/exhaustive_search.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/exhaustive_search.cpp.s
 .PHONY : src/exhaustive_search.cpp.s
 
 src/fluid_force.o: src/fluid_force.cpp.o
@@ -230,7 +256,7 @@ src/fluid_force.o: src/fluid_force.cpp.o
 
 # target to build an object file
 src/fluid_force.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/fluid_force.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/fluid_force.cpp.o
 .PHONY : src/fluid_force.cpp.o
 
 src/fluid_force.i: src/fluid_force.cpp.i
@@ -238,7 +264,7 @@ src/fluid_force.i: src/fluid_force.cpp.i
 
 # target to preprocess a source file
 src/fluid_force.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/fluid_force.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/fluid_force.cpp.i
 .PHONY : src/fluid_force.cpp.i
 
 src/fluid_force.s: src/fluid_force.cpp.s
@@ -246,7 +272,7 @@ src/fluid_force.s: src/fluid_force.cpp.s
 
 # target to generate assembly for a file
 src/fluid_force.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/fluid_force.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/fluid_force.cpp.s
 .PHONY : src/fluid_force.cpp.s
 
 src/gdisph/gdi_fluid_force.o: src/gdisph/gdi_fluid_force.cpp.o
@@ -254,7 +280,7 @@ src/gdisph/gdi_fluid_force.o: src/gdisph/gdi_fluid_force.cpp.o
 
 # target to build an object file
 src/gdisph/gdi_fluid_force.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_fluid_force.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_fluid_force.cpp.o
 .PHONY : src/gdisph/gdi_fluid_force.cpp.o
 
 src/gdisph/gdi_fluid_force.i: src/gdisph/gdi_fluid_force.cpp.i
@@ -262,7 +288,7 @@ src/gdisph/gdi_fluid_force.i: src/gdisph/gdi_fluid_force.cpp.i
 
 # target to preprocess a source file
 src/gdisph/gdi_fluid_force.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_fluid_force.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_fluid_force.cpp.i
 .PHONY : src/gdisph/gdi_fluid_force.cpp.i
 
 src/gdisph/gdi_fluid_force.s: src/gdisph/gdi_fluid_force.cpp.s
@@ -270,7 +296,7 @@ src/gdisph/gdi_fluid_force.s: src/gdisph/gdi_fluid_force.cpp.s
 
 # target to generate assembly for a file
 src/gdisph/gdi_fluid_force.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_fluid_force.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_fluid_force.cpp.s
 .PHONY : src/gdisph/gdi_fluid_force.cpp.s
 
 src/gdisph/gdi_pre_interaction.o: src/gdisph/gdi_pre_interaction.cpp.o
@@ -278,7 +304,7 @@ src/gdisph/gdi_pre_interaction.o: src/gdisph/gdi_pre_interaction.cpp.o
 
 # target to build an object file
 src/gdisph/gdi_pre_interaction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_pre_interaction.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_pre_interaction.cpp.o
 .PHONY : src/gdisph/gdi_pre_interaction.cpp.o
 
 src/gdisph/gdi_pre_interaction.i: src/gdisph/gdi_pre_interaction.cpp.i
@@ -286,7 +312,7 @@ src/gdisph/gdi_pre_interaction.i: src/gdisph/gdi_pre_interaction.cpp.i
 
 # target to preprocess a source file
 src/gdisph/gdi_pre_interaction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_pre_interaction.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_pre_interaction.cpp.i
 .PHONY : src/gdisph/gdi_pre_interaction.cpp.i
 
 src/gdisph/gdi_pre_interaction.s: src/gdisph/gdi_pre_interaction.cpp.s
@@ -294,7 +320,7 @@ src/gdisph/gdi_pre_interaction.s: src/gdisph/gdi_pre_interaction.cpp.s
 
 # target to generate assembly for a file
 src/gdisph/gdi_pre_interaction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gdisph/gdi_pre_interaction.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gdisph/gdi_pre_interaction.cpp.s
 .PHONY : src/gdisph/gdi_pre_interaction.cpp.s
 
 src/gravity_force.o: src/gravity_force.cpp.o
@@ -302,7 +328,7 @@ src/gravity_force.o: src/gravity_force.cpp.o
 
 # target to build an object file
 src/gravity_force.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gravity_force.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gravity_force.cpp.o
 .PHONY : src/gravity_force.cpp.o
 
 src/gravity_force.i: src/gravity_force.cpp.i
@@ -310,7 +336,7 @@ src/gravity_force.i: src/gravity_force.cpp.i
 
 # target to preprocess a source file
 src/gravity_force.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gravity_force.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gravity_force.cpp.i
 .PHONY : src/gravity_force.cpp.i
 
 src/gravity_force.s: src/gravity_force.cpp.s
@@ -318,7 +344,7 @@ src/gravity_force.s: src/gravity_force.cpp.s
 
 # target to generate assembly for a file
 src/gravity_force.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gravity_force.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gravity_force.cpp.s
 .PHONY : src/gravity_force.cpp.s
 
 src/gsph/g_fluid_force.o: src/gsph/g_fluid_force.cpp.o
@@ -326,7 +352,7 @@ src/gsph/g_fluid_force.o: src/gsph/g_fluid_force.cpp.o
 
 # target to build an object file
 src/gsph/g_fluid_force.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_fluid_force.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_fluid_force.cpp.o
 .PHONY : src/gsph/g_fluid_force.cpp.o
 
 src/gsph/g_fluid_force.i: src/gsph/g_fluid_force.cpp.i
@@ -334,7 +360,7 @@ src/gsph/g_fluid_force.i: src/gsph/g_fluid_force.cpp.i
 
 # target to preprocess a source file
 src/gsph/g_fluid_force.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_fluid_force.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_fluid_force.cpp.i
 .PHONY : src/gsph/g_fluid_force.cpp.i
 
 src/gsph/g_fluid_force.s: src/gsph/g_fluid_force.cpp.s
@@ -342,7 +368,7 @@ src/gsph/g_fluid_force.s: src/gsph/g_fluid_force.cpp.s
 
 # target to generate assembly for a file
 src/gsph/g_fluid_force.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_fluid_force.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_fluid_force.cpp.s
 .PHONY : src/gsph/g_fluid_force.cpp.s
 
 src/gsph/g_pre_interaction.o: src/gsph/g_pre_interaction.cpp.o
@@ -350,7 +376,7 @@ src/gsph/g_pre_interaction.o: src/gsph/g_pre_interaction.cpp.o
 
 # target to build an object file
 src/gsph/g_pre_interaction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_pre_interaction.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_pre_interaction.cpp.o
 .PHONY : src/gsph/g_pre_interaction.cpp.o
 
 src/gsph/g_pre_interaction.i: src/gsph/g_pre_interaction.cpp.i
@@ -358,7 +384,7 @@ src/gsph/g_pre_interaction.i: src/gsph/g_pre_interaction.cpp.i
 
 # target to preprocess a source file
 src/gsph/g_pre_interaction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_pre_interaction.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_pre_interaction.cpp.i
 .PHONY : src/gsph/g_pre_interaction.cpp.i
 
 src/gsph/g_pre_interaction.s: src/gsph/g_pre_interaction.cpp.s
@@ -366,7 +392,7 @@ src/gsph/g_pre_interaction.s: src/gsph/g_pre_interaction.cpp.s
 
 # target to generate assembly for a file
 src/gsph/g_pre_interaction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/gsph/g_pre_interaction.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/gsph/g_pre_interaction.cpp.s
 .PHONY : src/gsph/g_pre_interaction.cpp.s
 
 src/heating_cooling.o: src/heating_cooling.cpp.o
@@ -374,7 +400,7 @@ src/heating_cooling.o: src/heating_cooling.cpp.o
 
 # target to build an object file
 src/heating_cooling.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/heating_cooling.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/heating_cooling.cpp.o
 .PHONY : src/heating_cooling.cpp.o
 
 src/heating_cooling.i: src/heating_cooling.cpp.i
@@ -382,7 +408,7 @@ src/heating_cooling.i: src/heating_cooling.cpp.i
 
 # target to preprocess a source file
 src/heating_cooling.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/heating_cooling.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/heating_cooling.cpp.i
 .PHONY : src/heating_cooling.cpp.i
 
 src/heating_cooling.s: src/heating_cooling.cpp.s
@@ -390,7 +416,7 @@ src/heating_cooling.s: src/heating_cooling.cpp.s
 
 # target to generate assembly for a file
 src/heating_cooling.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/heating_cooling.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/heating_cooling.cpp.s
 .PHONY : src/heating_cooling.cpp.s
 
 src/inplane_integration.o: src/inplane_integration.cpp.o
@@ -398,7 +424,7 @@ src/inplane_integration.o: src/inplane_integration.cpp.o
 
 # target to build an object file
 src/inplane_integration.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/inplane_integration.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/inplane_integration.cpp.o
 .PHONY : src/inplane_integration.cpp.o
 
 src/inplane_integration.i: src/inplane_integration.cpp.i
@@ -406,7 +432,7 @@ src/inplane_integration.i: src/inplane_integration.cpp.i
 
 # target to preprocess a source file
 src/inplane_integration.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/inplane_integration.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/inplane_integration.cpp.i
 .PHONY : src/inplane_integration.cpp.i
 
 src/inplane_integration.s: src/inplane_integration.cpp.s
@@ -414,7 +440,7 @@ src/inplane_integration.s: src/inplane_integration.cpp.s
 
 # target to generate assembly for a file
 src/inplane_integration.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/inplane_integration.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/inplane_integration.cpp.s
 .PHONY : src/inplane_integration.cpp.s
 
 src/logger.o: src/logger.cpp.o
@@ -422,7 +448,7 @@ src/logger.o: src/logger.cpp.o
 
 # target to build an object file
 src/logger.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/logger.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/logger.cpp.o
 .PHONY : src/logger.cpp.o
 
 src/logger.i: src/logger.cpp.i
@@ -430,7 +456,7 @@ src/logger.i: src/logger.cpp.i
 
 # target to preprocess a source file
 src/logger.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/logger.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/logger.cpp.i
 .PHONY : src/logger.cpp.i
 
 src/logger.s: src/logger.cpp.s
@@ -438,7 +464,7 @@ src/logger.s: src/logger.cpp.s
 
 # target to generate assembly for a file
 src/logger.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/logger.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/logger.cpp.s
 .PHONY : src/logger.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -446,6 +472,7 @@ src/main.o: src/main.cpp.o
 
 # target to build an object file
 src/main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/main.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
@@ -454,6 +481,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/main.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
@@ -462,6 +490,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/main.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
@@ -470,7 +499,7 @@ src/output.o: src/output.cpp.o
 
 # target to build an object file
 src/output.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/output.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/output.cpp.o
 .PHONY : src/output.cpp.o
 
 src/output.i: src/output.cpp.i
@@ -478,7 +507,7 @@ src/output.i: src/output.cpp.i
 
 # target to preprocess a source file
 src/output.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/output.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/output.cpp.i
 .PHONY : src/output.cpp.i
 
 src/output.s: src/output.cpp.s
@@ -486,7 +515,7 @@ src/output.s: src/output.cpp.s
 
 # target to generate assembly for a file
 src/output.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/output.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/output.cpp.s
 .PHONY : src/output.cpp.s
 
 src/pre_interaction.o: src/pre_interaction.cpp.o
@@ -494,7 +523,7 @@ src/pre_interaction.o: src/pre_interaction.cpp.o
 
 # target to build an object file
 src/pre_interaction.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/pre_interaction.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/pre_interaction.cpp.o
 .PHONY : src/pre_interaction.cpp.o
 
 src/pre_interaction.i: src/pre_interaction.cpp.i
@@ -502,7 +531,7 @@ src/pre_interaction.i: src/pre_interaction.cpp.i
 
 # target to preprocess a source file
 src/pre_interaction.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/pre_interaction.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/pre_interaction.cpp.i
 .PHONY : src/pre_interaction.cpp.i
 
 src/pre_interaction.s: src/pre_interaction.cpp.s
@@ -510,7 +539,7 @@ src/pre_interaction.s: src/pre_interaction.cpp.s
 
 # target to generate assembly for a file
 src/pre_interaction.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/pre_interaction.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/pre_interaction.cpp.s
 .PHONY : src/pre_interaction.cpp.s
 
 src/relaxation/lane_emden_relaxation.o: src/relaxation/lane_emden_relaxation.cpp.o
@@ -518,7 +547,7 @@ src/relaxation/lane_emden_relaxation.o: src/relaxation/lane_emden_relaxation.cpp
 
 # target to build an object file
 src/relaxation/lane_emden_relaxation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/relaxation/lane_emden_relaxation.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/relaxation/lane_emden_relaxation.cpp.o
 .PHONY : src/relaxation/lane_emden_relaxation.cpp.o
 
 src/relaxation/lane_emden_relaxation.i: src/relaxation/lane_emden_relaxation.cpp.i
@@ -526,7 +555,7 @@ src/relaxation/lane_emden_relaxation.i: src/relaxation/lane_emden_relaxation.cpp
 
 # target to preprocess a source file
 src/relaxation/lane_emden_relaxation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/relaxation/lane_emden_relaxation.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/relaxation/lane_emden_relaxation.cpp.i
 .PHONY : src/relaxation/lane_emden_relaxation.cpp.i
 
 src/relaxation/lane_emden_relaxation.s: src/relaxation/lane_emden_relaxation.cpp.s
@@ -534,7 +563,7 @@ src/relaxation/lane_emden_relaxation.s: src/relaxation/lane_emden_relaxation.cpp
 
 # target to generate assembly for a file
 src/relaxation/lane_emden_relaxation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/relaxation/lane_emden_relaxation.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/relaxation/lane_emden_relaxation.cpp.s
 .PHONY : src/relaxation/lane_emden_relaxation.cpp.s
 
 src/sample/evrard.o: src/sample/evrard.cpp.o
@@ -542,7 +571,7 @@ src/sample/evrard.o: src/sample/evrard.cpp.o
 
 # target to build an object file
 src/sample/evrard.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/evrard.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/evrard.cpp.o
 .PHONY : src/sample/evrard.cpp.o
 
 src/sample/evrard.i: src/sample/evrard.cpp.i
@@ -550,7 +579,7 @@ src/sample/evrard.i: src/sample/evrard.cpp.i
 
 # target to preprocess a source file
 src/sample/evrard.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/evrard.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/evrard.cpp.i
 .PHONY : src/sample/evrard.cpp.i
 
 src/sample/evrard.s: src/sample/evrard.cpp.s
@@ -558,7 +587,7 @@ src/sample/evrard.s: src/sample/evrard.cpp.s
 
 # target to generate assembly for a file
 src/sample/evrard.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/evrard.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/evrard.cpp.s
 .PHONY : src/sample/evrard.cpp.s
 
 src/sample/gresho_chan_vortex.o: src/sample/gresho_chan_vortex.cpp.o
@@ -566,7 +595,7 @@ src/sample/gresho_chan_vortex.o: src/sample/gresho_chan_vortex.cpp.o
 
 # target to build an object file
 src/sample/gresho_chan_vortex.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/gresho_chan_vortex.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/gresho_chan_vortex.cpp.o
 .PHONY : src/sample/gresho_chan_vortex.cpp.o
 
 src/sample/gresho_chan_vortex.i: src/sample/gresho_chan_vortex.cpp.i
@@ -574,7 +603,7 @@ src/sample/gresho_chan_vortex.i: src/sample/gresho_chan_vortex.cpp.i
 
 # target to preprocess a source file
 src/sample/gresho_chan_vortex.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/gresho_chan_vortex.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/gresho_chan_vortex.cpp.i
 .PHONY : src/sample/gresho_chan_vortex.cpp.i
 
 src/sample/gresho_chan_vortex.s: src/sample/gresho_chan_vortex.cpp.s
@@ -582,7 +611,7 @@ src/sample/gresho_chan_vortex.s: src/sample/gresho_chan_vortex.cpp.s
 
 # target to generate assembly for a file
 src/sample/gresho_chan_vortex.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/gresho_chan_vortex.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/gresho_chan_vortex.cpp.s
 .PHONY : src/sample/gresho_chan_vortex.cpp.s
 
 src/sample/hydrostatic.o: src/sample/hydrostatic.cpp.o
@@ -590,7 +619,7 @@ src/sample/hydrostatic.o: src/sample/hydrostatic.cpp.o
 
 # target to build an object file
 src/sample/hydrostatic.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/hydrostatic.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/hydrostatic.cpp.o
 .PHONY : src/sample/hydrostatic.cpp.o
 
 src/sample/hydrostatic.i: src/sample/hydrostatic.cpp.i
@@ -598,7 +627,7 @@ src/sample/hydrostatic.i: src/sample/hydrostatic.cpp.i
 
 # target to preprocess a source file
 src/sample/hydrostatic.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/hydrostatic.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/hydrostatic.cpp.i
 .PHONY : src/sample/hydrostatic.cpp.i
 
 src/sample/hydrostatic.s: src/sample/hydrostatic.cpp.s
@@ -606,7 +635,7 @@ src/sample/hydrostatic.s: src/sample/hydrostatic.cpp.s
 
 # target to generate assembly for a file
 src/sample/hydrostatic.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/hydrostatic.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/hydrostatic.cpp.s
 .PHONY : src/sample/hydrostatic.cpp.s
 
 src/sample/khi.o: src/sample/khi.cpp.o
@@ -614,7 +643,7 @@ src/sample/khi.o: src/sample/khi.cpp.o
 
 # target to build an object file
 src/sample/khi.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/khi.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/khi.cpp.o
 .PHONY : src/sample/khi.cpp.o
 
 src/sample/khi.i: src/sample/khi.cpp.i
@@ -622,7 +651,7 @@ src/sample/khi.i: src/sample/khi.cpp.i
 
 # target to preprocess a source file
 src/sample/khi.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/khi.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/khi.cpp.i
 .PHONY : src/sample/khi.cpp.i
 
 src/sample/khi.s: src/sample/khi.cpp.s
@@ -630,7 +659,7 @@ src/sample/khi.s: src/sample/khi.cpp.s
 
 # target to generate assembly for a file
 src/sample/khi.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/khi.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/khi.cpp.s
 .PHONY : src/sample/khi.cpp.s
 
 src/sample/lane_emden.o: src/sample/lane_emden.cpp.o
@@ -638,7 +667,7 @@ src/sample/lane_emden.o: src/sample/lane_emden.cpp.o
 
 # target to build an object file
 src/sample/lane_emden.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden.cpp.o
 .PHONY : src/sample/lane_emden.cpp.o
 
 src/sample/lane_emden.i: src/sample/lane_emden.cpp.i
@@ -646,7 +675,7 @@ src/sample/lane_emden.i: src/sample/lane_emden.cpp.i
 
 # target to preprocess a source file
 src/sample/lane_emden.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden.cpp.i
 .PHONY : src/sample/lane_emden.cpp.i
 
 src/sample/lane_emden.s: src/sample/lane_emden.cpp.s
@@ -654,7 +683,7 @@ src/sample/lane_emden.s: src/sample/lane_emden.cpp.s
 
 # target to generate assembly for a file
 src/sample/lane_emden.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden.cpp.s
 .PHONY : src/sample/lane_emden.cpp.s
 
 src/sample/lane_emden_2d.o: src/sample/lane_emden_2d.cpp.o
@@ -662,7 +691,7 @@ src/sample/lane_emden_2d.o: src/sample/lane_emden_2d.cpp.o
 
 # target to build an object file
 src/sample/lane_emden_2d.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden_2d.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden_2d.cpp.o
 .PHONY : src/sample/lane_emden_2d.cpp.o
 
 src/sample/lane_emden_2d.i: src/sample/lane_emden_2d.cpp.i
@@ -670,7 +699,7 @@ src/sample/lane_emden_2d.i: src/sample/lane_emden_2d.cpp.i
 
 # target to preprocess a source file
 src/sample/lane_emden_2d.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden_2d.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden_2d.cpp.i
 .PHONY : src/sample/lane_emden_2d.cpp.i
 
 src/sample/lane_emden_2d.s: src/sample/lane_emden_2d.cpp.s
@@ -678,7 +707,7 @@ src/sample/lane_emden_2d.s: src/sample/lane_emden_2d.cpp.s
 
 # target to generate assembly for a file
 src/sample/lane_emden_2d.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/lane_emden_2d.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/lane_emden_2d.cpp.s
 .PHONY : src/sample/lane_emden_2d.cpp.s
 
 src/sample/pairing_instability.o: src/sample/pairing_instability.cpp.o
@@ -686,7 +715,7 @@ src/sample/pairing_instability.o: src/sample/pairing_instability.cpp.o
 
 # target to build an object file
 src/sample/pairing_instability.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/pairing_instability.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/pairing_instability.cpp.o
 .PHONY : src/sample/pairing_instability.cpp.o
 
 src/sample/pairing_instability.i: src/sample/pairing_instability.cpp.i
@@ -694,7 +723,7 @@ src/sample/pairing_instability.i: src/sample/pairing_instability.cpp.i
 
 # target to preprocess a source file
 src/sample/pairing_instability.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/pairing_instability.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/pairing_instability.cpp.i
 .PHONY : src/sample/pairing_instability.cpp.i
 
 src/sample/pairing_instability.s: src/sample/pairing_instability.cpp.s
@@ -702,7 +731,7 @@ src/sample/pairing_instability.s: src/sample/pairing_instability.cpp.s
 
 # target to generate assembly for a file
 src/sample/pairing_instability.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/pairing_instability.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/pairing_instability.cpp.s
 .PHONY : src/sample/pairing_instability.cpp.s
 
 src/sample/purtabation_damping.o: src/sample/purtabation_damping.cpp.o
@@ -710,7 +739,7 @@ src/sample/purtabation_damping.o: src/sample/purtabation_damping.cpp.o
 
 # target to build an object file
 src/sample/purtabation_damping.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/purtabation_damping.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/purtabation_damping.cpp.o
 .PHONY : src/sample/purtabation_damping.cpp.o
 
 src/sample/purtabation_damping.i: src/sample/purtabation_damping.cpp.i
@@ -718,7 +747,7 @@ src/sample/purtabation_damping.i: src/sample/purtabation_damping.cpp.i
 
 # target to preprocess a source file
 src/sample/purtabation_damping.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/purtabation_damping.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/purtabation_damping.cpp.i
 .PHONY : src/sample/purtabation_damping.cpp.i
 
 src/sample/purtabation_damping.s: src/sample/purtabation_damping.cpp.s
@@ -726,7 +755,7 @@ src/sample/purtabation_damping.s: src/sample/purtabation_damping.cpp.s
 
 # target to generate assembly for a file
 src/sample/purtabation_damping.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/purtabation_damping.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/purtabation_damping.cpp.s
 .PHONY : src/sample/purtabation_damping.cpp.s
 
 src/sample/sedov_taylor.o: src/sample/sedov_taylor.cpp.o
@@ -734,7 +763,7 @@ src/sample/sedov_taylor.o: src/sample/sedov_taylor.cpp.o
 
 # target to build an object file
 src/sample/sedov_taylor.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/sedov_taylor.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/sedov_taylor.cpp.o
 .PHONY : src/sample/sedov_taylor.cpp.o
 
 src/sample/sedov_taylor.i: src/sample/sedov_taylor.cpp.i
@@ -742,7 +771,7 @@ src/sample/sedov_taylor.i: src/sample/sedov_taylor.cpp.i
 
 # target to preprocess a source file
 src/sample/sedov_taylor.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/sedov_taylor.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/sedov_taylor.cpp.i
 .PHONY : src/sample/sedov_taylor.cpp.i
 
 src/sample/sedov_taylor.s: src/sample/sedov_taylor.cpp.s
@@ -750,7 +779,7 @@ src/sample/sedov_taylor.s: src/sample/sedov_taylor.cpp.s
 
 # target to generate assembly for a file
 src/sample/sedov_taylor.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/sedov_taylor.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/sedov_taylor.cpp.s
 .PHONY : src/sample/sedov_taylor.cpp.s
 
 src/sample/shock_tube.o: src/sample/shock_tube.cpp.o
@@ -758,7 +787,7 @@ src/sample/shock_tube.o: src/sample/shock_tube.cpp.o
 
 # target to build an object file
 src/sample/shock_tube.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube.cpp.o
 .PHONY : src/sample/shock_tube.cpp.o
 
 src/sample/shock_tube.i: src/sample/shock_tube.cpp.i
@@ -766,7 +795,7 @@ src/sample/shock_tube.i: src/sample/shock_tube.cpp.i
 
 # target to preprocess a source file
 src/sample/shock_tube.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube.cpp.i
 .PHONY : src/sample/shock_tube.cpp.i
 
 src/sample/shock_tube.s: src/sample/shock_tube.cpp.s
@@ -774,7 +803,7 @@ src/sample/shock_tube.s: src/sample/shock_tube.cpp.s
 
 # target to generate assembly for a file
 src/sample/shock_tube.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube.cpp.s
 .PHONY : src/sample/shock_tube.cpp.s
 
 src/sample/shock_tube_2d.o: src/sample/shock_tube_2d.cpp.o
@@ -782,7 +811,7 @@ src/sample/shock_tube_2d.o: src/sample/shock_tube_2d.cpp.o
 
 # target to build an object file
 src/sample/shock_tube_2d.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2d.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2d.cpp.o
 .PHONY : src/sample/shock_tube_2d.cpp.o
 
 src/sample/shock_tube_2d.i: src/sample/shock_tube_2d.cpp.i
@@ -790,7 +819,7 @@ src/sample/shock_tube_2d.i: src/sample/shock_tube_2d.cpp.i
 
 # target to preprocess a source file
 src/sample/shock_tube_2d.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2d.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2d.cpp.i
 .PHONY : src/sample/shock_tube_2d.cpp.i
 
 src/sample/shock_tube_2d.s: src/sample/shock_tube_2d.cpp.s
@@ -798,7 +827,7 @@ src/sample/shock_tube_2d.s: src/sample/shock_tube_2d.cpp.s
 
 # target to generate assembly for a file
 src/sample/shock_tube_2d.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2d.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2d.cpp.s
 .PHONY : src/sample/shock_tube_2d.cpp.s
 
 src/sample/shock_tube_2p5d.o: src/sample/shock_tube_2p5d.cpp.o
@@ -806,7 +835,7 @@ src/sample/shock_tube_2p5d.o: src/sample/shock_tube_2p5d.cpp.o
 
 # target to build an object file
 src/sample/shock_tube_2p5d.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2p5d.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2p5d.cpp.o
 .PHONY : src/sample/shock_tube_2p5d.cpp.o
 
 src/sample/shock_tube_2p5d.i: src/sample/shock_tube_2p5d.cpp.i
@@ -814,7 +843,7 @@ src/sample/shock_tube_2p5d.i: src/sample/shock_tube_2p5d.cpp.i
 
 # target to preprocess a source file
 src/sample/shock_tube_2p5d.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2p5d.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2p5d.cpp.i
 .PHONY : src/sample/shock_tube_2p5d.cpp.i
 
 src/sample/shock_tube_2p5d.s: src/sample/shock_tube_2p5d.cpp.s
@@ -822,7 +851,7 @@ src/sample/shock_tube_2p5d.s: src/sample/shock_tube_2p5d.cpp.s
 
 # target to generate assembly for a file
 src/sample/shock_tube_2p5d.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_2p5d.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_2p5d.cpp.s
 .PHONY : src/sample/shock_tube_2p5d.cpp.s
 
 src/sample/shock_tube_astro_unit.o: src/sample/shock_tube_astro_unit.cpp.o
@@ -830,7 +859,7 @@ src/sample/shock_tube_astro_unit.o: src/sample/shock_tube_astro_unit.cpp.o
 
 # target to build an object file
 src/sample/shock_tube_astro_unit.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_astro_unit.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_astro_unit.cpp.o
 .PHONY : src/sample/shock_tube_astro_unit.cpp.o
 
 src/sample/shock_tube_astro_unit.i: src/sample/shock_tube_astro_unit.cpp.i
@@ -838,7 +867,7 @@ src/sample/shock_tube_astro_unit.i: src/sample/shock_tube_astro_unit.cpp.i
 
 # target to preprocess a source file
 src/sample/shock_tube_astro_unit.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_astro_unit.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_astro_unit.cpp.i
 .PHONY : src/sample/shock_tube_astro_unit.cpp.i
 
 src/sample/shock_tube_astro_unit.s: src/sample/shock_tube_astro_unit.cpp.s
@@ -846,7 +875,7 @@ src/sample/shock_tube_astro_unit.s: src/sample/shock_tube_astro_unit.cpp.s
 
 # target to generate assembly for a file
 src/sample/shock_tube_astro_unit.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_astro_unit.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_astro_unit.cpp.s
 .PHONY : src/sample/shock_tube_astro_unit.cpp.s
 
 src/sample/shock_tube_heating_cooling.o: src/sample/shock_tube_heating_cooling.cpp.o
@@ -854,7 +883,7 @@ src/sample/shock_tube_heating_cooling.o: src/sample/shock_tube_heating_cooling.c
 
 # target to build an object file
 src/sample/shock_tube_heating_cooling.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_heating_cooling.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_heating_cooling.cpp.o
 .PHONY : src/sample/shock_tube_heating_cooling.cpp.o
 
 src/sample/shock_tube_heating_cooling.i: src/sample/shock_tube_heating_cooling.cpp.i
@@ -862,7 +891,7 @@ src/sample/shock_tube_heating_cooling.i: src/sample/shock_tube_heating_cooling.c
 
 # target to preprocess a source file
 src/sample/shock_tube_heating_cooling.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_heating_cooling.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_heating_cooling.cpp.i
 .PHONY : src/sample/shock_tube_heating_cooling.cpp.i
 
 src/sample/shock_tube_heating_cooling.s: src/sample/shock_tube_heating_cooling.cpp.s
@@ -870,7 +899,7 @@ src/sample/shock_tube_heating_cooling.s: src/sample/shock_tube_heating_cooling.c
 
 # target to generate assembly for a file
 src/sample/shock_tube_heating_cooling.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_heating_cooling.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_heating_cooling.cpp.s
 .PHONY : src/sample/shock_tube_heating_cooling.cpp.s
 
 src/sample/shock_tube_strong_shock.o: src/sample/shock_tube_strong_shock.cpp.o
@@ -878,7 +907,7 @@ src/sample/shock_tube_strong_shock.o: src/sample/shock_tube_strong_shock.cpp.o
 
 # target to build an object file
 src/sample/shock_tube_strong_shock.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_strong_shock.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_strong_shock.cpp.o
 .PHONY : src/sample/shock_tube_strong_shock.cpp.o
 
 src/sample/shock_tube_strong_shock.i: src/sample/shock_tube_strong_shock.cpp.i
@@ -886,7 +915,7 @@ src/sample/shock_tube_strong_shock.i: src/sample/shock_tube_strong_shock.cpp.i
 
 # target to preprocess a source file
 src/sample/shock_tube_strong_shock.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_strong_shock.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_strong_shock.cpp.i
 .PHONY : src/sample/shock_tube_strong_shock.cpp.i
 
 src/sample/shock_tube_strong_shock.s: src/sample/shock_tube_strong_shock.cpp.s
@@ -894,7 +923,7 @@ src/sample/shock_tube_strong_shock.s: src/sample/shock_tube_strong_shock.cpp.s
 
 # target to generate assembly for a file
 src/sample/shock_tube_strong_shock.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/shock_tube_strong_shock.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/shock_tube_strong_shock.cpp.s
 .PHONY : src/sample/shock_tube_strong_shock.cpp.s
 
 src/sample/thin_disk_3d.o: src/sample/thin_disk_3d.cpp.o
@@ -902,7 +931,7 @@ src/sample/thin_disk_3d.o: src/sample/thin_disk_3d.cpp.o
 
 # target to build an object file
 src/sample/thin_disk_3d.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_disk_3d.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_disk_3d.cpp.o
 .PHONY : src/sample/thin_disk_3d.cpp.o
 
 src/sample/thin_disk_3d.i: src/sample/thin_disk_3d.cpp.i
@@ -910,7 +939,7 @@ src/sample/thin_disk_3d.i: src/sample/thin_disk_3d.cpp.i
 
 # target to preprocess a source file
 src/sample/thin_disk_3d.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_disk_3d.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_disk_3d.cpp.i
 .PHONY : src/sample/thin_disk_3d.cpp.i
 
 src/sample/thin_disk_3d.s: src/sample/thin_disk_3d.cpp.s
@@ -918,7 +947,7 @@ src/sample/thin_disk_3d.s: src/sample/thin_disk_3d.cpp.s
 
 # target to generate assembly for a file
 src/sample/thin_disk_3d.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_disk_3d.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_disk_3d.cpp.s
 .PHONY : src/sample/thin_disk_3d.cpp.s
 
 src/sample/thin_slice_poly_2_5d.o: src/sample/thin_slice_poly_2_5d.cpp.o
@@ -926,7 +955,7 @@ src/sample/thin_slice_poly_2_5d.o: src/sample/thin_slice_poly_2_5d.cpp.o
 
 # target to build an object file
 src/sample/thin_slice_poly_2_5d.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d.cpp.o
 .PHONY : src/sample/thin_slice_poly_2_5d.cpp.o
 
 src/sample/thin_slice_poly_2_5d.i: src/sample/thin_slice_poly_2_5d.cpp.i
@@ -934,7 +963,7 @@ src/sample/thin_slice_poly_2_5d.i: src/sample/thin_slice_poly_2_5d.cpp.i
 
 # target to preprocess a source file
 src/sample/thin_slice_poly_2_5d.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d.cpp.i
 .PHONY : src/sample/thin_slice_poly_2_5d.cpp.i
 
 src/sample/thin_slice_poly_2_5d.s: src/sample/thin_slice_poly_2_5d.cpp.s
@@ -942,7 +971,7 @@ src/sample/thin_slice_poly_2_5d.s: src/sample/thin_slice_poly_2_5d.cpp.s
 
 # target to generate assembly for a file
 src/sample/thin_slice_poly_2_5d.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d.cpp.s
 .PHONY : src/sample/thin_slice_poly_2_5d.cpp.s
 
 src/sample/thin_slice_poly_2_5d_relax.o: src/sample/thin_slice_poly_2_5d_relax.cpp.o
@@ -950,7 +979,7 @@ src/sample/thin_slice_poly_2_5d_relax.o: src/sample/thin_slice_poly_2_5d_relax.c
 
 # target to build an object file
 src/sample/thin_slice_poly_2_5d_relax.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.o
 .PHONY : src/sample/thin_slice_poly_2_5d_relax.cpp.o
 
 src/sample/thin_slice_poly_2_5d_relax.i: src/sample/thin_slice_poly_2_5d_relax.cpp.i
@@ -958,7 +987,7 @@ src/sample/thin_slice_poly_2_5d_relax.i: src/sample/thin_slice_poly_2_5d_relax.c
 
 # target to preprocess a source file
 src/sample/thin_slice_poly_2_5d_relax.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.i
 .PHONY : src/sample/thin_slice_poly_2_5d_relax.cpp.i
 
 src/sample/thin_slice_poly_2_5d_relax.s: src/sample/thin_slice_poly_2_5d_relax.cpp.s
@@ -966,7 +995,7 @@ src/sample/thin_slice_poly_2_5d_relax.s: src/sample/thin_slice_poly_2_5d_relax.c
 
 # target to generate assembly for a file
 src/sample/thin_slice_poly_2_5d_relax.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_relax.cpp.s
 .PHONY : src/sample/thin_slice_poly_2_5d_relax.cpp.s
 
 src/sample/vacuum_test.o: src/sample/vacuum_test.cpp.o
@@ -974,7 +1003,7 @@ src/sample/vacuum_test.o: src/sample/vacuum_test.cpp.o
 
 # target to build an object file
 src/sample/vacuum_test.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/vacuum_test.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/vacuum_test.cpp.o
 .PHONY : src/sample/vacuum_test.cpp.o
 
 src/sample/vacuum_test.i: src/sample/vacuum_test.cpp.i
@@ -982,7 +1011,7 @@ src/sample/vacuum_test.i: src/sample/vacuum_test.cpp.i
 
 # target to preprocess a source file
 src/sample/vacuum_test.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/vacuum_test.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/vacuum_test.cpp.i
 .PHONY : src/sample/vacuum_test.cpp.i
 
 src/sample/vacuum_test.s: src/sample/vacuum_test.cpp.s
@@ -990,7 +1019,7 @@ src/sample/vacuum_test.s: src/sample/vacuum_test.cpp.s
 
 # target to generate assembly for a file
 src/sample/vacuum_test.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample/vacuum_test.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/vacuum_test.cpp.s
 .PHONY : src/sample/vacuum_test.cpp.s
 
 src/sample_registry.o: src/sample_registry.cpp.o
@@ -998,7 +1027,7 @@ src/sample_registry.o: src/sample_registry.cpp.o
 
 # target to build an object file
 src/sample_registry.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample_registry.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample_registry.cpp.o
 .PHONY : src/sample_registry.cpp.o
 
 src/sample_registry.i: src/sample_registry.cpp.i
@@ -1006,7 +1035,7 @@ src/sample_registry.i: src/sample_registry.cpp.i
 
 # target to preprocess a source file
 src/sample_registry.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample_registry.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample_registry.cpp.i
 .PHONY : src/sample_registry.cpp.i
 
 src/sample_registry.s: src/sample_registry.cpp.s
@@ -1014,15 +1043,39 @@ src/sample_registry.s: src/sample_registry.cpp.s
 
 # target to generate assembly for a file
 src/sample_registry.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/sample_registry.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample_registry.cpp.s
 .PHONY : src/sample_registry.cpp.s
+
+src/shock_detection.o: src/shock_detection.cpp.o
+.PHONY : src/shock_detection.o
+
+# target to build an object file
+src/shock_detection.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/shock_detection.cpp.o
+.PHONY : src/shock_detection.cpp.o
+
+src/shock_detection.i: src/shock_detection.cpp.i
+.PHONY : src/shock_detection.i
+
+# target to preprocess a source file
+src/shock_detection.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/shock_detection.cpp.i
+.PHONY : src/shock_detection.cpp.i
+
+src/shock_detection.s: src/shock_detection.cpp.s
+.PHONY : src/shock_detection.s
+
+# target to generate assembly for a file
+src/shock_detection.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/shock_detection.cpp.s
+.PHONY : src/shock_detection.cpp.s
 
 src/simulation.o: src/simulation.cpp.o
 .PHONY : src/simulation.o
 
 # target to build an object file
 src/simulation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/simulation.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/simulation.cpp.o
 .PHONY : src/simulation.cpp.o
 
 src/simulation.i: src/simulation.cpp.i
@@ -1030,7 +1083,7 @@ src/simulation.i: src/simulation.cpp.i
 
 # target to preprocess a source file
 src/simulation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/simulation.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/simulation.cpp.i
 .PHONY : src/simulation.cpp.i
 
 src/simulation.s: src/simulation.cpp.s
@@ -1038,7 +1091,7 @@ src/simulation.s: src/simulation.cpp.s
 
 # target to generate assembly for a file
 src/simulation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/simulation.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/simulation.cpp.s
 .PHONY : src/simulation.cpp.s
 
 src/solver.o: src/solver.cpp.o
@@ -1046,7 +1099,7 @@ src/solver.o: src/solver.cpp.o
 
 # target to build an object file
 src/solver.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/solver.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/solver.cpp.o
 .PHONY : src/solver.cpp.o
 
 src/solver.i: src/solver.cpp.i
@@ -1054,7 +1107,7 @@ src/solver.i: src/solver.cpp.i
 
 # target to preprocess a source file
 src/solver.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/solver.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/solver.cpp.i
 .PHONY : src/solver.cpp.i
 
 src/solver.s: src/solver.cpp.s
@@ -1062,7 +1115,7 @@ src/solver.s: src/solver.cpp.s
 
 # target to generate assembly for a file
 src/solver.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/solver.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/solver.cpp.s
 .PHONY : src/solver.cpp.s
 
 src/timestep.o: src/timestep.cpp.o
@@ -1070,7 +1123,7 @@ src/timestep.o: src/timestep.cpp.o
 
 # target to build an object file
 src/timestep.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/timestep.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/timestep.cpp.o
 .PHONY : src/timestep.cpp.o
 
 src/timestep.i: src/timestep.cpp.i
@@ -1078,7 +1131,7 @@ src/timestep.i: src/timestep.cpp.i
 
 # target to preprocess a source file
 src/timestep.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/timestep.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/timestep.cpp.i
 .PHONY : src/timestep.cpp.i
 
 src/timestep.s: src/timestep.cpp.s
@@ -1086,8 +1139,32 @@ src/timestep.s: src/timestep.cpp.s
 
 # target to generate assembly for a file
 src/timestep.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph.dir/build.make CMakeFiles/sph.dir/src/timestep.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/timestep.cpp.s
 .PHONY : src/timestep.cpp.s
+
+test/kernel_test/kernel_test.o: test/kernel_test/kernel_test.cpp.o
+.PHONY : test/kernel_test/kernel_test.o
+
+# target to build an object file
+test/kernel_test/kernel_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/test/kernel_test/kernel_test.cpp.o
+.PHONY : test/kernel_test/kernel_test.cpp.o
+
+test/kernel_test/kernel_test.i: test/kernel_test/kernel_test.cpp.i
+.PHONY : test/kernel_test/kernel_test.i
+
+# target to preprocess a source file
+test/kernel_test/kernel_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/test/kernel_test/kernel_test.cpp.i
+.PHONY : test/kernel_test/kernel_test.cpp.i
+
+test/kernel_test/kernel_test.s: test/kernel_test/kernel_test.cpp.s
+.PHONY : test/kernel_test/kernel_test.s
+
+# target to generate assembly for a file
+test/kernel_test/kernel_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/test/kernel_test/kernel_test.cpp.s
+.PHONY : test/kernel_test/kernel_test.cpp.s
 
 # Help Target
 help:
@@ -1097,7 +1174,9 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... run_kernel_test"
 	@echo "... sph"
+	@echo "... sph_lib"
 	@echo "... src/bhtree.o"
 	@echo "... src/bhtree.i"
 	@echo "... src/bhtree.s"
@@ -1209,6 +1288,9 @@ help:
 	@echo "... src/sample_registry.o"
 	@echo "... src/sample_registry.i"
 	@echo "... src/sample_registry.s"
+	@echo "... src/shock_detection.o"
+	@echo "... src/shock_detection.i"
+	@echo "... src/shock_detection.s"
 	@echo "... src/simulation.o"
 	@echo "... src/simulation.i"
 	@echo "... src/simulation.s"
@@ -1218,6 +1300,9 @@ help:
 	@echo "... src/timestep.o"
 	@echo "... src/timestep.i"
 	@echo "... src/timestep.s"
+	@echo "... test/kernel_test/kernel_test.o"
+	@echo "... test/kernel_test/kernel_test.i"
+	@echo "... test/kernel_test/kernel_test.s"
 .PHONY : help
 
 

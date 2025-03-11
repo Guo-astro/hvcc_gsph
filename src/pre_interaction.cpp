@@ -1,5 +1,7 @@
+/* ================================
+ * pre_interaction.cpp
+ * ================================ */
 #include <algorithm>
-
 #include "parameters.hpp"
 #include "pre_interaction.hpp"
 #include "simulation.hpp"
@@ -16,8 +18,11 @@
 namespace sph
 {
 
+    // Added member m_twoAndHalf to store the simulation’s 2.5D flag.
     void PreInteraction::initialize(std::shared_ptr<SPHParameters> param)
     {
+        m_twoAndHalf = param->two_and_half_sim; // NEW: effective 2D kernel if true
+
         m_use_time_dependent_av = param->av.use_time_dependent_av;
         if (m_use_time_dependent_av)
         {
@@ -63,24 +68,26 @@ namespace sph
             auto &p_i = particles[i];
             std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
-            // guess smoothing length
-            constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
-                                                         : 4.0 * M_PI / 3.0;
-            p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A), 1.0 / DIM) * m_kernel_ratio;
+            // Use effective kernel dimension: if two_and_half_sim is true, use 2; otherwise use DIM.
+            int effectiveDim = m_twoAndHalf ? 2 : DIM;
+            real A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+            p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim) * m_kernel_ratio;
 
-            // neighbor search
+            // neighbor search remains in full 3D
 #ifdef EXHAUSTIVE_SEARCH
-            const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list, m_neighbor_number * neighbor_list_size, periodic, false);
+            const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list,
+                                                         m_neighbor_number * neighbor_list_size, periodic, false);
 #else
             const int n_neighbor_tmp = tree->neighbor_search(p_i, neighbor_list, particles, false);
 #endif
-            // smoothing length
+
+            // If iterative smoothing is enabled, update the smoothing length.
             if (m_iteration)
             {
                 p_i.sml = newton_raphson(p_i, particles, neighbor_list, n_neighbor_tmp, periodic, kernel);
             }
 
-            // density etc.
+            // Now compute density and related quantities.
             real dens_i = 0.0;
             real dh_dens_i = 0.0;
             real v_sig_max = p_i.sound * 2.0;
@@ -95,7 +102,7 @@ namespace sph
 
                 if (r >= p_i.sml)
                 {
-                    continue; // Instead of breaking, simply skip this neighbor.
+                    continue; // Skip neighbors outside smoothing length.
                 }
 
                 ++n_neighbor;
@@ -114,7 +121,8 @@ namespace sph
 
             p_i.dens = dens_i;
             p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
-            p_i.gradh = 1.0 / (1.0 + p_i.sml / (DIM * dens_i) * dh_dens_i);
+            // Use effectiveDim in the grad-h term as well.
+            p_i.gradh = 1.0 / (1.0 + p_i.sml / (effectiveDim * dens_i) * dh_dens_i);
             p_i.neighbor = n_neighbor;
 
             const real h_per_v_sig_i = p_i.sml / v_sig_max;
@@ -123,11 +131,10 @@ namespace sph
                 h_per_v_sig.get() = h_per_v_sig_i;
             }
 
-            // Artificial viscosity
+            // Artificial viscosity (unchanged; still computed using full DIM values)
             if (m_use_balsara_switch && DIM != 1)
             {
 #if DIM != 1
-                // balsara switch
                 real div_v = 0.0;
 #if DIM == 2
                 real rot_v = 0.0;
@@ -149,11 +156,12 @@ namespace sph
                 rot_v /= p_i.dens;
                 p_i.balsara = std::abs(div_v) / (std::abs(div_v) + std::abs(rot_v) + 1e-4 * p_i.sound / p_i.sml);
 
-                // time dependent alpha
                 if (m_use_time_dependent_av)
                 {
                     const real tau_inv = m_epsilon * p_i.sound / p_i.sml;
-                    const real dalpha = (-(p_i.alpha - m_alpha_min) * tau_inv + std::max(-div_v, (real)0.0) * (m_alpha_max - p_i.alpha)) * dt;
+                    const real dalpha = (-(p_i.alpha - m_alpha_min) * tau_inv +
+                                         std::max(-div_v, (real)0.0) * (m_alpha_max - p_i.alpha)) *
+                                        dt;
                     p_i.alpha += dalpha;
                 }
 #endif
@@ -200,19 +208,20 @@ namespace sph
             const vec_t &pos_i = p_i.pos;
             std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
-            // guess smoothing length
-            constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
-                                                         : 4.0 * M_PI / 3.0;
-            p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A), 1.0 / DIM);
+            // Use effective kernel dimension for initial smoothing as well.
+            int effectiveDim = m_twoAndHalf ? 2 : DIM;
+            real A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+            p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim);
 
             // neighbor search
 #ifdef EXHAUSTIVE_SEARCH
-            int const n_neighbor = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list, m_neighbor_number * neighbor_list_size, periodic, false);
+            int const n_neighbor = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list,
+                                                     m_neighbor_number * neighbor_list_size, periodic, false);
 #else
             int const n_neighbor = tree->neighbor_search(p_i, neighbor_list, particles, false);
 #endif
 
-            // density
+            // Compute density by summing contributions from neighbors.
             real dens_i = 0.0;
             for (int n = 0; n < n_neighbor; ++n)
             {
@@ -233,17 +242,7 @@ namespace sph
         }
     }
 
-    inline real powh_(const real h)
-    {
-#if DIM == 1
-        return 1;
-#elif DIM == 2
-        return h;
-#elif DIM == 3
-        return h * h;
-#endif
-    }
-
+    // In the Newton–Raphson routine, we also use the effective kernel dimension.
     real PreInteraction::newton_raphson(
         const SPHParticle &p_i,
         const std::vector<SPHParticle> &particles,
@@ -252,21 +251,32 @@ namespace sph
         const Periodic *periodic,
         const KernelFunction *kernel)
     {
+        // Use m_kernel_ratio to scale the initial guess.
         real h_i = p_i.sml / m_kernel_ratio;
-        constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
-                                                     : 4.0 * M_PI / 3.0;
-        const real b = p_i.mass * m_neighbor_number / A;
+        int effectiveDim = m_twoAndHalf ? 2 : DIM;
+        real A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+        const real b = p_i.mass * m_neighbor_number / A_eff;
 
-        // f = rho h^d - b
-        // f' = drho/dh h^d + d rho h^{d-1}
-
+        // f = rho * h^(effectiveDim) - b
+        // f' = (drho/dh) * h^(effectiveDim) + effectiveDim * rho * h^(effectiveDim-1)
         constexpr real epsilon = 1e-4;
         constexpr int max_iter = 10;
         const auto &r_i = p_i.pos;
+
+        // Define a lambda to compute h^(effectiveDim) for our Newton iteration.
+        auto powh_eff = [effectiveDim](real h) -> real
+        {
+            if (effectiveDim == 1)
+                return h;
+            else if (effectiveDim == 2)
+                return h; // for 2D, our kernel normalization uses h^1 (see above)
+            else
+                return h * h;
+        };
+
         for (int i = 0; i < max_iter; ++i)
         {
             const real h_b = h_i;
-            const real h_prev = h_i;
 
             real dens = 0.0;
             real ddens = 0.0;
@@ -286,11 +296,10 @@ namespace sph
                 ddens += p_j.mass * kernel->dhw(r, h_i);
             }
 
-            const real f = dens * powh(h_i) - b;
-            const real df = ddens * powh(h_i) + DIM * dens * powh_(h_i);
+            const real f = dens * powh_dim(h_i, effectiveDim) - b;
+            const real df = ddens * powh_dim(h_i, effectiveDim) + effectiveDim * dens * powh_eff(h_i);
 
             h_i -= f / df;
-            // For particles with a low id, log each iteration.
 
             if (std::abs(h_i - h_b) < (h_i + h_b) * epsilon)
             {
@@ -300,10 +309,10 @@ namespace sph
 
 #pragma omp critical
         {
-            WRITE_LOG << "Particle id " << p_i.id << " is not convergence";
+            WRITE_LOG << "Particle id " << p_i.id << " did not converge";
         }
 
         return p_i.sml / m_kernel_ratio;
     }
 
-}
+} // namespace sph

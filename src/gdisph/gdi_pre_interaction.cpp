@@ -20,7 +20,7 @@ namespace sph
 
         void PreInteraction::initialize(std::shared_ptr<SPHParameters> param)
         {
-
+            // Call the base pre-interaction initializer; it also sets m_twoAndHalf.
             sph::PreInteraction::initialize(param);
         }
 
@@ -40,7 +40,7 @@ namespace sph
 
             omp_real h_per_v_sig(std::numeric_limits<real>::max());
 
-            // for MUSCL
+            // For MUSCL gradient arrays.
             auto &grad_d = sim->get_vector_array("grad_density");
             auto &grad_p = sim->get_vector_array("grad_pressure");
             vec_t *grad_v[DIM] = {
@@ -59,24 +59,27 @@ namespace sph
                 auto &p_i = particles[i];
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
-                // guess smoothing length
-                constexpr real A = DIM == 1 ? 2.0 : DIM == 2 ? M_PI
-                                                             : 4.0 * M_PI / 3.0;
-                p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A), 1.0 / DIM) * m_kernel_ratio;
+                // --- Use effective kernel dimension ---
+                // When m_twoAndHalf is true, we want the kernel math to act as in 2D.
+                int effectiveDim = m_twoAndHalf ? 2 : DIM;
+                real A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+                p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim) * m_kernel_ratio;
 
-                // neighbor search
+                // Perform neighbor search in full 3D.
 #ifdef EXHAUSTIVE_SEARCH
-                const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list, m_neighbor_number * neighbor_list_size, periodic, false);
+                const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list,
+                                                             m_neighbor_number * neighbor_list_size, periodic, false);
 #else
                 const int n_neighbor_tmp = tree->neighbor_search(p_i, neighbor_list, particles, false);
 #endif
-                // smoothing length
+
+                // If iterative smoothing is enabled, update smoothing length.
                 if (m_iteration)
                 {
                     p_i.sml = newton_raphson(p_i, particles, neighbor_list, n_neighbor_tmp, periodic, kernel);
                 }
 
-                // density etc.
+                // --- Density calculation ---
                 real dens_i = 0.0;
                 real v_sig_max = p_i.sound * 2.0;
                 const vec_t &pos_i = p_i.pos;
@@ -105,7 +108,6 @@ namespace sph
                         }
                     }
                 }
-
                 p_i.dens = dens_i;
                 p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
                 p_i.neighbor = n_neighbor;
@@ -116,13 +118,12 @@ namespace sph
                     h_per_v_sig.get() = h_per_v_sig_i;
                 }
 
-                // MUSCL法のための勾配計算
+                // --- MUSCL Gradient Calculation ---
                 if (!m_is_2nd_order)
                 {
                     continue;
                 }
-
-                vec_t dd, du; // dP = (gamma - 1) * (rho * du + drho * u)
+                vec_t dd, du; // For pressure gradient: dP = (gamma - 1)*(rho*du + drho*u)
                 vec_t dv[DIM];
                 for (int n = 0; n < n_neighbor; ++n)
                 {

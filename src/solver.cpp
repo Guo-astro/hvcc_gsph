@@ -1,4 +1,6 @@
-﻿// src/solver.cpp
+﻿/* ================================
+ * solver.cpp
+ * ================================ */
 #include <cassert>
 #include <iostream>
 #include <chrono>
@@ -44,7 +46,7 @@
 // Unit system and density relaxation helper
 #include "unit_system.hpp"
 #include "density_relaxation.hpp"
-
+#include "shock_detection/shock_detection.hpp"
 namespace sph
 {
     // **Module Registrations**
@@ -209,27 +211,6 @@ namespace sph
 
         m_param->two_and_half_sim = root.get<bool>("two_and_half_sim", false);
 
-        // Updated Density Relaxation Parsing
-        m_param->density_relaxation.is_valid = root.get<bool>("useDensityRelaxation", false);
-        if (m_param->density_relaxation.is_valid)
-        {
-            m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
-            m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
-            m_param->density_relaxation.velocity_threshold = root.get<real>("velocityThreshold", 1e-3);
-            m_param->density_relaxation.table_file = root.get<std::string>("laneEmdenTable", "lane_emden_n15_3d.csv");
-
-            // Allocate the LaneEmdenRelaxation object once
-            m_laneEmdenRelaxation = std::make_unique<LaneEmdenRelaxation>();
-            // Load the table using the file name from JSON (see below)
-            m_laneEmdenRelaxation->load_table(m_param->density_relaxation.table_file);
-            // Then apply the relaxation force
-            m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
-            WRITE_LOG << "Density relaxation: LaneEmden-based force applied.";
-            WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
-                      << ", damping=" << m_param->density_relaxation.damping_factor
-                      << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold;
-        }
-
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
         m_param->time.start = root.get<real>("startTime", real(0));
         m_param->time.end = root.get<real>("endTime");
@@ -308,6 +289,14 @@ namespace sph
                 m_param->periodic.range_min[i] = std::stod(v.second.data());
                 ++i;
             }
+        }
+        m_param->density_relaxation.is_valid = root.get<bool>("useDensityRelaxation", false);
+        if (m_param->density_relaxation.is_valid)
+        {
+            m_param->density_relaxation.max_iterations = root.get<int>("densityRelaxationMaxIter", 100);
+            m_param->density_relaxation.damping_factor = root.get<real>("densityRelaxationDamping", 0.1);
+            m_param->density_relaxation.velocity_threshold = root.get<real>("velocityThreshold", 1e-3);
+            m_param->density_relaxation.table_file = root.get<std::string>("laneEmdenTable", "xi_theta.csv");
         }
 
         m_param->gravity.is_valid = root.get<bool>("useGravity", false);
@@ -438,7 +427,16 @@ namespace sph
     {
         parseJsonOverrides();
         std::string sph_type_str = sphTypeToString(m_param->type);
-        std::string dim_str = std::to_string(DIM) + "D";
+        std::string dim_str;
+        if (m_param->two_and_half_sim)
+        {
+            dim_str = "2.5D";
+        }
+        else
+        {
+            dim_str = std::to_string(DIM) + "D";
+        }
+
         boost::filesystem::path output_path(m_output_dir);
         output_path /= sph_type_str;
         output_path /= m_sample_name;
@@ -457,7 +455,10 @@ namespace sph
         }
         else
         {
+            std::cout << "Attempting to create sample: " << m_sample_name << "\n";
             bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
+            std::cout << "Sample recognized: " << (recognized ? "yes" : "no") << "\n";
+
             if (!recognized)
             {
                 THROW_ERROR("No recognized sample named ", m_sample_name,
@@ -465,6 +466,22 @@ namespace sph
             }
             m_output->output_particle(m_sim);
             m_output->output_energy(m_sim);
+
+            // Updated Density Relaxation Parsing
+            if (m_param->density_relaxation.is_valid)
+            {
+
+                // Allocate the LaneEmdenRelaxation object once
+                m_laneEmdenRelaxation = std::make_unique<LaneEmdenRelaxation>();
+                // Load the table using the file name from JSON (see below)
+                m_laneEmdenRelaxation->load_table(m_param->density_relaxation.table_file);
+                // Then apply the relaxation force
+                m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
+                WRITE_LOG << "Density relaxation: LaneEmden-based force applied.";
+                WRITE_LOG << "Density relaxation enabled: max_iter=" << m_param->density_relaxation.max_iterations
+                          << ", damping=" << m_param->density_relaxation.damping_factor
+                          << ", velocity_threshold=" << m_param->density_relaxation.velocity_threshold;
+            }
         }
 
         ModuleFactory &factory = ModuleFactory::instance();
@@ -541,6 +558,11 @@ namespace sph
         {
             m_hcool->calculation(m_sim);
         }
+        // --- Run Shock Detection ---
+        // Call the detect_shocks function using the periodic boundary conditions from m_sim,
+        // and use the adiabatic index (gamma) from the simulation parameters.
+        sph::detect_shocks(m_sim, m_sim->get_periodic().get(), m_param->physics.gamma, 1.0);
+
         correct();
     }
 

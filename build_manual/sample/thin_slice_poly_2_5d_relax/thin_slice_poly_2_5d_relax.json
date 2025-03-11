@@ -2,11 +2,11 @@
   "outputDirectory": "sample/thin_slice_poly_2_5d_relax/results",
   "endTime": 1000.0,
   "avAlpha": 2.0,
-  "neighborNumber": 1024,
+  "neighborNumber": 2048,
   "useBalsaraSwitch": true,
   "useTimeDependentAV": false,
   "useArtificialConductivity": false,
-  "leafParticleNumber": 32,
+  "leafParticleNumber": 16,
   "gamma": 1.6666666666666667,
   "kernel": "wendland",
   "N": 1000000,
@@ -20,5 +20,5 @@
   "densityRelaxationMaxIter": 1000,
   "densityRelaxationTolerance": 0.1,
   "densityRelaxationDamping": 0.2,
-  "laneEmdenTable": "./sample/thin_slice_poly_2_5d_relax/00000.csv"
+  "laneEmdenTable": "./sample/thin_slice_poly_2_5d_relax/adiabatic_razor_thin_disk_sigma.csv"
 }

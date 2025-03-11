@@ -1,3 +1,6 @@
+/* ================================
+ * simulation.cpp
+ * ================================ */
 #include "parameters.hpp"
 #include "simulation.hpp"
 #include "exception.hpp"
@@ -11,21 +14,22 @@ namespace sph
 
     Simulation::Simulation(std::shared_ptr<SPHParameters> param)
     {
+        m_periodic = std::make_shared<Periodic>();
+        m_periodic->initialize(param);
+        // pick kernel
+        bool is2p5 = param->two_and_half_sim;
         if (param->kernel == KernelType::CUBIC_SPLINE)
         {
-            m_kernel = std::make_shared<Spline::Cubic>();
+            m_kernel = std::make_shared<Spline::Cubic>(is2p5);
         }
         else if (param->kernel == KernelType::WENDLAND)
         {
-            m_kernel = std::make_shared<Wendland::C4Kernel>();
+            m_kernel = std::make_shared<Wendland::C4Kernel>(is2p5);
         }
         else
         {
-            THROW_ERROR("kernel is unknown.");
+            THROW_ERROR("Unknown kernel.");
         }
-
-        m_periodic = std::make_shared<Periodic>();
-        m_periodic->initialize(param);
 
         m_tree = std::make_shared<BHTree>();
         m_tree->initialize(param);

@@ -67,3 +67,8 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/guo/OSS/sphcode/build_manual/include/utilities/cmake_install.cmake")
 endif()
 
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/Users/guo/OSS/sphcode/build_manual/include/shock_detection/cmake_install.cmake")
+endif()
+

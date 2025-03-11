@@ -12,7 +12,7 @@ namespace sph
 
     void SampleRegistry::register_sample(const std::string &name, SampleCreateFunc func)
     {
-        // If the user re-registers the same name, you can handle or override
+        std::cout << "Registering sample: " << name << "\n";
         m_registry[name] = func;
     }
 

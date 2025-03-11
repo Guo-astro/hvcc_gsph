@@ -88,7 +88,7 @@ namespace sph
             vec_t relax_acc = compute_relaxation_force(particles[i], params);
 
             // subtract from the current acceleration to push toward equilibrium
-            particles[i].acc += -relax_acc;
+            particles[i].acc += relax_acc;
 
             // optionally zero out velocity for pure relaxation
             particles[i].vel = 0.0;

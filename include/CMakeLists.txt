@@ -1,28 +1,31 @@
-target_sources(sph
-  PUBLIC
-    defines.hpp
-    bhtree.hpp
-    exception.hpp
-    exhaustive_search.hpp
-    fluid_force.hpp
-    gravity_force.hpp
-    logger.hpp
-    module.hpp
-    openmp.hpp
-    output.hpp
-    parameters.hpp
-    particle.hpp
-    periodic.hpp
-    pre_interaction.hpp
-    simulation.hpp
-    solver.hpp
-    timestep.hpp
-    vector_type.hpp
-    module_factory.hpp
-  )
+target_sources(sph_lib
+    PUBLIC
+        defines.hpp
+        bhtree.hpp
+        exception.hpp
+        exhaustive_search.hpp
+        fluid_force.hpp
+        gravity_force.hpp
+        logger.hpp
+        module.hpp
+        openmp.hpp
+        output.hpp
+        parameters.hpp
+        particle.hpp
+        periodic.hpp
+        pre_interaction.hpp
+        simulation.hpp
+        solver.hpp
+        timestep.hpp
+        vector_type.hpp
+        module_factory.hpp
+)
+
+# Also add subdirectories if they have their own CMakeLists.txt:
 add_subdirectory(gdisph)
 add_subdirectory(disph)
 add_subdirectory(gsph)
 add_subdirectory(kernel)
 add_subdirectory(relaxation)
 add_subdirectory(utilities)
+add_subdirectory(shock_detection)

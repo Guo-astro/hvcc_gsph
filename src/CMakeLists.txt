@@ -1,4 +1,4 @@
-target_sources(sph
+target_sources(sph_lib
     PRIVATE
         main.cpp
         bhtree.cpp
@@ -14,22 +14,16 @@ target_sources(sph
         timestep.cpp
         heating_cooling.cpp
         inplane_integration.cpp
+        shock_detection.cpp
 )
 
+# Add subdirectories containing additional source files.
 add_subdirectory(disph)
 add_subdirectory(gdisph)
 add_subdirectory(gsph)
 add_subdirectory(sample)
-
-# Production folder for new simulation code:
 add_subdirectory(relaxation)
 
-# Copy sample data to build dir if needed
-file(COPY ${CMAKE_SOURCE_DIR}/sample
-     DESTINATION ${CMAKE_BINARY_DIR})
-
-
-file(COPY ${CMAKE_SOURCE_DIR}/production_sims
-     DESTINATION ${CMAKE_BINARY_DIR})
-
-
+# Optionally, copy sample data into the build directory.
+file(COPY ${CMAKE_SOURCE_DIR}/sample DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/production_sims DESTINATION ${CMAKE_BINARY_DIR})

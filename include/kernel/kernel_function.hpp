@@ -1,21 +1,28 @@
+/* ================================
+ * kernel_function.hpp
+ * ================================ */
 #pragma once
 
 #include "vector_type.hpp"
 
 namespace sph
 {
-
-    inline real powh(const real h)
+    inline int kernelDim(bool two_and_half)
     {
-#if DIM == 1
-        return h;
-#elif DIM == 2
-        return h * h;
-#elif DIM == 3
-        return h * h * h;
-#endif
+        return two_and_half ? 2 : DIM;
     }
-
+    inline real powh_dim(real h, int kd)
+    {
+        if (kd == 1)
+            return h;
+        if (kd == 2)
+            return h * h;
+        return h * h * h; // default 3
+    }
+    inline real powh_(real h, int dim)
+    {
+        return std::pow(h, dim - 1);
+    }
     class KernelFunction
     {
     public:

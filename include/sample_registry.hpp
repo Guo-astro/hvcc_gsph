@@ -51,11 +51,12 @@ namespace sph
 ///  2) This means merely #including sample_registry.hpp and writing
 ///     REGISTER_SAMPLE(...) in the .cpp is enough to register the sample at startup.
 ///
-#define REGISTER_SAMPLE(NAME_STR, FUNCTION)                                      \
-    static struct Register_##FUNCTION                                            \
-    {                                                                            \
-        Register_##FUNCTION()                                                    \
-        {                                                                        \
-            sph::SampleRegistry::instance().register_sample(NAME_STR, FUNCTION); \
-        }                                                                        \
-    } g_register_##FUNCTION
+#define REGISTER_SAMPLE(NAME, FUNC)                                        \
+    namespace                                                              \
+    {                                                                      \
+        /* Force a unique static boolean so it can’t get optimized out. */ \
+        static const bool s_registered_##FUNC = []() {                            \
+        std::cout << "Registering sample: " << NAME << "\n";                \
+        sph::SampleRegistry::instance().register_sample(NAME, FUNC);         \
+        return true; }();                \
+    } /* end anonymous namespace */
