@@ -49,8 +49,14 @@ run_kernel_test:
 	@echo "Running kernel_test sample..."
 	./build_manual/sph kernel_test
 
+# Run sample: razor_thin_hvcc
+run_razor_thin_hvcc: build
+	@echo "Running razor_thin_hvcc sample..."
+	./build_manual/sph razor_thin_hvcc ./production_sims/razor_thin_hvcc/razor_thin_hvcc.json 8
 
-# Run sample: thin_slice_poly_2_5d_relax
+
+
+# Run sample: run_razor_thin_sg_relaxation
 run_razor_thin_sg_relaxation: build
 	@echo "Running razor_thin_sg_relaxation sample..."
 	./build_manual/sph razor_thin_sg_relaxation ./production_sims/razor_thin_sg_relaxation/razor_thin_sg_relaxation.json 8

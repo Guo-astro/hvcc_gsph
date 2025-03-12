@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "production_sims/razor_thin_sg_relaxation/results",
+  "outputDirectory": "production_sims/razor_thin_hvcc/results",
   "endTime": 1000.0,
   "avAlpha": 2.0,
   "neighborNumber": 2048,
@@ -15,7 +15,7 @@
   "iterativeSml": true,
   "G": 1.0,
   "SPHType": "disph",
-  "checkpointFile": "./sample/thin_slice_poly_2_5d_relax/results/DISPH/thin_slice_poly_2_5d_relax/3D/00221.csv",
+  "checkpointFile": "./sample/thin_slice_poly_2_5d_relax/results/DISPH/thin_slice_poly_2_5d_relax/2.5D/00002.csv",
   "recenterParticles": true,
   "two_and_half_sim": true
 }
