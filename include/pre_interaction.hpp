@@ -24,6 +24,8 @@ namespace sph
         bool m_iteration;
         bool m_first;
         bool m_twoAndHalf;
+        bool m_anisotropic = false;
+        real m_hz;
 
         virtual real newton_raphson(
             const SPHParticle &p_i,

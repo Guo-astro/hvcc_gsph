@@ -29,6 +29,8 @@ namespace sph
         virtual real w(const real r, const real h) const = 0;                     // W(r,h)
         virtual vec_t dw(const vec_t &rij, const real r, const real h) const = 0; // grad W(r,h)
         virtual real dhw(const real r, const real h) const = 0;                   // dW(r,h)/dh
+        virtual real W(const real q) const = 0;                                   // dimensionless kernel profile f(q)
+        virtual real dW_dq(const real q) const = 0;                               // df/dq
+        virtual ~KernelFunction() = default;
     };
-
 }

@@ -52,7 +52,7 @@ run_kernel_test:
 
 
 # Run sample: thin_slice_poly_2_5d_relax
-run_thin_slice_poly_2_5d_relax:
+run_thin_slice_poly_2_5d_relax: build
 	@echo "Running thin_slice_poly_2_5d_relax sample..."
 	./build_manual/sph thin_slice_poly_2_5d_relax ./sample/thin_slice_poly_2_5d_relax/thin_slice_poly_2_5d_relax.json 8
 

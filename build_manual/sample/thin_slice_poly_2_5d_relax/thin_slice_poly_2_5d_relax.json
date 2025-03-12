@@ -2,7 +2,7 @@
   "outputDirectory": "sample/thin_slice_poly_2_5d_relax/results",
   "endTime": 1000.0,
   "avAlpha": 2.0,
-  "neighborNumber": 2048,
+  "neighborNumber": 1024,
   "useBalsaraSwitch": true,
   "useTimeDependentAV": false,
   "useArtificialConductivity": false,
@@ -15,7 +15,8 @@
   "iterativeSml": true,
   "G": 1.0,
   "SPHType": "disph",
-  "two_and_half_sim": true,
+  "anisotropic_sim": true,
+
   "useDensityRelaxation": true,
   "densityRelaxationMaxIter": 1000,
   "densityRelaxationTolerance": 0.1,

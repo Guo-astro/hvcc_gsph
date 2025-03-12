@@ -1,5 +1,6 @@
 #include <cassert>
-
+#include <cmath>
+#include <algorithm>
 #include "parameters.hpp"
 #include "bhtree.hpp"
 #include "openmp.hpp"
@@ -32,9 +33,14 @@ namespace sph
             }
             m_root.edge = l;
         }
+
         m_periodic = std::make_shared<Periodic>();
         m_periodic->initialize(param);
-
+        m_anisotropic = param->anisotropic;
+        if (m_anisotropic)
+        {
+            m_hz = param->h_z;
+        }
         if (param->gravity.is_valid)
         {
             m_g_constant = param->gravity.constant;
@@ -138,9 +144,9 @@ namespace sph
         const auto &pos_i = p_i.pos;
         std::sort(neighbor_list.begin(), neighbor_list.begin() + n_neighbor, [&](const int a, const int b)
                   {
-        const vec_t r_ia = m_periodic->calc_r_ij(pos_i, particles[a].pos);
-        const vec_t r_ib = m_periodic->calc_r_ij(pos_i, particles[b].pos);
-        return abs2(r_ia) < abs2(r_ib); });
+            const vec_t r_ia = m_periodic->calc_r_ij(pos_i, particles[a].pos);
+            const vec_t r_ib = m_periodic->calc_r_ij(pos_i, particles[b].pos);
+            return abs2(r_ia) < abs2(r_ib); });
         return n_neighbor;
     }
 
@@ -206,7 +212,6 @@ namespace sph
         {
             if (remaind < 0)
             {
-
                 THROW_ERROR("There is no free node.");
             }
             childs[index] = nodes;
@@ -216,6 +221,10 @@ namespace sph
             child->clear();
             child->level = level + 1;
             child->edge = edge * 0.5;
+
+            // Propagate anisotropic information from the parent node:
+            child->anisotropic = this->anisotropic;
+            child->hz = this->hz;
 
             int a = 1;
             real b = 2.0;
@@ -306,11 +315,8 @@ namespace sph
                         }
                         else
                         {
-                            // Log a warning that we've reached the capacity
-                            WRITE_LOG << "WARNING: Neighbor list full. "
-                                      << "Maximum allowed neighbors = " << neighbor_list.size()
-                                      << ", current count = " << n_neighbor;
-                            // Optionally, break out of the loop to prevent further writes.
+                            WRITE_LOG << "WARNING: Neighbor list full. Maximum allowed neighbors = "
+                                      << neighbor_list.size() << ", current count = " << n_neighbor;
                             break;
                         }
                     }
@@ -385,8 +391,28 @@ namespace sph
                     const vec_t &r_j = p->pos;
                     const vec_t r_ij = periodic->calc_r_ij(r_i, r_j);
                     const real r = std::abs(r_ij);
-                    p_i.phi -= g_constant * p->mass * (f(r, p_i.sml) + f(r, p->sml)) * 0.5;
-                    p_i.acc -= r_ij * (g_constant * p->mass * (g(r, p_i.sml) + g(r, p->sml)) * 0.5);
+                    if (anisotropic)
+                    {
+                        // Anisotropic force using effective distance:
+                        real r_xy = std::sqrt(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]);
+                        real r_eff = std::sqrt((r_xy / p_i.sml) * (r_xy / p_i.sml) + (r_ij[2] / hz) * (r_ij[2] / hz));
+                        if (r_eff < 1e-12)
+                            r_eff = 1e-12;
+                        real r_eff_inv = 1.0 / r_eff;
+                        p_i.phi -= g_constant * p->mass * r_eff_inv;
+                        vec_t grad_r_eff;
+                        for (int i = 0; i < 2; ++i)
+                        {
+                            grad_r_eff[i] = (r_ij[i] / (p_i.sml * p_i.sml)) / r_eff;
+                        }
+                        grad_r_eff[2] = (r_ij[2] / (hz * hz)) / r_eff;
+                        p_i.acc -= grad_r_eff * (g_constant * p->mass * pow3(r_eff_inv));
+                    }
+                    else
+                    {
+                        p_i.phi -= g_constant * p->mass * (f(r, p_i.sml) + f(r, p->sml)) * 0.5;
+                        p_i.acc -= r_ij * (g_constant * p->mass * (g(r, p_i.sml) + g(r, p->sml)) * 0.5);
+                    }
                     p = p->next;
                 }
             }
@@ -403,10 +429,29 @@ namespace sph
         }
         else
         {
-            const real r_inv = 1.0 / std::sqrt(d2);
-            p_i.phi -= g_constant * mass * r_inv;
-            p_i.acc -= d * (g_constant * mass * pow3(r_inv));
+            if (anisotropic)
+            {
+                real r_xy = std::sqrt(d[0] * d[0] + d[1] * d[1]);
+                real r_eff = std::sqrt((r_xy / p_i.sml) * (r_xy / p_i.sml) + (d[2] / hz) * (d[2] / hz));
+                if (r_eff < 1e-12)
+                    r_eff = 1e-12;
+                real r_eff_inv = 1.0 / r_eff;
+                vec_t grad_r_eff;
+                for (int i = 0; i < 2; ++i)
+                {
+                    grad_r_eff[i] = (d[i] / (p_i.sml * p_i.sml)) / r_eff;
+                }
+                grad_r_eff[2] = (d[2] / (hz * hz)) / r_eff;
+                p_i.phi -= g_constant * mass * r_eff_inv;
+                p_i.acc -= grad_r_eff * (g_constant * mass * pow3(r_eff_inv));
+            }
+            else
+            {
+                real r_inv = 1.0 / std::sqrt(d2);
+                p_i.phi -= g_constant * mass * r_inv;
+                p_i.acc -= d * (g_constant * mass * pow3(r_inv));
+            }
         }
     }
 
-}
+} // namespace sph

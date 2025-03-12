@@ -107,8 +107,9 @@ namespace sph
         bool two_and_half_sim = false; // Set to true in JSON to force 2.5D integration.
         real alpha_scaling;            // Radial scaling factor from Lane–Emden analysis.
         real R_fluid;                  // Radial scaling factor from Lane–Emden analysis.
-        real z_max;                    // Radial scaling factor from Lane–Emden analysis.
+        real h_z;                      // Radial scaling factor from Lane–Emden analysis.
         bool recenterParticles;
+        bool anisotropic = false; // if true, use anisotropic kernel
         struct DensityRelaxation
         {
             bool is_valid = false;          // Enable/disable density relaxation

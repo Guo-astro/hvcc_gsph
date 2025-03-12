@@ -1,4 +1,8 @@
-﻿#include <algorithm>
+﻿/* ================================
+ * g_pre_interaction.cpp
+ * Modified for anisotropic kernel support (GSPH version)
+ * ================================ */
+#include <algorithm>
 #include "parameters.hpp"
 #include "gsph/g_pre_interaction.hpp"
 #include "simulation.hpp"
@@ -8,153 +12,189 @@
 #include "exception.hpp"
 #include "bhtree.hpp"
 
-#ifdef EXHAUSTIVE_SEARCH
-#include "exhaustive_search.hpp"
-#endif
-
 namespace sph
 {
     namespace gsph
     {
+        real PreInteraction::newton_raphson(
+            const SPHParticle &p_i,
+            const std::vector<SPHParticle> &particles,
+            const std::vector<int> &neighbor_list,
+            const int n_neighbor,
+            const Periodic *periodic,
+            const KernelFunction *kernel)
+        {
+            if (!m_anisotropic)
+            {
+                // If not anisotropic, use base class implementation
+                return sph::PreInteraction::newton_raphson(p_i, particles, neighbor_list, n_neighbor, periodic, kernel);
+            }
 
+            // Anisotropic case: identical to gdisph for now, but can be customized
+            real h_xy = p_i.sml;
+            const real h_z = m_hz;
+            const real h_min = 1e-6;
+            const real tolerance = 1e-6;
+            const int max_iterations = 20;
+            const real N_desired = static_cast<real>(m_neighbor_number);
+
+            for (int iter = 0; iter < max_iterations; ++iter)
+            {
+                real N_h = 0.0;
+                real dN_dh_xy = 0.0;
+
+                for (int n = 0; n < n_neighbor; ++n)
+                {
+                    int j = neighbor_list[n];
+                    const SPHParticle &p_j = particles[j];
+                    vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
+                    real r_xy = std::sqrt(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]);
+                    real r_z = r_ij[2];
+                    real q = std::sqrt((r_xy / h_xy) * (r_xy / h_xy) + (r_z / h_z) * (r_z / h_z));
+
+                    real W = kernel->W(q);
+                    real dW_dq = kernel->dW_dq(q);
+
+                    N_h += p_j.mass / p_j.dens * W;
+
+                    real dq_dh_xy = -(r_xy * r_xy) / (h_xy * h_xy * h_xy * q);
+                    dN_dh_xy += p_j.mass / p_j.dens * dW_dq * dq_dh_xy;
+                }
+
+                real residual = N_h - N_desired;
+                if (std::abs(residual) < tolerance)
+                {
+                    break;
+                }
+
+                if (std::abs(dN_dh_xy) < 1e-12)
+                {
+                    throw std::runtime_error("newton_raphson: derivative too small in gsph");
+                }
+                real dh_xy = -residual / dN_dh_xy;
+                h_xy += dh_xy;
+
+                if (h_xy < h_min)
+                {
+                    h_xy = h_min;
+                }
+            }
+
+            return h_xy;
+        }
         void PreInteraction::initialize(std::shared_ptr<SPHParameters> param)
         {
-            // Call the base PreInteraction::initialize and set second–order flag.
+            // Call base PreInteraction::initialize
             sph::PreInteraction::initialize(param);
             m_is_2nd_order = param->gsph.is_2nd_order;
+            m_anisotropic = param->anisotropic;
+            if (m_anisotropic)
+            {
+                m_hz = param->h_z;
+            }
         }
 
         void PreInteraction::calculation(std::shared_ptr<Simulation> sim)
         {
             if (m_first)
             {
-                initial_smoothing(sim);
+                auto &particles = sim->get_particles();
+                const int num = sim->get_particle_num();
+                auto *periodic = sim->get_periodic().get();
+                auto *kernel = sim->get_kernel().get();
+                for (int i = 0; i < num; ++i)
+                {
+                    auto &p_i = particles[i];
+                    std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
+                    int effectiveDim;
+                    real A_eff;
+                    if (m_anisotropic)
+                    {
+                        effectiveDim = 2;
+                        A_eff = M_PI;
+                        p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / 2.0) * m_kernel_ratio;
+                    }
+                    else
+                    {
+                        effectiveDim = m_twoAndHalf ? 2 : DIM;
+                        A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+                        p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim) * m_kernel_ratio;
+                    }
+#ifdef EXHAUSTIVE_SEARCH
+                    int n_neighbor = exhaustive_search(p_i, p_i.sml, particles, num,
+                                                       neighbor_list, m_neighbor_number * neighbor_list_size,
+                                                       periodic, false);
+#else
+                    int n_neighbor = sim->get_tree()->neighbor_search(p_i, neighbor_list, particles, false);
+#endif
+
+                    p_i.neighbor = n_neighbor;
+                }
                 m_first = false;
             }
 
             auto &particles = sim->get_particles();
-            auto *periodic = sim->get_periodic().get();
             const int num = sim->get_particle_num();
+            auto *periodic = sim->get_periodic().get();
             auto *kernel = sim->get_kernel().get();
-            auto *tree = sim->get_tree().get();
-
             omp_real h_per_v_sig(std::numeric_limits<real>::max());
-
-            // For MUSCL: get gradient arrays.
-            auto &grad_d = sim->get_vector_array("grad_density");
-            auto &grad_p = sim->get_vector_array("grad_pressure");
-            vec_t *grad_v[DIM] = {
-                sim->get_vector_array("grad_velocity_0").data(),
-#if DIM == 2
-                sim->get_vector_array("grad_velocity_1").data(),
-#elif DIM == 3
-                sim->get_vector_array("grad_velocity_1").data(),
-                sim->get_vector_array("grad_velocity_2").data(),
-#endif
-            };
 
 #pragma omp parallel for
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
-
-                // --- Use effective kernel dimension ---
-                int effectiveDim = m_twoAndHalf ? 2 : DIM;
-                real A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
-                p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim) * m_kernel_ratio;
-
-                // Neighbor search (3D)
+                int effectiveDim;
+                real A_eff;
+                if (m_anisotropic)
+                {
+                    effectiveDim = 2;
+                    A_eff = M_PI;
+                    p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / 2.0) * m_kernel_ratio;
+                }
+                else
+                {
+                    effectiveDim = m_twoAndHalf ? 2 : DIM;
+                    A_eff = (effectiveDim == 1 ? 2.0 : (effectiveDim == 2 ? M_PI : 4.0 * M_PI / 3.0));
+                    p_i.sml = std::pow(m_neighbor_number * p_i.mass / (p_i.dens * A_eff), 1.0 / effectiveDim) * m_kernel_ratio;
+                }
 #ifdef EXHAUSTIVE_SEARCH
-                const int n_neighbor_tmp = exhaustive_search(p_i, p_i.sml, particles, num, neighbor_list,
-                                                             m_neighbor_number * neighbor_list_size, periodic, false);
+                int n_neighbor = exhaustive_search(p_i, p_i.sml, particles, num,
+                                                   neighbor_list, m_neighbor_number * neighbor_list_size,
+                                                   periodic, false);
 #else
-                const int n_neighbor_tmp = tree->neighbor_search(p_i, neighbor_list, particles, false);
+                int n_neighbor = sim->get_tree()->neighbor_search(p_i, neighbor_list, particles, false);
 #endif
 
-                // Update smoothing length if needed.
-                if (m_iteration)
-                {
-                    p_i.sml = newton_raphson(p_i, particles, neighbor_list, n_neighbor_tmp, periodic, kernel);
-                }
-
-                // --- Density calculation ---
-                real dens_i = 0.0;
-                real v_sig_max = p_i.sound * 2.0;
-                const vec_t &pos_i = p_i.pos;
-                int n_neighbor = 0;
-                for (int n = 0; n < n_neighbor_tmp; ++n)
-                {
-                    int const j = neighbor_list[n];
-                    auto &p_j = particles[j];
-                    const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
-                    const real r = std::abs(r_ij);
-
-                    if (r >= p_i.sml)
-                    {
-                        break;
-                    }
-
-                    ++n_neighbor;
-                    dens_i += p_j.mass * kernel->w(r, p_i.sml);
-
-                    if (i != j)
-                    {
-                        const real v_sig = p_i.sound + p_j.sound - 3.0 * inner_product(r_ij, p_i.vel - p_j.vel) / r;
-                        if (v_sig > v_sig_max)
-                        {
-                            v_sig_max = v_sig;
-                        }
-                    }
-                }
-
-                p_i.dens = dens_i;
-                p_i.pres = (m_gamma - 1.0) * dens_i * p_i.ene;
-                p_i.neighbor = n_neighbor;
-
-                const real h_per_v_sig_i = p_i.sml / v_sig_max;
-                if (h_per_v_sig.get() > h_per_v_sig_i)
-                {
-                    h_per_v_sig.get() = h_per_v_sig_i;
-                }
-
-                // --- MUSCL gradient calculation ---
-                if (!m_is_2nd_order)
-                {
-                    continue;
-                }
-
-                vec_t dd, du; // For pressure gradient: dP = (gamma-1)(rho*du + drho*u)
-                vec_t dv[DIM];
                 for (int n = 0; n < n_neighbor; ++n)
                 {
-                    int const j = neighbor_list[n];
+                    int j = neighbor_list[n];
                     auto &p_j = particles[j];
-                    const vec_t r_ij = periodic->calc_r_ij(pos_i, p_j.pos);
-                    const real r = std::abs(r_ij);
-                    const vec_t dw_ij = kernel->dw(r_ij, r, p_i.sml);
-                    dd += dw_ij * p_j.mass;
-                    du += dw_ij * (p_j.mass * (p_j.ene - p_i.ene));
-                    for (int k = 0; k < DIM; ++k)
+                    vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
+                    real r = std::abs(r_ij);
+                    if (m_anisotropic)
                     {
-                        dv[k] += dw_ij * (p_j.mass * (p_j.vel[k] - p_i.vel[k]));
+                        real r_xy = std::sqrt(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]);
+                        real r_aniso = std::sqrt((r_xy / p_i.sml) * (r_xy / p_i.sml) +
+                                                 (r_ij[2] / m_hz) * (r_ij[2] / m_hz));
+                        if (r_aniso >= 1.0)
+                            continue;
+                    }
+                    else
+                    {
+                        if (r >= p_i.sml)
+                            continue;
+                    }
+                    if (i != j)
+                    {
+                        real r_local = std::abs(r_ij);
+                        real v_sig = p_i.sound + p_j.sound - 3.0 * inner_product(r_ij, p_i.vel - p_j.vel) / (r_local + 1e-12);
+                        if (v_sig > 0 && (p_i.sml / v_sig) < h_per_v_sig.get())
+                            h_per_v_sig.get() = p_i.sml / v_sig;
                     }
                 }
-                grad_d[i] = dd;
-                grad_p[i] = (dd * p_i.ene + du) * (m_gamma - 1.0);
-                const real rho_inv = 1.0 / p_i.dens;
-                for (int k = 0; k < DIM; ++k)
-                {
-                    grad_v[k][i] = dv[k] * rho_inv;
-                }
             }
-
             sim->set_h_per_v_sig(h_per_v_sig.min());
-
-#ifndef EXHAUSTIVE_SEARCH
-            tree->set_kernel();
-#endif
         }
-
     }
 }

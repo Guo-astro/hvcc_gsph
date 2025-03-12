@@ -45,7 +45,7 @@
 
 // Unit system and density relaxation helper
 #include "unit_system.hpp"
-#include "density_relaxation.hpp"
+#include "relaxation/density_relaxation.hpp"
 #include "shock_detection/shock_detection.hpp"
 namespace sph
 {

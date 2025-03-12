@@ -23,7 +23,7 @@ namespace sph
         // Fluid parameters
         const real gamma = 5.0 / 3.0; // Polytrope with γ = 5/3
         const real n_poly = 1.5;      // Polytropic index
-        const real z_max = 0.2;       // Half-thickness (unused since z=0)
+        const real z_max = 0.01;      // Half-thickness (unused since z=0)
         const real K = 1.0;           // Polytropic constant
         const real rho_c = 1.0;       // Central surface density
 
@@ -41,7 +41,7 @@ namespace sph
         const real alpha = R_fluid / xi_max; // Radial scaling factor
         param->alpha_scaling = alpha;
         param->R_fluid = R_fluid;
-        param->z_max = z_max;
+        param->h_z = z_max;
 
         // Compute cumulative mass M(<xi) using the trapezoidal rule
         std::vector<real> M_cum(laneEmden_x.size(), 0.0);
