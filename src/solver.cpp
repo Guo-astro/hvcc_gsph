@@ -213,7 +213,11 @@ namespace sph
 
         m_output_dir = root.get<std::string>("outputDirectory", m_output_dir);
         m_param->time.start = root.get<real>("startTime", real(0));
+        WRITE_LOG << "startTime: " << m_param->time.start;
+
         m_param->time.end = root.get<real>("endTime");
+        WRITE_LOG << "endTimeOutput directory: " << m_param->time.start;
+
         if (m_param->time.end < m_param->time.start)
         {
             THROW_ERROR("endTime < startTime");
@@ -446,10 +450,12 @@ namespace sph
         boost::filesystem::create_directories(output_path);
 
         m_output = std::make_shared<Output>(full_output_dir, 0, m_unit, m_param->recenterParticles);
+        WRITE_LOG << "create_directories successfully: " << full_output_dir;
 
         m_sim = std::make_shared<Simulation>(m_param);
         if (!m_param->checkpoint_file.empty())
         {
+            WRITE_LOG << "Redaing  checkpoint_file: " << full_output_dir;
             m_output->read_checkpoint(m_param->checkpoint_file, m_sim);
             WRITE_LOG << "Initialized simulation from checkpoint: " << m_param->checkpoint_file;
         }

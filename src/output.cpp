@@ -202,6 +202,7 @@ namespace sph
                 checkpointTime = timeVal / m_unit.time_factor;
             }
             SPHParticle p;
+
 #if DIM == 3
             p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
             p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
@@ -224,15 +225,32 @@ namespace sph
             p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
             p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
 #endif
+
             p.mass = std::stod(fields[idx++]) / m_unit.mass_factor;
+
             p.dens = std::stod(fields[idx++]) / m_unit.density_factor;
             p.pres = std::stod(fields[idx++]) / m_unit.pressure_factor;
             p.ene = std::stod(fields[idx++]) / m_unit.energy_factor;
             p.sml = std::stod(fields[idx++]) / m_unit.length_factor;
             p.id = std::stoi(fields[idx++]);
+
             p.neighbor = std::stoi(fields[idx++]);
+
             p.alpha = std::stod(fields[idx++]);
-            p.gradh = std::stod(fields[idx++]);
+            try
+            {
+                p.gradh = std::stod(fields[idx++]);
+            }
+            catch (const std::out_of_range &e)
+            {
+                WRITE_LOG << "stod: out of range error for  p.gradh : " << p.gradh;
+            }
+            catch (const std::invalid_argument &e)
+            {
+                WRITE_LOG << "stod: invalid argument error for  p.gradh : " << p.gradh;
+            }
+            p.shockSensor = std::stod(fields[idx++]);
+
             // Note: The shockSensor value was not saved to the checkpoint file.
             // You may choose to output it later from the simulation state.
             particles.push_back(p);

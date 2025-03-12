@@ -47,6 +47,7 @@ namespace sph
 #if DIM != 3
         THROW_ERROR("blast_wave_from_checkpoint requires DIM == 3.");
 #endif
+        std::cout << "[blast_wave_from_checkpoint] Reading checkpoint from " << param->checkpoint_file << "\n";
 
         // Ensure that param->checkpoint_file is set (the file that holds the razor-thin disk data).
         if (param->checkpoint_file.empty())

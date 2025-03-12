@@ -16,7 +16,7 @@
   "G": 1.0,
   "anisotropic_sim": false,
   "SPHType": "disph",
-  "checkpointFile": "./sample/thin_slice_poly_2_5d_relax/00000.csv",
+  "checkpointFile": "./sample/thin_slice_poly_2_5d_relax/results/DISPH/thin_slice_poly_2_5d_relax/2.5D/00002.csv",
   "recenterParticles": true,
   "two_and_half_sim": true
 }
