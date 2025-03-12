@@ -50,6 +50,11 @@ run_kernel_test:
 	./build_manual/sph kernel_test
 
 
+# Run sample: thin_slice_poly_2_5d_relax
+run_razor_thin_sg_relaxation: build
+	@echo "Running razor_thin_sg_relaxation sample..."
+	./build_manual/sph razor_thin_sg_relaxation ./production_sims/razor_thin_sg_relaxation/razor_thin_sg_relaxation.json 8
+
 
 # Run sample: thin_slice_poly_2_5d_relax
 run_thin_slice_poly_2_5d_relax: build
