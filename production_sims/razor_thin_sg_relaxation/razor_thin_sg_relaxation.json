@@ -9,14 +9,14 @@
   "leafParticleNumber": 64,
   "gamma": 1.6666666666666667,
   "kernel": "wendland",
-  "N": 1000000,
+  "N": 20000,
   "periodic": false,
   "useGravity": true,
   "iterativeSml": true,
   "G": 1.0,
   "anisotropic_sim": false,
   "SPHType": "disph",
-  "checkpointFile": "./sample/thin_slice_poly_2_5d_relax/results/DISPH/thin_slice_poly_2_5d_relax/2.5D/00002.csv",
+  "checkpointFile": "./production_sims/razor_thin_sg_relaxation/00002.csv",
   "recenterParticles": true,
   "two_and_half_sim": true
 }

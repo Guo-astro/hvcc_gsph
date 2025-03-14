@@ -227,7 +227,7 @@ namespace sph
 
         m_param->cfl.sound = root.get<real>("cflSound", 0.3);
         m_param->cfl.force = root.get<real>("cflForce", 0.125);
-
+        m_param->cfl.ene = root.get<real>("cflEnergy", 0.3);
         m_param->av.alpha = root.get<real>("avAlpha", 1.0);
         m_param->av.use_balsara_switch = root.get<bool>("useBalsaraSwitch", true);
         m_param->av.use_time_dependent_av = root.get<bool>("useTimeDependentAV", false);

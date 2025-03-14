@@ -46,6 +46,8 @@ namespace sph
         {
             real sound;
             real force;
+            real ene;
+
         } cfl;
 
         struct ArtificialViscosity
