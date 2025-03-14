@@ -11,12 +11,12 @@
 #include "particle.hpp"
 #include "defines.hpp"
 #include "exception.hpp"
-#include "density_relaxation.hpp"
+#include "relaxation/density_relaxation.hpp"
 
 namespace sph
 {
-    void load_thin_slice_poly_2_5d_relax(std::shared_ptr<Simulation> sim,
-                                         std::shared_ptr<SPHParameters> param)
+    void thin_slice_poly_2_5d_anistropic_relax(std::shared_ptr<Simulation> sim,
+                                               std::shared_ptr<SPHParameters> param)
     {
 #if DIM != 3
         THROW_ERROR("thin_slice_poly_2_5d_relax requires DIM == 3.");
@@ -136,9 +136,9 @@ namespace sph
         }
 
         sim->set_particle_num(N_total);
-        std::cout << "[load_thin_slice_poly_2_5d_relax] Placed " << N_total
+        std::cout << "[thin_slice_poly_2_5d_anistropic_relax] Placed " << N_total
                   << " particles, total mass=" << M_total << "\n";
     }
 
-    REGISTER_SAMPLE("thin_slice_poly_2_5d_relax", load_thin_slice_poly_2_5d_relax);
+    REGISTER_SAMPLE("thin_slice_poly_2_5d_anistropic_relax", thin_slice_poly_2_5d_anistropic_relax);
 } // namespace sph

@@ -29,6 +29,8 @@ namespace sph
         NullModifier(const real center_[DIM], real radius_, real highPressure_)
             : radius(radius_), highPressure(highPressure_)
         {
+            WRITE_LOG << "[RazorThinSGModifier] Initializing";
+
             for (int i = 0; i < DIM; ++i)
                 center[i] = center_[i];
         }
@@ -36,41 +38,38 @@ namespace sph
         virtual void modifyParticles(std::vector<SPHParticle> &particles,
                                      std::shared_ptr<Simulation> sim) override
         {
+            WRITE_LOG << "[RazorThinSGModifier] Initializing";
         }
     };
 
-    // Sample function that reads an existing checkpoint (razor-thin disk data)
-    // and then modifies it so that a circular region centered at (0,0,...) gets high pressure.
     void razor_thin_sg_relaxation(std::shared_ptr<Simulation> sim,
                                   std::shared_ptr<SPHParameters> param)
     {
+        WRITE_LOG << "[razor_thin_sg_relaxation] Reading checkpoint from " << param->checkpoint_file;
+
 #if DIM != 3
         THROW_ERROR("blast_wave_from_checkpoint requires DIM == 3.");
 #endif
-        std::cout << "[blast_wave_from_checkpoint] Reading checkpoint from " << param->checkpoint_file << "\n";
 
-        // Ensure that param->checkpoint_file is set (the file that holds the razor-thin disk data).
         if (param->checkpoint_file.empty())
         {
             THROW_ERROR("No checkpoint file provided for blast wave initialization.");
         }
-        std::cout << "[blast_wave_from_checkpoint] Reading checkpoint from " << param->checkpoint_file << "\n";
+        WRITE_LOG << "[razor_thin_sg_relaxation] Checkpoint file: " << param->checkpoint_file;
 
         // Set up a high-pressure modifier.
-        // For example, we want to set a high pressure of 1000.0 inside a circle of radius 0.2,
-        // centered at the origin.
         real center_arr[DIM] = {0.0};
 #if DIM >= 2
         center_arr[1] = 0.0;
 #endif
         std::shared_ptr<CheckpointModifier> mod = std::make_shared<NullModifier>(center_arr, 0.2, 1000.0);
-        sim->set_checkpoint_modifier(mod);
 
-        // Now, trigger the checkpoint reading.
-        // (This will read the CSV and then call our modifier.)
-        // For example, if you have an Output object in your solver, you can call:
-        //    output->read_checkpoint(param->checkpoint_file, sim);
-        // For this sample, we assume that the checkpoint reading is triggered externally.
+        // Debug print: print the simulation pointer and modifier pointer when setting.
+        WRITE_LOG << "[razor_thin_sg_relaxation] Setting checkpoint modifier for simulation at " << sim.get()
+                  << ", modifier pointer: " << mod.get();
+        sim->set_checkpoint_modifier(mod);
+        WRITE_LOG << "[razor_thin_sg_relaxation] Checkpoint modifier set successfully.";
+
         std::cout << "[razor_thin_sg_relaxation] Finished modifying checkpoint data.\n";
     }
 

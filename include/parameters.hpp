@@ -121,6 +121,10 @@ namespace sph
 
         } density_relaxation;
         std::string checkpoint_file; // Path to the previous output file (e.g., "results/20250306141324/00000.csv")
+
+        real impact_parameter;
+        real initial_velocity;
+        real point_mass;
     };
 
 } // namespace sph

@@ -22,3 +22,4 @@ build/
 build_manual/
 codefetch/
 results/
+.codefetchignore

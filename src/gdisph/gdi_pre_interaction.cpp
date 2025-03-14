@@ -47,6 +47,10 @@ namespace sph
                 {
                     int j = neighbor_list[n];
                     const SPHParticle &p_j = particles[j];
+                    if (p_j.is_point_mass)
+                    {
+                        continue;
+                    }
                     vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
                     real r_xy = std::sqrt(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]);
                     real r_z = r_ij[2];
@@ -106,6 +110,10 @@ namespace sph
                 for (int i = 0; i < num; ++i)
                 {
                     auto &p_i = particles[i];
+                    if (p_i.is_point_mass)
+                    {
+                        continue;
+                    }
                     std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
                     int effectiveDim;
                     real A_eff;
@@ -144,6 +152,10 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
+                if (p_i.is_point_mass)
+                {
+                    continue;
+                }
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
                 int effectiveDim;
                 real A_eff;
@@ -171,6 +183,10 @@ namespace sph
                 {
                     int j = neighbor_list[n];
                     auto &p_j = particles[j];
+                    if (p_j.is_point_mass)
+                    {
+                        continue;
+                    }
                     vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
                     real r = std::abs(r_ij);
                     if (m_anisotropic)

@@ -22,6 +22,7 @@ add_subdirectory(disph)
 add_subdirectory(gdisph)
 add_subdirectory(gsph)
 add_subdirectory(sample)
+add_subdirectory(production_sims)
 add_subdirectory(relaxation)
 
 # Optionally, copy sample data into the build directory.

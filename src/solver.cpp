@@ -448,14 +448,18 @@ namespace sph
         std::string full_output_dir = output_path.string();
         WRITE_LOG << "Output directory: " << full_output_dir;
         boost::filesystem::create_directories(output_path);
-
+        m_sim = std::make_shared<Simulation>(m_param);
         m_output = std::make_shared<Output>(full_output_dir, 0, m_unit, m_param->recenterParticles);
         WRITE_LOG << "create_directories successfully: " << full_output_dir;
 
-        m_sim = std::make_shared<Simulation>(m_param);
         if (!m_param->checkpoint_file.empty())
         {
-            WRITE_LOG << "Redaing  checkpoint_file: " << full_output_dir;
+            // If your sample (which sets the modifier) should be applied even with a checkpoint,
+            // call it here. This ensures that the modifier gets attached.
+            bool recognized = SampleRegistry::instance().create_sample(m_sample_name, m_sim, m_param);
+            WRITE_LOG << "Sample (for checkpoint modifier) recognized: " << (recognized ? "yes" : "no");
+
+            WRITE_LOG << "Reading checkpoint_file: " << m_param->checkpoint_file;
             m_output->read_checkpoint(m_param->checkpoint_file, m_sim);
             WRITE_LOG << "Initialized simulation from checkpoint: " << m_param->checkpoint_file;
         }
@@ -528,6 +532,8 @@ namespace sph
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
+            if (p[i].is_point_mass)
+                continue;
             p[i].alpha = m_param->av.alpha;
             p[i].balsara = 1.0;
             p[i].sound = std::sqrt(c_sound * p[i].ene);
@@ -584,10 +590,11 @@ namespace sph
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
+            if (p[i].is_point_mass)
+                continue;
+
             if (p[i].is_wall)
             {
-                p[i].vel_p = p[i].vel;
-                p[i].ene_p = p[i].ene;
                 continue;
             }
             p[i].vel_p = p[i].vel + p[i].acc * (0.5 * dt);
@@ -625,6 +632,9 @@ namespace sph
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
+            if (p[i].is_point_mass)
+                continue;
+
             if (p[i].is_wall)
                 continue;
             p[i].vel = p[i].vel_p + p[i].acc * (0.5 * dt);

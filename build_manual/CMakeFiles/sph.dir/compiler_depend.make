@@ -867,8 +867,7 @@ CMakeFiles/sph.dir/src/main.cpp.o: ../src/main.cpp \
   ../include/vector_type.hpp \
   ../include/defines.hpp \
   ../include/utilities/checkpoint_modifier.hpp \
-  ../include/parameters.hpp \
-  ../include/relaxation/lane_emden_data.hpp \
+  ../include/logger.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/fstream \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/filesystem \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/__filesystem/copy_options.h \
@@ -890,13 +889,14 @@ CMakeFiles/sph.dir/src/main.cpp.o: ../src/main.cpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/__filesystem/recursive_directory_iterator.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/__filesystem/u8path.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/sstream \
-  ../include/exception.hpp \
-  ../include/logger.hpp
+  ../include/parameters.hpp \
+  ../include/relaxation/lane_emden_data.hpp \
+  ../include/exception.hpp
 
-
-../include/logger.hpp:
 
 ../include/exception.hpp:
+
+../include/relaxation/lane_emden_data.hpp:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/sstream:
 
@@ -930,7 +930,7 @@ CMakeFiles/sph.dir/src/main.cpp.o: ../src/main.cpp \
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include/c++/v1/filesystem:
 
-../include/relaxation/lane_emden_data.hpp:
+../include/logger.hpp:
 
 ../include/utilities/checkpoint_modifier.hpp:
 

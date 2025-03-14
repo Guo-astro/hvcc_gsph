@@ -22,6 +22,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "../src/disph/CMakeLists.txt"
   "../src/gdisph/CMakeLists.txt"
   "../src/gsph/CMakeLists.txt"
+  "../src/production_sims/CMakeLists.txt"
   "../src/relaxation/CMakeLists.txt"
   "../src/sample/CMakeLists.txt"
   "../test/CMakeLists.txt"
@@ -100,6 +101,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "src/gdisph/CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/gsph/CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/sample/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "src/production_sims/CMakeFiles/CMakeDirectoryInformation.cmake"
   "src/relaxation/CMakeFiles/CMakeDirectoryInformation.cmake"
   "test/CMakeFiles/CMakeDirectoryInformation.cmake"
   )

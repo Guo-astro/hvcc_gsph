@@ -65,6 +65,10 @@ namespace sph
             for (int i = 0; i < num; ++i)
             {
                 auto &p_i = particles[i];
+                if (p_i.is_point_mass)
+                {
+                    continue;
+                }
                 std::vector<int> neighbor_list(m_neighbor_number * neighbor_list_size);
 
                 // neighbor search
@@ -87,6 +91,10 @@ namespace sph
                 {
                     int const j = neighbor_list[n];
                     auto &p_j = particles[j];
+                    if (p_j.is_point_mass)
+                    {
+                        continue;
+                    }
                     const vec_t r_ij = periodic->calc_r_ij(r_i, p_j.pos);
                     const real r = std::abs(r_ij);
 

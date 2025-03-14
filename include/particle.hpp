@@ -26,14 +26,16 @@ namespace sph
 
         real gradh; // grad-h term
 
-        real phi = 0.0; // potential
+        real phi = 0.0;             // potential
+        bool is_point_mass = false; // Flag to indicate if particle is fixed
 
         int id;
         int neighbor;
         SPHParticle *next = nullptr;
-        bool is_wall = false; // <<-- NEW: flag indicating a wall particle
-        real shockSensor;     // dimensionless measure of compression
-        int shockMode;        // 1 = currently in shock mode, 0 = not
+        bool is_wall = false; // <<-- flag indicating a wall particle
+
+        real shockSensor; // dimensionless measure of compression
+        int shockMode;    // 1 = currently in shock mode, 0 = not
         int oldShockMode;
         bool switch_to_no_shock_region = false; // True if DISPH will be used
         real target_rho;

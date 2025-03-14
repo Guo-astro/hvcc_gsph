@@ -542,6 +542,78 @@ src/pre_interaction.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/pre_interaction.cpp.s
 .PHONY : src/pre_interaction.cpp.s
 
+src/production_sims/razor_thin_hvcc.o: src/production_sims/razor_thin_hvcc.cpp.o
+.PHONY : src/production_sims/razor_thin_hvcc.o
+
+# target to build an object file
+src/production_sims/razor_thin_hvcc.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_hvcc.cpp.o
+.PHONY : src/production_sims/razor_thin_hvcc.cpp.o
+
+src/production_sims/razor_thin_hvcc.i: src/production_sims/razor_thin_hvcc.cpp.i
+.PHONY : src/production_sims/razor_thin_hvcc.i
+
+# target to preprocess a source file
+src/production_sims/razor_thin_hvcc.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_hvcc.cpp.i
+.PHONY : src/production_sims/razor_thin_hvcc.cpp.i
+
+src/production_sims/razor_thin_hvcc.s: src/production_sims/razor_thin_hvcc.cpp.s
+.PHONY : src/production_sims/razor_thin_hvcc.s
+
+# target to generate assembly for a file
+src/production_sims/razor_thin_hvcc.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_hvcc.cpp.s
+.PHONY : src/production_sims/razor_thin_hvcc.cpp.s
+
+src/production_sims/razor_thin_sg_relaxation.o: src/production_sims/razor_thin_sg_relaxation.cpp.o
+.PHONY : src/production_sims/razor_thin_sg_relaxation.o
+
+# target to build an object file
+src/production_sims/razor_thin_sg_relaxation.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_sg_relaxation.cpp.o
+.PHONY : src/production_sims/razor_thin_sg_relaxation.cpp.o
+
+src/production_sims/razor_thin_sg_relaxation.i: src/production_sims/razor_thin_sg_relaxation.cpp.i
+.PHONY : src/production_sims/razor_thin_sg_relaxation.i
+
+# target to preprocess a source file
+src/production_sims/razor_thin_sg_relaxation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_sg_relaxation.cpp.i
+.PHONY : src/production_sims/razor_thin_sg_relaxation.cpp.i
+
+src/production_sims/razor_thin_sg_relaxation.s: src/production_sims/razor_thin_sg_relaxation.cpp.s
+.PHONY : src/production_sims/razor_thin_sg_relaxation.s
+
+# target to generate assembly for a file
+src/production_sims/razor_thin_sg_relaxation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/razor_thin_sg_relaxation.cpp.s
+.PHONY : src/production_sims/razor_thin_sg_relaxation.cpp.s
+
+src/production_sims/test_razor_thin_blast_wave.o: src/production_sims/test_razor_thin_blast_wave.cpp.o
+.PHONY : src/production_sims/test_razor_thin_blast_wave.o
+
+# target to build an object file
+src/production_sims/test_razor_thin_blast_wave.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/test_razor_thin_blast_wave.cpp.o
+.PHONY : src/production_sims/test_razor_thin_blast_wave.cpp.o
+
+src/production_sims/test_razor_thin_blast_wave.i: src/production_sims/test_razor_thin_blast_wave.cpp.i
+.PHONY : src/production_sims/test_razor_thin_blast_wave.i
+
+# target to preprocess a source file
+src/production_sims/test_razor_thin_blast_wave.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/test_razor_thin_blast_wave.cpp.i
+.PHONY : src/production_sims/test_razor_thin_blast_wave.cpp.i
+
+src/production_sims/test_razor_thin_blast_wave.s: src/production_sims/test_razor_thin_blast_wave.cpp.s
+.PHONY : src/production_sims/test_razor_thin_blast_wave.s
+
+# target to generate assembly for a file
+src/production_sims/test_razor_thin_blast_wave.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/production_sims/test_razor_thin_blast_wave.cpp.s
+.PHONY : src/production_sims/test_razor_thin_blast_wave.cpp.s
+
 src/relaxation/lane_emden_relaxation.o: src/relaxation/lane_emden_relaxation.cpp.o
 .PHONY : src/relaxation/lane_emden_relaxation.o
 
@@ -974,6 +1046,30 @@ src/sample/thin_slice_poly_2_5d.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d.cpp.s
 .PHONY : src/sample/thin_slice_poly_2_5d.cpp.s
 
+src/sample/thin_slice_poly_2_5d_anistropic_relax.o: src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.o
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.o
+
+# target to build an object file
+src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.o
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.o
+
+src/sample/thin_slice_poly_2_5d_anistropic_relax.i: src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.i
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.i
+
+# target to preprocess a source file
+src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.i
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.i
+
+src/sample/thin_slice_poly_2_5d_anistropic_relax.s: src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.s
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.s
+
+# target to generate assembly for a file
+src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sph_lib.dir/build.make CMakeFiles/sph_lib.dir/src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.s
+.PHONY : src/sample/thin_slice_poly_2_5d_anistropic_relax.cpp.s
+
 src/sample/thin_slice_poly_2_5d_relax.o: src/sample/thin_slice_poly_2_5d_relax.cpp.o
 .PHONY : src/sample/thin_slice_poly_2_5d_relax.o
 
@@ -1225,6 +1321,15 @@ help:
 	@echo "... src/pre_interaction.o"
 	@echo "... src/pre_interaction.i"
 	@echo "... src/pre_interaction.s"
+	@echo "... src/production_sims/razor_thin_hvcc.o"
+	@echo "... src/production_sims/razor_thin_hvcc.i"
+	@echo "... src/production_sims/razor_thin_hvcc.s"
+	@echo "... src/production_sims/razor_thin_sg_relaxation.o"
+	@echo "... src/production_sims/razor_thin_sg_relaxation.i"
+	@echo "... src/production_sims/razor_thin_sg_relaxation.s"
+	@echo "... src/production_sims/test_razor_thin_blast_wave.o"
+	@echo "... src/production_sims/test_razor_thin_blast_wave.i"
+	@echo "... src/production_sims/test_razor_thin_blast_wave.s"
 	@echo "... src/relaxation/lane_emden_relaxation.o"
 	@echo "... src/relaxation/lane_emden_relaxation.i"
 	@echo "... src/relaxation/lane_emden_relaxation.s"
@@ -1279,6 +1384,9 @@ help:
 	@echo "... src/sample/thin_slice_poly_2_5d.o"
 	@echo "... src/sample/thin_slice_poly_2_5d.i"
 	@echo "... src/sample/thin_slice_poly_2_5d.s"
+	@echo "... src/sample/thin_slice_poly_2_5d_anistropic_relax.o"
+	@echo "... src/sample/thin_slice_poly_2_5d_anistropic_relax.i"
+	@echo "... src/sample/thin_slice_poly_2_5d_anistropic_relax.s"
 	@echo "... src/sample/thin_slice_poly_2_5d_relax.o"
 	@echo "... src/sample/thin_slice_poly_2_5d_relax.i"
 	@echo "... src/sample/thin_slice_poly_2_5d_relax.s"

@@ -1,6 +1,6 @@
 {
   "outputDirectory": "production_sims/razor_thin_hvcc/results",
-  "endTime": 1000.0,
+  "endTime": 30.0,
   "avAlpha": 2.0,
   "neighborNumber": 2048,
   "useBalsaraSwitch": true,

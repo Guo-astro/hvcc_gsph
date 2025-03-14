@@ -29,6 +29,8 @@
 /Users/guo/OSS/sphcode/build_manual/src/gsph/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/sample/CMakeFiles/edit_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/sample/CMakeFiles/rebuild_cache.dir
+/Users/guo/OSS/sphcode/build_manual/src/production_sims/CMakeFiles/edit_cache.dir
+/Users/guo/OSS/sphcode/build_manual/src/production_sims/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/relaxation/CMakeFiles/edit_cache.dir
 /Users/guo/OSS/sphcode/build_manual/src/relaxation/CMakeFiles/rebuild_cache.dir
 /Users/guo/OSS/sphcode/build_manual/test/CMakeFiles/edit_cache.dir

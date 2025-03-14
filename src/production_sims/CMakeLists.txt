@@ -1,6 +1,5 @@
-file(GLOB SAMPLE_SOURCES *.cpp)
-
-target_sources(sph
+file(GLOB production_sims_SOURCES *.cpp)
+target_sources(sph_lib
     PRIVATE
-        ${SAMPLE_SOURCES}
+        ${production_sims_SOURCES}
 )

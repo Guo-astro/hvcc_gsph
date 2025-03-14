@@ -175,6 +175,8 @@ namespace sph
 
     void Output::read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim)
     {
+        WRITE_LOG << "Output::read_checkpoint called with simulation pointer: " << sim.get();
+
         std::ifstream in(file_name);
         if (!in.is_open())
         {
@@ -243,7 +245,7 @@ namespace sph
             }
             catch (const std::out_of_range &e)
             {
-                WRITE_LOG << "stod: out of range error for  p.gradh : " << p.gradh;
+                // WRITE_LOG << "stod: out of range error for  p.gradh : " << p.gradh;
             }
             catch (const std::invalid_argument &e)
             {
@@ -266,6 +268,8 @@ namespace sph
 
         // NEW: Use the Simulation's checkpoint modifier if set.
         auto modifier = sim->get_checkpoint_modifier();
+        WRITE_LOG << "CheckpointModifier in read_checkpoint: " << (modifier ? "found" : "not found")
+                  << " (simulation pointer: " << sim.get() << ")";
         if (modifier)
         {
             modifier->modifyParticles(particles, sim);

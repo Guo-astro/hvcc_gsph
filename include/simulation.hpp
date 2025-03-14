@@ -6,6 +6,7 @@
 
 #include "particle.hpp"
 #include "utilities/checkpoint_modifier.hpp"
+#include "logger.hpp"
 namespace sph
 {
 
@@ -57,9 +58,14 @@ private:                                      \
         void set_checkpoint_modifier(std::shared_ptr<CheckpointModifier> mod)
         {
             checkpoint_modifier = mod;
+            WRITE_LOG << "Simulation::set_checkpoint_modifier called on simulation " << this
+                      << " with modifier pointer: " << mod.get();
         }
+
         std::shared_ptr<CheckpointModifier> get_checkpoint_modifier() const
         {
+            WRITE_LOG << "Simulation::get_checkpoint_modifier called on simulation " << this
+                      << " returning modifier: " << (checkpoint_modifier ? "non-null" : "null");
             return checkpoint_modifier;
         }
     };
