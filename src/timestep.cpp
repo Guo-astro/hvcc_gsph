@@ -60,8 +60,20 @@ namespace sph
         const real dt_force = dt_min_force.min();
         const real dt_ene = dt_min_ene.min();
 
-        // Set the global timestep as the smallest of the three
-        const real dt_global = std::min({dt_sound_i, dt_force, dt_ene});
+        // Set the global timestep as the smallest of dt_sound_i and dt_force
+        real dt_global = std::min({dt_sound_i, dt_force});
+
+        // Apply the condition: if dt_global < 1e-3, multiply by 5
+        const real dt_threshold = 1e-3;
+        if (dt_global < dt_threshold)
+        {
+            real dt_original = dt_global; // Store original for logging
+            dt_global *= 5;               // Multiply by 5
+            WRITE_LOG << "Warning: dt_global adjusted from " << dt_original
+                      << " to " << dt_global << " (multiplied by 5) at t = " << sim->get_time();
+        }
+
+        // Set the adjusted timestep in the simulation
         sim->set_dt(dt_global);
 
         // Determine which criterion is limiting
@@ -74,16 +86,12 @@ namespace sph
         {
             limiting_criterion = "force";
         }
-        else if (dt_global == dt_ene)
-        {
-            limiting_criterion = "energy";
-        }
 
         // Log the timestep values and the limiting criterion
         WRITE_LOG << "Timestep criteria at t = " << sim->get_time() << ": "
                   << "dt_sound = " << dt_sound_i << ", "
                   << "dt_force = " << dt_force << ", "
                   << "dt_ene = " << dt_ene << ". "
-                  << "Limiting criterion: " << limiting_criterion;
+                  << "Limiting criterion(ene is only for reference): " << limiting_criterion;
     }
 }

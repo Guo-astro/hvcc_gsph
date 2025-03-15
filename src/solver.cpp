@@ -577,7 +577,6 @@ namespace sph
 
         correct();
     }
-
     void Solver::predict()
     {
         auto &p = m_sim->get_particles();
@@ -586,23 +585,28 @@ namespace sph
         const real dt = m_sim->get_dt();
         const real gamma = m_param->physics.gamma;
         const real c_sound = gamma * (gamma - 1.0);
+        const real ene_min = 1e-10; // Minimum energy threshold
 
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
-            if (p[i].is_point_mass)
+            if (p[i].is_point_mass || p[i].is_wall)
                 continue;
 
-            if (p[i].is_wall)
-            {
-                continue;
-            }
             p[i].vel_p = p[i].vel + p[i].acc * (0.5 * dt);
             p[i].ene_p = p[i].ene + p[i].dene * (0.5 * dt);
 
             p[i].pos += p[i].vel_p * dt;
             p[i].vel += p[i].acc * dt;
             p[i].ene += p[i].dene * dt;
+
+            // Cap internal energy to prevent negative or very small values
+            if (p[i].ene < ene_min)
+            {
+                p[i].ene = ene_min;
+                WRITE_LOG << "Warning: ene floored to " << ene_min << " for particle " << i << " in predict step.";
+            }
+
             p[i].sound = std::sqrt(c_sound * p[i].ene);
 
             periodic->apply(p[i].pos);
@@ -613,7 +617,8 @@ namespace sph
                 p[i].vel[2] = 0.0;
             }
         }
-        // Optionally re-apply LaneEmden-based relaxation if user wants it each step:
+
+        // Density relaxation (unchanged)
         if (m_param->density_relaxation.is_valid && m_laneEmdenRelaxation)
         {
             m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
@@ -628,24 +633,34 @@ namespace sph
         const real dt = m_sim->get_dt();
         const real gamma = m_param->physics.gamma;
         const real c_sound = gamma * (gamma - 1.0);
+        const real ene_min = 1e-10; // Minimum energy threshold
 
 #pragma omp parallel for
         for (int i = 0; i < num; ++i)
         {
-            if (p[i].is_point_mass)
+            if (p[i].is_point_mass || p[i].is_wall)
                 continue;
 
-            if (p[i].is_wall)
-                continue;
             p[i].vel = p[i].vel_p + p[i].acc * (0.5 * dt);
             p[i].ene = p[i].ene_p + p[i].dene * (0.5 * dt);
+
+            // Cap internal energy to prevent negative or very small values
+            if (p[i].ene < ene_min)
+            {
+                p[i].ene = ene_min;
+                WRITE_LOG << "Warning: ene floored to " << ene_min << " for particle " << i << " in correct step.";
+            }
+
             p[i].sound = std::sqrt(c_sound * p[i].ene);
+
             if (m_param->two_and_half_sim)
             {
                 p[i].pos[2] = 0.0;
                 p[i].vel[2] = 0.0;
             }
         }
+
+        // Density relaxation (unchanged)
         if (m_param->density_relaxation.is_valid && m_laneEmdenRelaxation)
         {
             m_laneEmdenRelaxation->add_relaxation_force(m_sim, *m_param);
