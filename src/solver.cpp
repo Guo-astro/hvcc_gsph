@@ -604,6 +604,7 @@ namespace sph
             if (p[i].ene < ene_min)
             {
                 p[i].ene = ene_min;
+                p[i].ene_floored = 1; // Mark as floored
                 WRITE_LOG << "Warning: ene floored to " << ene_min << " for particle " << i << " in predict step.";
             }
 

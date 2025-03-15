@@ -11,7 +11,41 @@ namespace sph
 {
     class SPHParticle;
     class Simulation;
+    inline double safe_stod(const std::string &str, const std::string &field_name)
+    {
+        try
+        {
+            return std::stod(str);
+        }
+        catch (const std::invalid_argument &e)
+        {
+            WRITE_LOG << "Invalid argument for " << field_name << ": '" << str << "'";
+            throw;
+        }
+        catch (const std::out_of_range &e)
+        {
+            WRITE_LOG << "Out of range for " << field_name << ": '" << str << "'";
+            // throw;
+        }
+    }
 
+    inline int safe_stoi(const std::string &str, const std::string &field_name)
+    {
+        try
+        {
+            return std::stoi(str);
+        }
+        catch (const std::invalid_argument &e)
+        {
+            WRITE_LOG << "Invalid argument for " << field_name << ": '" << str << "'";
+            throw;
+        }
+        catch (const std::out_of_range &e)
+        {
+            WRITE_LOG << "Out of range for " << field_name << ": '" << str << "'";
+            throw;
+        }
+    }
     class Output
     {
         int m_count;

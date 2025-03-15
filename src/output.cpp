@@ -11,7 +11,6 @@
 
 namespace sph
 {
-    // Helper function: outputs one particle's data in CSV format.
     void output_particle_data_csv(const SPHParticle &p, std::ostringstream &line, const UnitSystem &units)
     {
 #if DIM == 1
@@ -45,7 +44,8 @@ namespace sph
              << p.neighbor << ","
              << p.alpha << ","
              << p.gradh << ","
-             << p.shockSensor; // Added shock detection result (e.g., Mach number)
+             << p.shockSensor << "," // Add comma after shockSensor
+             << p.ene_floored;       // Add ene_floored
     }
 
     // Modified output_particle function: writes CSV with a header line showing units.
@@ -55,11 +55,9 @@ namespace sph
         const int num = sim->get_particle_num();
         const real time = sim->get_time();
 
-        // Use .csv extension and create file name using m_count.
         const std::string file_name = m_dir + (boost::format("/%05d.csv") % m_count).str();
         std::ofstream out(file_name);
 
-        // Build CSV header with explicit units
         std::ostringstream header;
         header << "time [" << m_unit.time_unit << "],";
 #if DIM == 1
@@ -89,9 +87,9 @@ namespace sph
                << "pres [" << m_unit.pressure_unit << "],"
                << "ene [" << m_unit.energy_unit << "],"
                << "sml [" << m_unit.length_unit << "],"
-               << "id,neighbor,alpha,gradh,shockSensor";
+               << "id,neighbor,alpha,gradh,shockSensor,ene_floored"; // Add ene_floored
 
-        // Append additional arrays (if any)
+        // Rest of the function remains unchanged
         auto &scalar_map = sim->get_scalar_map();
         auto &vector_map = sim->get_vector_map();
         for (auto &kv : scalar_map)
@@ -110,19 +108,15 @@ namespace sph
         }
         out << header.str() << "\n";
 
-        // Write one line per particle (each line includes simulation time)
         for (int i = 0; i < num; ++i)
         {
             std::ostringstream line;
             line << time * m_unit.time_factor << ",";
             output_particle_data_csv(particles[i], line, m_unit);
-
-            // Write additional scalar arrays
             for (auto &[name, arr] : scalar_map)
             {
                 line << "," << arr[i];
             }
-            // Write additional vector arrays
             for (auto &[name, arrv] : vector_map)
             {
 #if DIM == 1
@@ -175,90 +169,169 @@ namespace sph
 
     void Output::read_checkpoint(const std::string &file_name, std::shared_ptr<Simulation> sim)
     {
-        WRITE_LOG << "Output::read_checkpoint called with simulation pointer: " << sim.get();
-
-        std::ifstream in(file_name);
-        if (!in.is_open())
+        std::ifstream file(file_name);
+        if (!file.is_open())
         {
-            THROW_ERROR("Cannot open checkpoint file: ", file_name);
+            WRITE_LOG << "Cannot open checkpoint file: " << file_name << "\n";
+            throw std::runtime_error("Cannot open checkpoint file");
         }
-        std::string headerLine;
-        std::getline(in, headerLine);
-
         std::vector<SPHParticle> particles;
+
         std::string line;
+        int lineNum = 1;
         double checkpointTime = 0.0;
-        while (std::getline(in, line))
+
+        // Read and parse the header
+        if (!std::getline(file, line))
         {
-            std::istringstream ss(line);
-            std::string field;
-            std::vector<std::string> fields;
-            while (std::getline(ss, field, ','))
+            WRITE_LOG << "Checkpoint file is empty\n";
+            throw std::runtime_error("Empty checkpoint file");
+        }
+        std::vector<std::string> header_fields;
+        std::stringstream header_ss(line);
+        std::string field;
+        while (std::getline(header_ss, field, ','))
+        {
+            // Remove units in brackets, e.g., "time [s]" -> "time"
+            size_t bracket = field.find('[');
+            if (bracket != std::string::npos)
             {
-                fields.push_back(field);
+                field = field.substr(0, bracket);
             }
-            int idx = 0;
-            double timeVal = std::stod(fields[idx++]);
+            field.erase(0, field.find_first_not_of(" \t")); // Trim leading whitespace
+            field.erase(field.find_last_not_of(" \t") + 1); // Trim trailing whitespace
+            header_fields.push_back(field);
+        }
+
+        // Create a map from field names to indices
+        std::unordered_map<std::string, int> field_map;
+        for (int i = 0; i < header_fields.size(); ++i)
+        {
+            field_map[header_fields[i]] = i;
+        }
+
+        // Define required fields based on DIM
+        std::vector<std::string> required_fields;
+#if DIM == 1
+        required_fields = {"time", "pos_x", "vel_x", "acc_x", "mass", "dens", "pres", "ene", "sml",
+                           "id", "neighbor", "alpha", "gradh", "shockSensor"};
+#elif DIM == 2
+        required_fields = {"time", "pos_x", "pos_y", "vel_x", "vel_y", "acc_x", "acc_y", "mass",
+                           "dens", "pres", "ene", "sml", "id", "neighbor", "alpha", "gradh", "shockSensor"};
+#elif DIM == 3
+        required_fields = {"time", "pos_x", "pos_y", "pos_z", "vel_x", "vel_y", "vel_z",
+                           "acc_x", "acc_y", "acc_z", "mass", "dens", "pres", "ene", "sml",
+                           "id", "neighbor", "alpha", "gradh", "shockSensor"};
+#endif
+
+        // Check for missing required fields
+        for (const auto &req_field : required_fields)
+        {
+            if (field_map.find(req_field) == field_map.end())
+            {
+                WRITE_LOG << "Checkpoint file missing required field: " << req_field << "\n";
+                throw std::runtime_error("Checkpoint file missing required field: " + req_field);
+            }
+        }
+
+        // Read particle data
+        particles.clear();
+        while (std::getline(file, line))
+        {
+            std::vector<std::string> fields;
+            std::stringstream ss(line);
+            std::string value;
+            while (std::getline(ss, value, ','))
+            {
+                fields.push_back(value);
+            }
+
+            if (fields.empty())
+            {
+                WRITE_LOG << "Line " << lineNum << ": Empty line skipped\n";
+                ++lineNum;
+                continue;
+            }
+
+            // Ensure the line has at least as many fields as in the header
+            if (fields.size() < header_fields.size())
+            {
+                WRITE_LOG << "Line " << lineNum << ": Insufficient fields (" << fields.size()
+                          << " found, " << header_fields.size() << " expected)\n";
+                ++lineNum;
+                continue;
+            }
+
+            SPHParticle p{};
+            // Read time (as in original code, used only once for checkpointTime)
+            double timeVal = safe_stod(fields[field_map["time"]], "time");
             if (particles.empty())
             {
                 checkpointTime = timeVal / m_unit.time_factor;
             }
-            SPHParticle p;
 
+            // Read position
+#if DIM >= 1
+            p.pos[0] = safe_stod(fields[field_map["pos_x"]], "pos_x") / m_unit.length_factor;
+#endif
+#if DIM >= 2
+            p.pos[1] = safe_stod(fields[field_map["pos_y"]], "pos_y") / m_unit.length_factor;
+#endif
 #if DIM == 3
-            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.pos[2] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.vel[1] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.vel[2] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-            p.acc[1] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-            p.acc[2] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-#elif DIM == 2
-            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.pos[1] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.vel[1] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-            p.acc[1] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
-#elif DIM == 1
-            p.pos[0] = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.vel[0] = std::stod(fields[idx++]) / (m_unit.length_factor / m_unit.time_factor);
-            p.acc[0] = std::stod(fields[idx++]) / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+            p.pos[2] = safe_stod(fields[field_map["pos_z"]], "pos_z") / m_unit.length_factor;
 #endif
 
-            p.mass = std::stod(fields[idx++]) / m_unit.mass_factor;
+            // Read velocity
+#if DIM >= 1
+            p.vel[0] = safe_stod(fields[field_map["vel_x"]], "vel_x") / (m_unit.length_factor / m_unit.time_factor);
+#endif
+#if DIM >= 2
+            p.vel[1] = safe_stod(fields[field_map["vel_y"]], "vel_y") / (m_unit.length_factor / m_unit.time_factor);
+#endif
+#if DIM == 3
+            p.vel[2] = safe_stod(fields[field_map["vel_z"]], "vel_z") / (m_unit.length_factor / m_unit.time_factor);
+#endif
 
-            p.dens = std::stod(fields[idx++]) / m_unit.density_factor;
-            p.pres = std::stod(fields[idx++]) / m_unit.pressure_factor;
-            p.ene = std::stod(fields[idx++]) / m_unit.energy_factor;
-            p.sml = std::stod(fields[idx++]) / m_unit.length_factor;
-            p.id = std::stoi(fields[idx++]);
+            // Read acceleration
+#if DIM >= 1
+            p.acc[0] = safe_stod(fields[field_map["acc_x"]], "acc_x") / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+#endif
+#if DIM >= 2
+            p.acc[1] = safe_stod(fields[field_map["acc_y"]], "acc_y") / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+#endif
+#if DIM == 3
+            p.acc[2] = safe_stod(fields[field_map["acc_z"]], "acc_z") / (m_unit.length_factor / (m_unit.time_factor * m_unit.time_factor));
+#endif
 
-            p.neighbor = std::stoi(fields[idx++]);
+            // Read scalar properties with unit conversions
+            p.mass = safe_stod(fields[field_map["mass"]], "mass") / m_unit.mass_factor;
+            p.dens = safe_stod(fields[field_map["dens"]], "dens") / m_unit.density_factor;
+            p.pres = safe_stod(fields[field_map["pres"]], "pres") / m_unit.pressure_factor;
+            p.ene = safe_stod(fields[field_map["ene"]], "ene") / m_unit.energy_factor;
+            p.sml = safe_stod(fields[field_map["sml"]], "sml") / m_unit.length_factor;
 
-            p.alpha = std::stod(fields[idx++]);
-            try
+            // Read integer and additional properties
+            p.id = safe_stoi(fields[field_map["id"]], "id");
+            p.neighbor = safe_stoi(fields[field_map["neighbor"]], "neighbor");
+            p.alpha = safe_stod(fields[field_map["alpha"]], "alpha");
+            p.gradh = safe_stod(fields[field_map["gradh"]], "gradh");
+            p.shockSensor = safe_stod(fields[field_map["shockSensor"]], "shockSensor");
+
+            // Read optional field ene_floored
+            if (field_map.count("ene_floored"))
             {
-                p.gradh = std::stod(fields[idx++]);
+                p.ene_floored = safe_stoi(fields[field_map["ene_floored"]], "ene_floored");
             }
-            catch (const std::out_of_range &e)
+            else
             {
-                // WRITE_LOG << "stod: out of range error for  p.gradh : " << p.gradh;
+                p.ene_floored = 0; // Default for older files
             }
-            catch (const std::invalid_argument &e)
-            {
-                WRITE_LOG << "stod: invalid argument error for  p.gradh : " << p.gradh;
-            }
-            p.shockSensor = std::stod(fields[idx++]);
 
-            // Note: The shockSensor value was not saved to the checkpoint file.
-            // You may choose to output it later from the simulation state.
             particles.push_back(p);
+            ++lineNum;
         }
-        in.close();
 
+        file.close();
         // Optional recentering
         if (m_recenterParticles)
         {
@@ -268,8 +341,6 @@ namespace sph
 
         // NEW: Use the Simulation's checkpoint modifier if set.
         auto modifier = sim->get_checkpoint_modifier();
-        WRITE_LOG << "CheckpointModifier in read_checkpoint: " << (modifier ? "found" : "not found")
-                  << " (simulation pointer: " << sim.get() << ")";
         if (modifier)
         {
             modifier->modifyParticles(particles, sim);
@@ -279,11 +350,8 @@ namespace sph
         sim->set_particles(particles);
         sim->set_time(checkpointTime);
         sim->set_particle_num((int)particles.size());
-
-        WRITE_LOG << "Loaded checkpoint from " << file_name << " with "
-                  << particles.size() << " particles and time " << checkpointTime;
+        WRITE_LOG << "Loaded " << particles.size() << " particles from " << file_name << "\n";
     }
-
     // Updated constructor: now accepts a flag to recenter particles.
     Output::Output(const std::string &dir, int count, const UnitSystem &unit, bool recenterParticles)
         : m_dir(dir), m_count(count), m_unit(unit), m_recenterParticles(recenterParticles)
