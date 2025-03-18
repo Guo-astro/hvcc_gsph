@@ -7,9 +7,17 @@
 
 namespace sph
 {
-    inline int kernelDim(bool two_and_half)
+    inline int kernelDim(bool is2p5)
     {
-        return two_and_half ? 2 : DIM;
+#if DIM == 1
+        return 1;
+#elif DIM == 2
+        return 2;
+#elif DIM == 3
+        return is2p5 ? 2 : 3;
+#else
+#error "Unsupported dimension: must be 1, 2, or 3."
+#endif
     }
     inline real powh_dim(real h, int kd)
     {
@@ -29,8 +37,6 @@ namespace sph
         virtual real w(const real r, const real h) const = 0;                     // W(r,h)
         virtual vec_t dw(const vec_t &rij, const real r, const real h) const = 0; // grad W(r,h)
         virtual real dhw(const real r, const real h) const = 0;                   // dW(r,h)/dh
-        virtual real W(const real q) const = 0;                                   // dimensionless kernel profile f(q)
-        virtual real dW_dq(const real q) const = 0;                               // df/dq
         virtual ~KernelFunction() = default;
     };
 }

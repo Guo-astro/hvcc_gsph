@@ -56,12 +56,13 @@ namespace sph
 
     void GravityForce::calculation(std::shared_ptr<Simulation> sim)
     {
-        WRITE_LOG << "Calculating gravity...";
 
         if (!m_is_valid)
         {
             return;
         }
+        WRITE_LOG << "Calculating gravity...";
+
         apply_self_gravity(sim);     // Compute self-gravity with BHTree
         apply_external_gravity(sim); // Add external gravity from point masses
     }

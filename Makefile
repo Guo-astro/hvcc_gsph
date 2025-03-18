@@ -109,7 +109,7 @@ run_khi:
 	./build_manual/sph khi ./sample/khi/khi.json 8
 
 # Run sample: shock_tube_2d
-run_shock_tube_2d:
+run_shock_tube_2d: build
 	@echo "Running shock_tube_2d sample..."
 	./build_manual/sph shock_tube_2d ./sample/shock_tube_2d/shock_tube_2d.json 8
 

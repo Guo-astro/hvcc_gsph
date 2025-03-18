@@ -24,67 +24,7 @@ namespace sph
             const Periodic *periodic,
             const KernelFunction *kernel)
         {
-            if (!m_anisotropic)
-            {
-                // If not anisotropic, use base class implementation
-                return sph::PreInteraction::newton_raphson(p_i, particles, neighbor_list, n_neighbor, periodic, kernel);
-            }
-
-            // Anisotropic case: identical to gdisph for now, but can be customized
-            real h_xy = p_i.sml;
-            const real h_z = m_hz;
-            const real h_min = 1e-6;
-            const real tolerance = 1e-6;
-            const int max_iterations = 20;
-            const real N_desired = static_cast<real>(m_neighbor_number);
-
-            for (int iter = 0; iter < max_iterations; ++iter)
-            {
-                real N_h = 0.0;
-                real dN_dh_xy = 0.0;
-
-                for (int n = 0; n < n_neighbor; ++n)
-                {
-                    int j = neighbor_list[n];
-                    const SPHParticle &p_j = particles[j];
-                    if (p_j.is_point_mass)
-                    {
-                        continue;
-                    }
-                    vec_t r_ij = periodic->calc_r_ij(p_i.pos, p_j.pos);
-                    real r_xy = std::sqrt(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]);
-                    real r_z = r_ij[2];
-                    real q = std::sqrt((r_xy / h_xy) * (r_xy / h_xy) + (r_z / h_z) * (r_z / h_z));
-
-                    real W = kernel->W(q);
-                    real dW_dq = kernel->dW_dq(q);
-
-                    N_h += p_j.mass / p_j.dens * W;
-
-                    real dq_dh_xy = -(r_xy * r_xy) / (h_xy * h_xy * h_xy * q);
-                    dN_dh_xy += p_j.mass / p_j.dens * dW_dq * dq_dh_xy;
-                }
-
-                real residual = N_h - N_desired;
-                if (std::abs(residual) < tolerance)
-                {
-                    break;
-                }
-
-                if (std::abs(dN_dh_xy) < 1e-12)
-                {
-                    throw std::runtime_error("newton_raphson: derivative too small in gsph");
-                }
-                real dh_xy = -residual / dN_dh_xy;
-                h_xy += dh_xy;
-
-                if (h_xy < h_min)
-                {
-                    h_xy = h_min;
-                }
-            }
-
-            return h_xy;
+            return sph::PreInteraction::newton_raphson(p_i, particles, neighbor_list, n_neighbor, periodic, kernel);
         }
         void PreInteraction::initialize(std::shared_ptr<SPHParameters> param)
         {

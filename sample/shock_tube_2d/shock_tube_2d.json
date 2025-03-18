@@ -6,15 +6,15 @@
   "avAlpha": 1.0,
   "neighborNumber": 32,
   "gamma": 1.4,
-  "kernel": "cubic_spline",
+  "kernel": "wendland",
   "N": 50,
   "periodic": true,
   "iterativeSmoothingLength": true,
-  "useBalsaraSwitch": false,
+  "useBalsaraSwitch": true,
 
   "rangeMax": [1.0, 0.5],
   "rangeMin": [-1.0, 0.0],
   "useTimeDependentAV": false,
-  "SPHType": "gdisph",
+  "SPHType": "disph",
   "unitConfig": "./units.json"
 }
