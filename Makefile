@@ -48,6 +48,9 @@ run: run_kernel_test
 run_kernel_test:
 	@echo "Running kernel_test sample..."
 	./build_manual/sph kernel_test
+run_shock_tube_2p5d_blastwave: build
+	@echo "Running shock_tube_2p5d_blastwave sample..."
+	./build_manual/sph shock_tube_2p5d_blastwave ./sample/shock_tube_2p5d_blastwave/shock_tube_2p5d_blastwave.json 8
 
 # Run: razor_thin_hvcc
 run_razor_thin_hvcc: build

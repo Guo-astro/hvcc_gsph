@@ -1,20 +1,21 @@
 {
-  "outputDirectory": "sample/shock_tube_2d/results",
-  "endTime": 0.5,
+  "outputDirectory": "sample/shock_tube_2p5d_blastwave/results",
+  "endTime": 0.05,
   "cflSound": 0.3,
   "cflForce": 0.125,
   "avAlpha": 1.0,
-  "neighborNumber": 32,
-  "gamma": 1.4,
+  "neighborNumber": 64,
+  "gamma": 1.66666666,
   "kernel": "wendland",
   "N": 50,
   "periodic": true,
   "iterativeSmoothingLength": true,
   "useBalsaraSwitch": true,
 
-  "rangeMax": [1.0, 0.5],
-  "rangeMin": [-1.0, 0.0],
+  "rangeMax": [4.0, 0.5,0.0],
+  "rangeMin": [-4.0, 0.0,0.0],
   "useTimeDependentAV": false,
-  "SPHType": "disph",
+  "two_and_half_sim": true,
+  "SPHType": "gsph",
   "unitConfig": "./units.json"
 }

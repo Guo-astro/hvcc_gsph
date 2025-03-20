@@ -64,7 +64,7 @@ namespace sph
         real dt_global = std::min({dt_sound_i, dt_force});
 
         // Apply the condition: if dt_global < 1e-3, multiply by 5
-        const real dt_threshold = 1e-4;
+        const real dt_threshold = 1e-5;
         if (dt_global < dt_threshold)
         {
             real dt_original = dt_global; // Store original for logging
