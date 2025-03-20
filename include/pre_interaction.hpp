@@ -34,10 +34,10 @@ namespace sph
             const int n_neighbor,
             const Periodic *periodic,
             const KernelFunction *kernel);
-        void initial_smoothing(std::shared_ptr<Simulation> sim);
 
     public:
         virtual void initialize(std::shared_ptr<SPHParameters> param) override;
+        void perform_initial_smoothing(std::shared_ptr<Simulation> sim, bool twoAndHalf, real kernel_ratio, int neighbor_number, real gamma);
         virtual void calculation(std::shared_ptr<Simulation> sim) override;
     };
 }

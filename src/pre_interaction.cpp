@@ -100,7 +100,7 @@ namespace sph
     }
 
     // A helper function for initial smoothing.
-    static void perform_initial_smoothing(std::shared_ptr<Simulation> sim, bool twoAndHalf, real kernel_ratio, int neighbor_number, real gamma)
+    void PreInteraction::perform_initial_smoothing(std::shared_ptr<Simulation> sim, bool twoAndHalf, real kernel_ratio, int neighbor_number, real gamma)
     {
         auto &particles = sim->get_particles();
         int num = sim->get_particle_num();
