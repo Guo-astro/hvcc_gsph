@@ -16,6 +16,6 @@
   "rangeMin": [-4.0, 0.0,0.0],
   "useTimeDependentAV": false,
   "two_and_half_sim": true,
-  "SPHType": "gdisph",
+  "SPHType": "gsph",
   "unitConfig": "./units.json"
 }

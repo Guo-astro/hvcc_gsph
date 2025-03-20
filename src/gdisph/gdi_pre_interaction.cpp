@@ -1,12 +1,12 @@
 #pragma once
 /* ================================
- * d_pre_interaction.cpp
- * Modified for anisotropic 3D kernel support (DISPH version)
+ * gdi_pre_interaction.cpp
+ * (GDISPH version)
  * ================================ */
 #include <algorithm>
 #include <cmath>
 #include "parameters.hpp"
-#include "disph/d_pre_interaction.hpp"
+#include "gdisph/gdi_pre_interaction.hpp"
 #include "simulation.hpp"
 #include "periodic.hpp"
 #include "openmp.hpp"
@@ -18,7 +18,6 @@ namespace sph
 {
     namespace gdisph
     {
-
         real PreInteraction::newton_raphson(
             const SPHParticle &p_i,
             const std::vector<SPHParticle> &particles,
@@ -286,5 +285,5 @@ namespace sph
             sim->set_h_per_v_sig(h_per_v_sig.min());
         }
 
-    } // namespace disph
+    } // namespace gdisph
 } // namespace sph

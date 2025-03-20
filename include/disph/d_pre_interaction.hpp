@@ -4,22 +4,22 @@
 
 namespace sph
 {
-namespace disph
-{
+    namespace disph
+    {
 
-class PreInteraction : public sph::PreInteraction {
-    real newton_raphson (
-        const SPHParticle & p_i,
-        const std::vector<SPHParticle> & particles,
-        const std::vector<int> & neighbor_list,
-        const int n_neighbor,
-        const Periodic * periodic,
-        const KernelFunction * kernel
-    ) override;
+        class PreInteraction : public sph::PreInteraction
+        {
+            real newton_raphson(
+                const SPHParticle &p_i,
+                const std::vector<SPHParticle> &particles,
+                const std::vector<int> &neighbor_list,
+                const int n_neighbor,
+                const Periodic *periodic,
+                const KernelFunction *kernel) override;
 
-public:
-    void calculation(std::shared_ptr<Simulation> sim) override;
-};
+        public:
+            void calculation(std::shared_ptr<Simulation> sim) override;
+        };
 
-}
+    }
 }
