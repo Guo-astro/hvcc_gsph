@@ -1,0 +1,10 @@
+{
+    "simulation": "shock_tube",
+    "endTime": 0.2,
+    "outputInterval": 0.05,
+    "enableCheckpointing": true,
+    "checkpointInterval": 0.05,
+    "checkpointMaxKeep": 3,
+    "checkpointOnInterrupt": true,
+    "checkpointDirectory": "checkpoints"
+}
