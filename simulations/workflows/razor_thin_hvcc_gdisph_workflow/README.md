@@ -24,11 +24,69 @@ razor_thin_hvcc_gdisph_workflow/
 
 ## Quick Start
 
-Run the complete workflow (relaxation + flyby):
+### Using Makefile (Recommended)
+
+The workflow includes a comprehensive Makefile for easy building, running, and visualization:
+
+```bash
+cd /Users/guo/OSS/sphcode/simulations/workflows/razor_thin_hvcc_gdisph_workflow
+
+# Show all available commands
+make help
+
+# Check status
+make status
+
+# Run complete workflow (both steps + animation)
+make workflow
+
+# Run quick test workflow
+make workflow-test
+
+# Run only relaxation step with animation
+make step1
+
+# Run only flyby step
+make step2
+```
+
+### Using Shell Script
+
+Alternatively, run the complete workflow using the shell script:
 ```bash
 cd /Users/guo/OSS/sphcode/simulations/workflows/razor_thin_hvcc_gdisph_workflow
 ./run_workflow.sh
 ```
+
+## Makefile Commands Reference
+
+The Makefile provides convenient targets for all workflow operations:
+
+### Common Workflows
+- `make workflow` - Run complete workflow (Step 1 + Step 2 + animation)
+- `make workflow-test` - Quick workflow test with shorter simulation times
+- `make step1` - Run relaxation + animation only
+- `make step1-test` - Quick relaxation test + animation
+- `make step2` - Run flyby simulation only
+
+### Individual Operations
+- `make build-all` - Build both plugins
+- `make run-relax` - Run full relaxation simulation
+- `make run-relax-test` - Run quick relaxation test
+- `make run-flyby` - Run flyby simulation
+- `make animate` - Create animation from existing data
+
+### Utilities
+- `make status` - Show current workflow status
+- `make check-deps` - Check if dependencies are installed
+- `make clean` - Clean outputs and animations (keep builds)
+- `make clean-all` - Clean everything including builds
+- `make help` - Show all available commands
+
+### Advanced
+- `make run-relax-bg` - Run relaxation in background with logging
+- `make stop-relax` - Stop background simulation
+- `make quick-vis` - Quick visualization of latest snapshot
 
 ## Workflow Steps
 
@@ -81,7 +139,18 @@ GDISPH (Generalized Density Independent SPH) provides:
 
 - SPH3D executable built in `/Users/guo/OSS/sphcode/build/`
 - CMake for building plugins
-- Python (optional, for analysis/visualization)
+- Python 3 with matplotlib, pandas, numpy (for visualization)
+- FFmpeg (optional, for MP4 animation - install with `brew install ffmpeg`)
+
+Check dependencies:
+```bash
+make check-deps
+```
+
+Install Python dependencies:
+```bash
+make install-python-deps
+```
 
 Use `./run_visualize.sh` to generate visualizations (requires python and dependencies).
 
