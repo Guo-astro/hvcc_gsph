@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "workflow": "riemann_problems",
+    "step": "01_simulation",
+    "purpose": "Strong shock (Test 3)",
+    "simulation_name": "riemann_test3_strong",
+    "description": "High Mach number shock (Mach ~100)",
+    "dimension": 1,
+    "physics": "hydrodynamics",
+    "sph_method": "GDISPH"
+  },
+  
+  "outputDirectory": "results_test3_strong",
+  
+  "endTime": 0.012,
+  "outputInterval": 0.0005,
+  
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.4,
+  
+  "neighborNumber": 50,
+  "iterativeSml": true,
+  
+  "avAlpha": 1.0,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  
+  "useGravity": false,
+  "periodic": false,
+  
+  "enableBinary": false,
+  "enableCSV": true,
+  
+  "enableCheckpointing": false,
+  
+  "cflSound": 0.2,
+  "cflForce": 0.3,
+  
+  "pluginPath": "/Users/guo/OSS/sphcode/simulations/workflows/riemann_problems_workflow/01_simulation/build/libriemann_plugin.dylib"
+}

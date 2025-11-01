@@ -107,10 +107,13 @@ class TheoreticalComparison:
                 vel[i] = u_L
                 pres[i] = P_L
             elif xi < x_tail:
-                # Rarefaction fan
-                c = (gamma - 1) / (gamma + 1) * (c_L - xi / t)
-                rho[i] = rho_L * (c / c_L)**(2 / (gamma - 1))
+                # Rarefaction fan - self-similar isentropic expansion
+                # Characteristic: xi/t = u + c (for left-moving rarefaction, use u-c)
+                # For Sod problem with interface at x=0, left rarefaction moves left
+                # In the fan: u and c vary smoothly
                 vel[i] = 2 / (gamma + 1) * (c_L + xi / t)
+                c = c_L - (gamma - 1) / 2 * vel[i]
+                rho[i] = rho_L * (c / c_L)**(2 / (gamma - 1))
                 pres[i] = P_L * (c / c_L)**(2 * gamma / (gamma - 1))
             elif xi < x_contact:
                 # Left star region
@@ -127,6 +130,199 @@ class TheoreticalComparison:
                 rho[i] = rho_R
                 vel[i] = u_R
                 pres[i] = P_R
+        
+        # Compute internal energy
+        ene = pres / ((gamma - 1) * rho)
+        
+        return ShockTubeSolution(x=x, rho=rho, vel=vel, pres=pres, ene=ene)
+    
+    @staticmethod
+    def riemann_problem(x: np.ndarray, t: float, 
+                       rho_L: float, P_L: float, u_L: float,
+                       rho_R: float, P_R: float, u_R: float,
+                       gamma: float = 1.4, x_interface: float = 0.0) -> ShockTubeSolution:
+        """
+        General 1D Riemann problem analytical solution.
+        
+        Uses exact Riemann solver for ideal gas EOS.
+        
+        Args:
+            x: Spatial positions to evaluate
+            t: Time
+            rho_L, P_L, u_L: Left state (density, pressure, velocity)
+            rho_R, P_R, u_R: Right state (density, pressure, velocity)
+            gamma: Adiabatic index
+            x_interface: Position of initial discontinuity
+        
+        Returns:
+            ShockTubeSolution with analytical values
+        """
+        # Shift coordinates to interface at x=0
+        x_shifted = x - x_interface
+        
+        # Sound speeds
+        c_L = np.sqrt(gamma * P_L / rho_L)
+        c_R = np.sqrt(gamma * P_R / rho_R)
+        
+        # Solve for post-shock state (Newton iteration)
+        def equations(p):
+            """Pressure ratio equation."""
+            # Left wave (rarefaction or shock)
+            if p > P_L:
+                # Left shock
+                A_L = 2 / ((gamma + 1) * rho_L)
+                B_L = (gamma - 1) / (gamma + 1) * P_L
+                f_L = (p - P_L) * np.sqrt(A_L / (p + B_L))
+            else:
+                # Left rarefaction
+                f_L = 2 * c_L / (gamma - 1) * ((p / P_L)**((gamma - 1) / (2 * gamma)) - 1)
+            
+            # Right wave (rarefaction or shock)
+            if p > P_R:
+                # Right shock
+                A_R = 2 / ((gamma + 1) * rho_R)
+                B_R = (gamma - 1) / (gamma + 1) * P_R
+                f_R = (p - P_R) * np.sqrt(A_R / (p + B_R))
+            else:
+                # Right rarefaction
+                f_R = 2 * c_R / (gamma - 1) * ((p / P_R)**((gamma - 1) / (2 * gamma)) - 1)
+            
+            # Velocity match condition
+            return u_L - u_R + f_L + f_R
+        
+        # Initial guess for star pressure
+        P_guess = max(0.5 * (P_L + P_R), 1e-10)
+        P_star = fsolve(equations, [P_guess])[0]
+        P_star = max(P_star, 1e-10)  # Ensure positive pressure
+        
+        # Star region velocity
+        if P_star > P_L:
+            # Left shock
+            A_L = 2 / ((gamma + 1) * rho_L)
+            B_L = (gamma - 1) / (gamma + 1) * P_L
+            f_L = (P_star - P_L) * np.sqrt(A_L / (P_star + B_L))
+        else:
+            # Left rarefaction
+            f_L = 2 * c_L / (gamma - 1) * ((P_star / P_L)**((gamma - 1) / (2 * gamma)) - 1)
+        
+        u_star = u_L + f_L
+        
+        # Star region densities
+        if P_star > P_L:
+            # Left shock
+            rho_star_L = rho_L * ((P_star / P_L + (gamma - 1) / (gamma + 1)) / \
+                                  ((gamma - 1) / (gamma + 1) * P_star / P_L + 1))
+        else:
+            # Left rarefaction
+            rho_star_L = rho_L * (P_star / P_L)**(1 / gamma)
+        
+        if P_star > P_R:
+            # Right shock
+            rho_star_R = rho_R * ((P_star / P_R + (gamma - 1) / (gamma + 1)) / \
+                                  ((gamma - 1) / (gamma + 1) * P_star / P_R + 1))
+        else:
+            # Right rarefaction
+            rho_star_R = rho_R * (P_star / P_R)**(1 / gamma)
+        
+        # Wave speeds
+        if P_star > P_L:
+            # Left shock
+            v_shock_L = u_L - c_L * np.sqrt((gamma + 1) / (2 * gamma) * P_star / P_L + \
+                                            (gamma - 1) / (2 * gamma))
+            x_head_L = v_shock_L * t
+            x_tail_L = v_shock_L * t
+        else:
+            # Left rarefaction
+            x_head_L = u_L - c_L
+            c_star_L = c_L * (P_star / P_L)**((gamma - 1) / (2 * gamma))
+            x_tail_L = u_star - c_star_L
+            x_head_L *= t
+            x_tail_L *= t
+        
+        if P_star > P_R:
+            # Right shock
+            v_shock_R = u_R + c_R * np.sqrt((gamma + 1) / (2 * gamma) * P_star / P_R + \
+                                            (gamma - 1) / (2 * gamma))
+            x_shock_R = v_shock_R * t
+        else:
+            # Right rarefaction
+            x_head_R = u_R + c_R
+            c_star_R = c_R * (P_star / P_R)**((gamma - 1) / (2 * gamma))
+            x_tail_R = u_star + c_star_R
+            x_head_R *= t
+            x_tail_R *= t
+        
+        # Contact discontinuity
+        x_contact = u_star * t
+        
+        # Allocate solution arrays
+        rho = np.zeros_like(x_shifted)
+        vel = np.zeros_like(x_shifted)
+        pres = np.zeros_like(x_shifted)
+        
+        # Fill regions
+        for i, xi in enumerate(x_shifted):
+            if P_star > P_L:
+                # Left shock
+                if xi < x_head_L:
+                    rho[i] = rho_L
+                    vel[i] = u_L
+                    pres[i] = P_L
+                elif xi < x_contact:
+                    rho[i] = rho_star_L
+                    vel[i] = u_star
+                    pres[i] = P_star
+                else:
+                    # Continue to right side
+                    pass
+            else:
+                # Left rarefaction
+                if xi < x_head_L:
+                    rho[i] = rho_L
+                    vel[i] = u_L
+                    pres[i] = P_L
+                elif xi < x_tail_L:
+                    # Rarefaction fan
+                    vel[i] = 2 / (gamma + 1) * (c_L + xi / t + u_L)
+                    c = c_L - (gamma - 1) / 2 * (vel[i] - u_L)
+                    rho[i] = rho_L * (c / c_L)**(2 / (gamma - 1))
+                    pres[i] = P_L * (c / c_L)**(2 * gamma / (gamma - 1))
+                elif xi < x_contact:
+                    rho[i] = rho_star_L
+                    vel[i] = u_star
+                    pres[i] = P_star
+                else:
+                    # Continue to right side
+                    pass
+            
+            # Right side
+            if (P_star <= P_L and xi >= x_contact) or (P_star > P_L and xi >= x_contact):
+                if P_star > P_R:
+                    # Right shock
+                    if xi < x_shock_R:
+                        rho[i] = rho_star_R
+                        vel[i] = u_star
+                        pres[i] = P_star
+                    else:
+                        rho[i] = rho_R
+                        vel[i] = u_R
+                        pres[i] = P_R
+                else:
+                    # Right rarefaction
+                    if xi < x_tail_R:
+                        rho[i] = rho_star_R
+                        vel[i] = u_star
+                        pres[i] = P_star
+                    elif xi < x_head_R:
+                        # Rarefaction fan
+                        vel[i] = 2 / (gamma + 1) * (-c_R + xi / t + u_R)
+                        c = c_R + (gamma - 1) / 2 * (vel[i] - u_R)
+                        rho[i] = rho_R * (c / c_R)**(2 / (gamma - 1))
+                        pres[i] = P_R * (c / c_R)**(2 * gamma / (gamma - 1))
+                    else:
+                        rho[i] = rho_R
+                        vel[i] = u_R
+                        pres[i] = P_R
         
         # Compute internal energy
         ene = pres / ((gamma - 1) * rho)

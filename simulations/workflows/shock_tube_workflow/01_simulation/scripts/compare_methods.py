@@ -32,12 +32,32 @@ except ImportError as e:
 
 
 def read_snapshot_csv(csv_file: Path, dim: int = 1):
-    """Read a snapshot from CSV file."""
+    """
+    Read a snapshot from CSV file with JSON metadata sidecar.
+    
+    New format (clean headers + metadata.json):
+    - CSV has simple column names: time, pos_x, vel_x, dens, etc.
+    - Metadata in *.meta.json file with units and descriptions
+    """
     df = pd.read_csv(csv_file)
     
-    # Extract time from filename or use 0 as default
+    # Read metadata file
+    meta_file = csv_file.parent / (csv_file.stem + '.meta.json')
+    metadata = None
+    if meta_file.exists():
+        try:
+            import json
+            with open(meta_file, 'r') as f:
+                metadata = json.load(f)
+        except Exception as e:
+            print(f"Warning: Could not read metadata file {meta_file}: {e}")
+    
+    # Extract time from metadata
     time = 0.0
-    if 'time' in df.columns:
+    if metadata and 'simulation' in metadata:
+        time = metadata['simulation'].get('time', 0.0)
+    elif 'time' in df.columns:
+        # Fallback to CSV time column
         time = df['time'].iloc[0] if len(df) > 0 else 0.0
     
     # Build snapshot
@@ -46,15 +66,23 @@ def read_snapshot_csv(csv_file: Path, dim: int = 1):
     vel = np.zeros((n, 3))
     acc = np.zeros((n, 3))
     
-    if dim >= 1:
-        pos[:, 0] = df['x'].values if 'x' in df.columns else 0.0
-        vel[:, 0] = df['vx'].values if 'vx' in df.columns else 0.0
-    if dim >= 2:
-        pos[:, 1] = df['y'].values if 'y' in df.columns else 0.0
-        vel[:, 1] = df['vy'].values if 'vy' in df.columns else 0.0
-    if dim >= 3:
-        pos[:, 2] = df['z'].values if 'z' in df.columns else 0.0
-        vel[:, 2] = df['vz'].values if 'vz' in df.columns else 0.0
+    # Read position and velocity columns
+    if dim >= 1 and 'pos_x' in df.columns and 'vel_x' in df.columns:
+        pos[:, 0] = df['pos_x'].values
+        vel[:, 0] = df['vel_x'].values
+    if dim >= 2 and 'pos_y' in df.columns and 'vel_y' in df.columns:
+        pos[:, 1] = df['pos_y'].values
+        vel[:, 1] = df['vel_y'].values
+    if dim >= 3 and 'pos_z' in df.columns and 'vel_z' in df.columns:
+        pos[:, 2] = df['pos_z'].values
+        vel[:, 2] = df['vel_z'].values
+    
+    # Read other fields
+    dens = df['dens'].values if 'dens' in df.columns else np.ones(n)
+    pres = df['pres'].values if 'pres' in df.columns else np.ones(n)
+    ene = df['ene'].values if 'ene' in df.columns else np.ones(n)
+    mass = df['mass'].values if 'mass' in df.columns else np.ones(n)
+    sml = df['sml'].values if 'sml' in df.columns else np.ones(n)
     
     snapshot = ParticleSnapshot(
         time=time,
@@ -62,11 +90,11 @@ def read_snapshot_csv(csv_file: Path, dim: int = 1):
         pos=pos,
         vel=vel,
         acc=acc,
-        dens=df['dens'].values if 'dens' in df.columns else np.ones(n),
-        pres=df['pres'].values if 'pres' in df.columns else np.ones(n),
-        ene=df['ene'].values if 'ene' in df.columns else np.ones(n),
-        mass=df['mass'].values if 'mass' in df.columns else np.ones(n),
-        sml=df['sml'].values if 'sml' in df.columns else np.ones(n),
+        dens=dens,
+        pres=pres,
+        ene=ene,
+        mass=mass,
+        sml=sml,
         particle_id=np.arange(n)
     )
     
@@ -129,11 +157,14 @@ def compare_shock_tube_methods(gdisph_dir: Path, ssph_dir: Path,
         times.append(t)
         print(f"Time: {t:.4f}")
         
-        # Get analytical solution
-        x_theory = np.linspace(-0.5, 0.5, 500)
+        # Determine domain for analytical solution based on actual particle positions
+        # Add some margin to ensure coverage
+        x_min = min(gdisph_snap.pos[:, 0].min(), ssph_snap.pos[:, 0].min()) - 0.1
+        x_max = max(gdisph_snap.pos[:, 0].max(), ssph_snap.pos[:, 0].max()) + 0.1
+        x_theory = np.linspace(x_min, x_max, 1000)
         theory = TheoreticalComparison.sod_shock_tube(x_theory, t, gamma)
         
-        # Compute errors
+        # Compute errors by interpolating analytical solution to particle positions
         rho_theory_gdisph = np.interp(gdisph_snap.pos[:, 0], theory.x, theory.rho)
         gdisph_error = np.sqrt(np.mean((gdisph_snap.dens - rho_theory_gdisph)**2))
         gdisph_errors.append(gdisph_error)
@@ -206,17 +237,22 @@ def compare_shock_tube_methods(gdisph_dir: Path, ssph_dir: Path,
         t_avg = (t_gdisph + t_ssph) / 2
         all_times.append(t_avg)
         
-        # Analytical solution
-        theory = TheoreticalComparison.sod_shock_tube(
-            gdisph_snap.pos[:, 0], t_gdisph, gamma
-        )
-        gdisph_err = np.sqrt(np.mean((gdisph_snap.dens - theory.rho)**2))
+        # Get domain for analytical solution
+        x_min = min(gdisph_snap.pos[:, 0].min(), ssph_snap.pos[:, 0].min()) - 0.1
+        x_max = max(gdisph_snap.pos[:, 0].max(), ssph_snap.pos[:, 0].max()) + 0.1
+        
+        # Analytical solution for GDISPH
+        x_theory_gdisph = np.linspace(x_min, x_max, 1000)
+        theory_gdisph = TheoreticalComparison.sod_shock_tube(x_theory_gdisph, t_gdisph, gamma)
+        rho_theory_gdisph = np.interp(gdisph_snap.pos[:, 0], theory_gdisph.x, theory_gdisph.rho)
+        gdisph_err = np.sqrt(np.mean((gdisph_snap.dens - rho_theory_gdisph)**2))
         all_gdisph_errors.append(gdisph_err)
         
-        theory = TheoreticalComparison.sod_shock_tube(
-            ssph_snap.pos[:, 0], t_ssph, gamma
-        )
-        ssph_err = np.sqrt(np.mean((ssph_snap.dens - theory.rho)**2))
+        # Analytical solution for SSPH
+        x_theory_ssph = np.linspace(x_min, x_max, 1000)
+        theory_ssph = TheoreticalComparison.sod_shock_tube(x_theory_ssph, t_ssph, gamma)
+        rho_theory_ssph = np.interp(ssph_snap.pos[:, 0], theory_ssph.x, theory_ssph.rho)
+        ssph_err = np.sqrt(np.mean((ssph_snap.dens - rho_theory_ssph)**2))
         all_ssph_errors.append(ssph_err)
     
     # Error evolution plot

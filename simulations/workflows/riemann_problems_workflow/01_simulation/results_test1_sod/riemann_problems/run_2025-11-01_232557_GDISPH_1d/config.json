@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "workflow": "riemann_problems",
+    "step": "01_simulation",
+    "purpose": "Sod shock tube (Test 1)",
+    "simulation_name": "riemann_test1_sod",
+    "description": "Standard Sod shock tube problem",
+    "dimension": 1,
+    "physics": "hydrodynamics",
+    "sph_method": "GDISPH"
+  },
+  
+  "outputDirectory": "results_test1_sod",
+  
+  "endTime": 0.12,
+  "outputInterval": 0.005,
+  
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.4,
+  
+  "neighborNumber": 50,
+  "iterativeSml": true,
+  
+  "avAlpha": 1.0,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  
+  "useGravity": false,
+  "periodic": false,
+  
+  "enableBinary": false,
+  "enableCSV": true,
+  
+  "enableCheckpointing": false,
+  
+  "cflSound": 0.3,
+  "cflForce": 0.5,
+  
+  "pluginPath": "/Users/guo/OSS/sphcode/simulations/workflows/riemann_problems_workflow/01_simulation/build/libriemann_plugin.dylib"
+}

@@ -3,6 +3,7 @@
 #include "core/particle.hpp"
 #include "core/logger.hpp"
 #include "utilities/unit_system.hpp"
+#include "utilities/snapshot_metadata.hpp"
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -23,46 +24,29 @@ namespace sph
         const int num = sim->get_particle_num();
         const real time = sim->get_time();
 
-        const std::string filename = m_directory + (boost::format("/%05d.csv") % m_snapshot_count).str();
-        std::ofstream out(filename);
-
+        const std::string csv_filename = m_directory + (boost::format("/%05d.csv") % m_snapshot_count).str();
+        
+        // ====================================================================
+        // Write CSV file with clean headers (no units in column names)
+        // ====================================================================
+        std::ofstream out(csv_filename);
         if (!out.is_open()) {
-            WRITE_LOG << "ERROR: Cannot open output file: " << filename;
+            WRITE_LOG << "ERROR: Cannot open output file: " << csv_filename;
             return;
         }
 
-        // Write header with units
+        // Write clean header without units
         std::ostringstream header;
-        header << "time [" << m_units.time_unit << "],";
+        header << "time,";
         
 #if DIM == 1
-        header << "pos_x [" << m_units.length_unit << "],"
-               << "vel_x [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "acc_x [" << m_units.length_unit << "/" << m_units.time_unit << "^2],";
+        header << "pos_x,vel_x,acc_x,";
 #elif DIM == 2
-        header << "pos_x [" << m_units.length_unit << "],"
-               << "pos_y [" << m_units.length_unit << "],"
-               << "vel_x [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "vel_y [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "acc_x [" << m_units.length_unit << "/" << m_units.time_unit << "^2],"
-               << "acc_y [" << m_units.length_unit << "/" << m_units.time_unit << "^2],";
+        header << "pos_x,pos_y,vel_x,vel_y,acc_x,acc_y,";
 #elif DIM == 3
-        header << "pos_x [" << m_units.length_unit << "],"
-               << "pos_y [" << m_units.length_unit << "],"
-               << "pos_z [" << m_units.length_unit << "],"
-               << "vel_x [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "vel_y [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "vel_z [" << m_units.length_unit << "/" << m_units.time_unit << "],"
-               << "acc_x [" << m_units.length_unit << "/" << m_units.time_unit << "^2],"
-               << "acc_y [" << m_units.length_unit << "/" << m_units.time_unit << "^2],"
-               << "acc_z [" << m_units.length_unit << "/" << m_units.time_unit << "^2],";
+        header << "pos_x,pos_y,pos_z,vel_x,vel_y,vel_z,acc_x,acc_y,acc_z,";
 #endif
-        header << "mass [" << m_units.mass_unit << "],"
-               << "dens [" << m_units.density_unit << "],"
-               << "pres [" << m_units.pressure_unit << "],"
-               << "ene [" << m_units.energy_unit << "],"
-               << "sml [" << m_units.length_unit << "],"
-               << "id,neighbor,alpha,gradh,shockSensor,ene_floored";
+        header << "mass,dens,pres,ene,sml,id,neighbor,alpha,gradh,shockSensor,ene_floored";
 
         out << header.str() << "\n";
 
@@ -110,9 +94,70 @@ namespace sph
                  
             out << line.str() << "\n";
         }
-
         out.close();
-        WRITE_LOG << "CSV snapshot written: " << filename;
+
+        // ====================================================================
+        // Write metadata JSON file (only once, for first snapshot)
+        // ====================================================================
+        if (m_snapshot_count == 0) {
+            const std::string metadata_filename = m_directory + "/metadata.json";
+            
+            SnapshotMetadata metadata;
+            metadata.from_unit_system(m_units);
+            metadata.simulation.time = time * m_units.time_factor;
+            metadata.simulation.snapshot_number = m_snapshot_count;
+            metadata.simulation.dimension = DIM;
+            metadata.simulation.particle_count = num;
+        
+            // Define columns with descriptions
+            metadata.columns.clear();
+            metadata.columns.push_back(ColumnMetadata("time", m_units.time_unit, "Simulation time"));
+        
+#if DIM == 1
+            metadata.columns.push_back(ColumnMetadata("pos_x", m_units.length_unit, "X position"));
+            metadata.columns.push_back(ColumnMetadata("vel_x", m_units.length_unit + "/" + m_units.time_unit, "X velocity"));
+            metadata.columns.push_back(ColumnMetadata("acc_x", m_units.length_unit + "/" + m_units.time_unit + "^2", "X acceleration"));
+#elif DIM == 2
+            metadata.columns.push_back(ColumnMetadata("pos_x", m_units.length_unit, "X position"));
+            metadata.columns.push_back(ColumnMetadata("pos_y", m_units.length_unit, "Y position"));
+            metadata.columns.push_back(ColumnMetadata("vel_x", m_units.length_unit + "/" + m_units.time_unit, "X velocity"));
+            metadata.columns.push_back(ColumnMetadata("vel_y", m_units.length_unit + "/" + m_units.time_unit, "Y velocity"));
+            metadata.columns.push_back(ColumnMetadata("acc_x", m_units.length_unit + "/" + m_units.time_unit + "^2", "X acceleration"));
+            metadata.columns.push_back(ColumnMetadata("acc_y", m_units.length_unit + "/" + m_units.time_unit + "^2", "Y acceleration"));
+#elif DIM == 3
+            metadata.columns.push_back(ColumnMetadata("pos_x", m_units.length_unit, "X position"));
+            metadata.columns.push_back(ColumnMetadata("pos_y", m_units.length_unit, "Y position"));
+            metadata.columns.push_back(ColumnMetadata("pos_z", m_units.length_unit, "Z position"));
+            metadata.columns.push_back(ColumnMetadata("vel_x", m_units.length_unit + "/" + m_units.time_unit, "X velocity"));
+            metadata.columns.push_back(ColumnMetadata("vel_y", m_units.length_unit + "/" + m_units.time_unit, "Y velocity"));
+            metadata.columns.push_back(ColumnMetadata("vel_z", m_units.length_unit + "/" + m_units.time_unit, "Z velocity"));
+            metadata.columns.push_back(ColumnMetadata("acc_x", m_units.length_unit + "/" + m_units.time_unit + "^2", "X acceleration"));
+            metadata.columns.push_back(ColumnMetadata("acc_y", m_units.length_unit + "/" + m_units.time_unit + "^2", "Y acceleration"));
+            metadata.columns.push_back(ColumnMetadata("acc_z", m_units.length_unit + "/" + m_units.time_unit + "^2", "Z acceleration"));
+#endif
+        
+            metadata.columns.push_back(ColumnMetadata("mass", m_units.mass_unit, "Particle mass"));
+            metadata.columns.push_back(ColumnMetadata("dens", m_units.density_unit, "Density"));
+            metadata.columns.push_back(ColumnMetadata("pres", m_units.pressure_unit, "Pressure"));
+            metadata.columns.push_back(ColumnMetadata("ene", m_units.energy_unit, "Specific internal energy"));
+            metadata.columns.push_back(ColumnMetadata("sml", m_units.length_unit, "Smoothing length"));
+            metadata.columns.push_back(ColumnMetadata("id", "", "Particle ID"));
+            metadata.columns.push_back(ColumnMetadata("neighbor", "", "Neighbor count"));
+            metadata.columns.push_back(ColumnMetadata("alpha", "", "Artificial viscosity coefficient"));
+            metadata.columns.push_back(ColumnMetadata("gradh", "", "Grad-h correction term"));
+            metadata.columns.push_back(ColumnMetadata("shockSensor", "", "Shock detection sensor"));
+            metadata.columns.push_back(ColumnMetadata("ene_floored", "", "Energy floor flag"));
+        
+            // Write metadata file (once)
+            try {
+                metadata.write_to_file(metadata_filename);
+                WRITE_LOG << "Metadata written: " << metadata_filename;
+            } catch (const std::exception& e) {
+                WRITE_LOG << "WARNING: Could not write metadata file: " << e.what();
+            }
+        }
+        
+        WRITE_LOG << "CSV snapshot written: " << csv_filename;
         increment_count();
     }
 

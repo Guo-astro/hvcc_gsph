@@ -42,63 +42,69 @@ public:
         std::cout << "Initializing Sod shock tube problem...\n";
         
         // Particle resolution
-        int N = 50;  // Particles per unit length
-        const real dx_r = 0.5 / N;  // Right side spacing
-        const real dx_l = dx_r * 0.25;  // Left side spacing (higher resolution)
+        int N = 400;  // Total number of particles
+        
+        // Domain: [-0.5, 0.5], discontinuity at x=0
+        const real x_min = -0.5;
+        const real x_max = 0.5;
+        const real domain_length = x_max - x_min;
+        const real dx = domain_length / N;
 
-        const int num = N * 10;
-        std::vector<SPHParticle> p(num);
+        std::vector<SPHParticle> p(N);
 
-        // Initial conditions
-        real x = -0.5 + dx_l * 0.5;
-        real dx = dx_l;
-        real dens = 1.0;   // Left state density
-        real pres = 1.0;   // Left state pressure
-        const real mass = 0.5 / N * 0.25;
+        // Physical parameters
         const real gamma = param->physics.gamma;
-        bool left = true;
+        
+        // Left state (x < 0)
+        const real rho_L = 1.0;
+        const real P_L = 1.0;
+        const real v_L = 0.0;
+        
+        // Right state (x > 0)
+        const real rho_R = 0.125;
+        const real P_R = 0.1;
+        const real v_R = 0.0;
 
         // Create particles
-        for (int i = 0; i < num; ++i) {
+        for (int i = 0; i < N; ++i) {
             auto &p_i = p[i];
-            p_i.pos[0] = x;
-            p_i.vel[0] = 0.0;
-            p_i.dens = dens;
-            p_i.pres = pres;
-            p_i.mass = mass;
+            
+            // Position: uniform spacing
+            p_i.pos[0] = x_min + (i + 0.5) * dx;
+            
+            // Set state based on position (discontinuity at x=0)
+            if (p_i.pos[0] < 0.0) {
+                // Left state
+                p_i.dens = rho_L;
+                p_i.pres = P_L;
+                p_i.vel[0] = v_L;
+                p_i.mass = rho_L * dx;  // mass = ρ * dx in 1D
+            } else {
+                // Right state
+                p_i.dens = rho_R;
+                p_i.pres = P_R;
+                p_i.vel[0] = v_R;
+                p_i.mass = rho_R * dx;  // mass = ρ * dx in 1D
+            }
+            
             p_i.ene = p_i.pres / ((gamma - 1.0) * p_i.dens);
             p_i.id = i;
+            
             // Initialize volume element for DISPH: V = m/ρ
             p_i.volume = p_i.mass / p_i.dens;
-
-            x += dx;
-            
-            // Switch to right state at x = 0
-            if (x > 0.0 && left) {
-                x = 0.0 + dx_r * 0.5;
-                dx = dx_r;
-                dens = 0.125;  // Right state density
-                pres = 0.1;    // Right state pressure
-                left = false;
-            }
         }
 
         sim->set_particles(p);
-        sim->set_particle_num(num);
+        sim->set_particle_num(N);
         
-        // Set simulation parameters (SPH type is read from config, not hardcoded)
-        // param->type is already set from config file
-        // param->time.end is already set from config file
-        // param->time.output is already set from config file
-        // param->cfl.sound is already set from config file
-        // param->physics.neighbor_number is already set from config file
-        
-        std::cout << "Created " << num << " particles\n";
+        std::cout << "Created " << N << " particles\n";
+        std::cout << "  Domain: [" << x_min << ", " << x_max << "]\n";
+        std::cout << "  Particle spacing: " << dx << "\n";
         std::cout << "  SPH Type: " << (param->type == SPHType::GDISPH ? "GDISPH" : 
                                        param->type == SPHType::SSPH ? "SSPH" : 
                                        param->type == SPHType::DISPH ? "DISPH" : "UNKNOWN") << "\n";
-        std::cout << "  Left state:  ρ=" << 1.0 << ", P=" << 1.0 << "\n";
-        std::cout << "  Right state: ρ=" << 0.125 << ", P=" << 0.1 << "\n";
+        std::cout << "  Left state:  ρ=" << rho_L << ", P=" << P_L << "\n";
+        std::cout << "  Right state: ρ=" << rho_R << ", P=" << P_R << "\n";
     }
     
     std::vector<std::string> get_source_files() const override {

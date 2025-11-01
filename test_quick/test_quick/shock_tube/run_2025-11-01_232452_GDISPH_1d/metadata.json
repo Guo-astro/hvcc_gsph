@@ -1,0 +1,50 @@
+{
+  "run_info": {
+    "run_id": "run_2025-11-01_232452_GDISPH_1d",
+    "sample_name": "/Users/guo/OSS/sphcode/simulations/workflows/shock_tube_workflow/01_simulation/build/libshock_tube_plugin.dylib",
+    "description": "",
+    "created_at": "",
+    "completed_at": "",
+    "duration_seconds": 1.009000,
+    "user": "",
+    "hostname": ""
+  },
+  "code_version": {
+    "git_hash": "",
+    "git_branch": "",
+    "git_dirty": false,
+    "compiler": ""
+  },
+  "simulation_params": {
+    "sph_type": "GDISPH",
+    "dimension": 1,
+    "particle_count": 400,
+    "gamma": 1.400000,
+    "cfl_sound": 0.300000,
+    "end_time": 0.020000,
+    "output_interval": 0.000020,
+    "neighbor_number": 50,
+    "use_balsara": false,
+    "use_time_dependent_av": false
+  },
+  "unit_system": {
+    "length_unit": "m",
+    "time_unit": "s",
+    "mass_unit": "kg",
+    "length_factor": 1.000000,
+    "time_factor": 1.000000,
+    "mass_factor": 1.000000
+  },
+  "output": {
+    "formats": ["csv", "binary"],
+    "snapshot_count": 0,
+    "snapshot_times": [],
+    "total_output_size_mb": 0.000000
+  },
+  "performance": {
+    "total_timesteps": 11,
+    "wall_time_seconds": 1.009000,
+    "timesteps_per_second": 10.901883,
+    "particles_per_second": 4360.753221
+  }
+}

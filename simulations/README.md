@@ -1,57 +1,134 @@
-# Self-Contained Simulation Cases
+# Self-Contained Simulation Cases and Workflows
 
+This directory contains both individual simulation cases and complete benchmark workflows.
+
+## Structure Overview
+
+### Individual Simulations
 Each simulation case is completely self-contained with its own:
 - Source code (`.cpp` files)
 - Build configuration (`CMakeLists.txt`)
 - Runtime configurations (`.json` files)
 - Results (outputs from runs)
 
+### Workflows
+Complete benchmark workflows implement multiple related tests:
+- Multiple test configurations
+- Automated execution scripts
+- Comprehensive analysis pipelines
+- Comparison with analytical/theoretical solutions
+
 ## Directory Structure
 
 ```
 simulations/
-├── shock_tube/                          # 1D Sod shock tube (DISPH)
-│   ├── shock_tube.cpp                   # Source code defining the simulation
-│   ├── CMakeLists.txt                   # Build file for this specific case
-│   ├── config.json                      # Default configuration
-│   ├── build.sh                         # Build script
-│   ├── README.md                        # Documentation for this case
-│   ├── analysis/                        # Simulation-specific analysis
-│   │   └── shock_tube_tutorial.ipynb   # Jupyter tutorial
-│   ├── latest -> run_2025-11-01_...    # Symlink to latest run
-│   └── run_2025-11-01_095541_DISPH_1d/ # Individual run results
-│       ├── metadata.json
-│       ├── config.json
-│       ├── initial_conditions.csv
-│       ├── source/                      # Source code snapshot
-│       │   └── shock_tube.cpp
-│       ├── outputs/                     # CSV and binary snapshots
-│       │   ├── csv/
-│       │   └── binary/
-│       ├── analysis/                    # Analysis results
-│       ├── visualizations/              # Plots and animations
-│       └── logs/                        # Simulation logs
+├── workflows/                           # Complete benchmark workflows
+│   ├── shock_tube_workflow/            # GDISPH vs SSPH comparison
+│   │   ├── README.md
+│   │   ├── IMPLEMENTATION_COMPLETE.md
+│   │   ├── 01_simulation/
+│   │   │   ├── src/plugin.cpp
+│   │   │   ├── build/libshock_tube_plugin.dylib
+│   │   │   ├── configs/
+│   │   │   │   ├── gdisph_config.json
+│   │   │   │   └── ssph_config.json
+│   │   │   ├── scripts/
+│   │   │   │   └── compare_methods.py
+│   │   │   └── results_*/
+│   │   └── 02_analysis/
+│   │
+│   └── riemann_problems_workflow/      # 1D Riemann problems benchmark suite
+│       ├── README.md                    # Workflow overview
+│       ├── IMPLEMENTATION_COMPLETE.md   # Technical details
+│       ├── RESULTS_SUMMARY.md           # Analysis of all test results
+│       ├── EXECUTION_COMPLETE.md        # Execution summary
+│       ├── 01_simulation/
+│       │   ├── src/plugin.cpp           # Multi-test plugin
+│       │   ├── build/libriemann_plugin.dylib
+│       │   ├── configs/
+│       │   │   ├── test1_sod.json
+│       │   │   ├── test2_rarefaction.json
+│       │   │   ├── test3_strong.json
+│       │   │   └── test5_vacuum.json
+│       │   ├── scripts/
+│       │   │   └── analyze_all_tests.py
+│       │   ├── results_test1_sod/
+│       │   ├── results_test2_rarefaction/
+│       │   ├── results_test3_strong/
+│       │   ├── results_test5_vacuum/
+│       │   └── comparison_results/      # Analysis plots
+│       └── 02_analysis/
+│
+├── shock_tube/                          # Individual 1D Sod shock tube (legacy)
+│   ├── shock_tube.cpp
+│   ├── CMakeLists.txt
+│   ├── config.json
+│   └── ...
 │
 ├── sedov_taylor/                        # 3D Sedov-Taylor (GSPH)
 │   ├── sedov_taylor.cpp
-│   ├── CMakeLists.txt
-│   ├── config.json
-│   ├── sedov_taylor.json               # Alternative config (from benchmarks)
 │   └── ...
 │
 ├── sedov_taylor_2d/                     # 2D Sedov-Taylor (DISPH)
 │   ├── sedov_taylor_2d.cpp
-│   ├── CMakeLists.txt
-│   ├── config.json
-│   ├── analytical/                      # Analytical solutions
-│   │   └── sedov_taylor_solution.py    # Self-similar solution (2D/3D)
+│   ├── analytical/
+│   │   └── sedov_taylor_solution.py
 │   └── ...
 │
 └── template/                            # Template for new simulations
-    ├── template_simulation.cpp
-    ├── CMakeLists.txt
-    └── README.md
+    └── ...
 ```
+
+## Workflow Status
+
+### Completed Workflows
+
+#### 1. Shock Tube Workflow ✅
+**Location**: `workflows/shock_tube_workflow/`  
+**Purpose**: Compare GDISPH vs SSPH methods on classic Sod shock tube  
+**Status**: VALIDATED  
+**Results**:
+- GDISPH L2 error: ~15.6%
+- SSPH L2 error: ~17.4%
+- Analysis complete with plots
+
+**Key Files**:
+- `01_simulation/src/plugin.cpp` - Sod shock tube initialization
+- `01_simulation/scripts/compare_methods.py` - GDISPH vs SSPH comparison
+- Fixed analytical solution (rarefaction fan formula)
+- Fixed initial conditions (domain bug)
+
+---
+
+#### 2. Riemann Problems Workflow ⚠️
+**Location**: `workflows/riemann_problems_workflow/`  
+**Purpose**: Comprehensive 1D Riemann problems benchmark suite from DISPH paper  
+**Status**: 4/5 TESTS COMPLETE  
+**Tests Implemented**:
+1. ✅ Sod Shock Tube (L2 error ~14%)
+2. ✅ Double Rarefaction (L2 error ~62% - vacuum expected)
+3. ❌ Strong Shock (UNSTABLE - needs shock limiter)
+4. ⏭️ Slow Shock (not yet configured)
+5. ✅ Vacuum Generation (L2 error ~36%)
+
+**Results**: See `RESULTS_SUMMARY.md` for detailed analysis
+
+**Key Features**:
+- Multi-test plugin with `TEST_CASE` environment variable
+- General Riemann solver in `analysis/theoretical.py`
+- Automated analysis with 4-panel comparison plots
+- CSV output with JSON metadata
+
+**Known Issues**:
+- Test 3: Pressure ratio 100,000:1 causes numerical instability
+- Tests 2, 5: High errors expected due to vacuum formation (inherent SPH limitation)
+
+**Next Steps**:
+- Add Test 4 (Slow Shock)
+- Implement shock limiter for Test 3
+- Run GDISPH vs SSPH comparison on all tests
+
+---
 
 ## How It Works
 

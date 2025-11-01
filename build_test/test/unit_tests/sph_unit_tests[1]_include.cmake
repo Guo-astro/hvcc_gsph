@@ -1,0 +1,5 @@
+if(EXISTS "/Users/guo/OSS/sphcode/build_test/test/unit_tests/sph_unit_tests[1]_tests.cmake")
+  include("/Users/guo/OSS/sphcode/build_test/test/unit_tests/sph_unit_tests[1]_tests.cmake")
+else()
+  add_test(sph_unit_tests_NOT_BUILT sph_unit_tests_NOT_BUILT)
+endif()

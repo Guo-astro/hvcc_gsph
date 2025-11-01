@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "workflow": "test_metadata",
+    "step": "test",
+    "purpose": "Test metadata generation",
+    "simulation_name": "test_meta",
+    "description": "Quick test of new metadata system",
+    "dimension": 1,
+    "physics": "hydrodynamics",
+    "sph_method": "GDISPH"
+  },
+  
+  "outputDirectory": "test_metadata",
+  
+  "endTime": 0.02,
+  "outputInterval": 0.01,
+  
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.4,
+  
+  "neighborNumber": 50,
+  "iterativeSml": true,
+  
+  "avAlpha": 1.0,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  
+  "useGravity": false,
+  "periodic": false,
+  
+  "enableBinary": false,
+  "enableCSV": true,
+  
+  "enableCheckpointing": false,
+  
+  "cflSound": 0.3,
+  "cflForce": 0.5
+}

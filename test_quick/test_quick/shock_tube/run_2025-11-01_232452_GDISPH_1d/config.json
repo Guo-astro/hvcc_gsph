@@ -1,0 +1,17 @@
+{
+  "outputDirectory": "test_quick",
+  "endTime": 0.02,
+  "outputInterval": 0.01,
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.4,
+  "neighborNumber": 50,
+  "iterativeSml": true,
+  "avAlpha": 1.0,
+  "useBalsaraSwitch": false,
+  "useGravity": false,
+  "periodic": false,
+  "enableBinary": false,
+  "enableCSV": true,
+  "cflSound": 0.3
+}

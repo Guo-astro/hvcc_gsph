@@ -1,0 +1,50 @@
+{
+  "run_info": {
+    "run_id": "run_2025-11-01_232723_GDISPH_1d",
+    "sample_name": "build/libriemann_plugin.dylib",
+    "description": "",
+    "created_at": "",
+    "completed_at": "",
+    "duration_seconds": 0.653000,
+    "user": "",
+    "hostname": ""
+  },
+  "code_version": {
+    "git_hash": "",
+    "git_branch": "",
+    "git_dirty": true,
+    "compiler": ""
+  },
+  "simulation_params": {
+    "sph_type": "GDISPH",
+    "dimension": 1,
+    "particle_count": 400,
+    "gamma": 1.400000,
+    "cfl_sound": 0.300000,
+    "end_time": 0.120000,
+    "output_interval": 0.000120,
+    "neighbor_number": 50,
+    "use_balsara": false,
+    "use_time_dependent_av": false
+  },
+  "unit_system": {
+    "length_unit": "m",
+    "time_unit": "s",
+    "mass_unit": "kg",
+    "length_factor": 1.000000,
+    "time_factor": 1.000000,
+    "mass_factor": 1.000000
+  },
+  "output": {
+    "formats": ["csv", "binary"],
+    "snapshot_count": 0,
+    "snapshot_times": [],
+    "total_output_size_mb": 0.000000
+  },
+  "performance": {
+    "total_timesteps": 83,
+    "wall_time_seconds": 0.653000,
+    "timesteps_per_second": 127.105666,
+    "particles_per_second": 50842.266462
+  }
+}

@@ -5,4 +5,5 @@ target_sources(sph_lib
         inplane_integration.cpp
         checkpoint_data.cpp
         checkpoint_manager.cpp
+        snapshot_metadata.cpp
 )

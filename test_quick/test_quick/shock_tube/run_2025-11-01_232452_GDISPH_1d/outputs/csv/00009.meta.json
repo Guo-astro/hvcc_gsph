@@ -1,0 +1,102 @@
+{
+  "format_version": "1.0",
+  "simulation": {
+    "time": 0.0179391844,
+    "snapshot_number": 9,
+    "dimension": 1,
+    "particle_count": 400
+  },
+  "units": {
+    "length": "m",
+    "time": "s",
+    "mass": "kg",
+    "density": "kg/m^3",
+    "pressure": "Pa",
+    "energy": "J/kg"
+  },
+  "conversion_factors": {
+    "length_factor": 1.0000000000,
+    "time_factor": 1.0000000000,
+    "mass_factor": 1.0000000000,
+    "density_factor": 1.0000000000,
+    "pressure_factor": 1.0000000000,
+    "energy_factor": 1.0000000000
+  },
+  "columns": [
+    {
+      "name": "time",
+      "unit": "s",
+      "description": "Simulation time"
+    },
+    {
+      "name": "pos_x",
+      "unit": "m",
+      "description": "X position"
+    },
+    {
+      "name": "vel_x",
+      "unit": "m/s",
+      "description": "X velocity"
+    },
+    {
+      "name": "acc_x",
+      "unit": "m/s^2",
+      "description": "X acceleration"
+    },
+    {
+      "name": "mass",
+      "unit": "kg",
+      "description": "Particle mass"
+    },
+    {
+      "name": "dens",
+      "unit": "kg/m^3",
+      "description": "Density"
+    },
+    {
+      "name": "pres",
+      "unit": "Pa",
+      "description": "Pressure"
+    },
+    {
+      "name": "ene",
+      "unit": "J/kg",
+      "description": "Specific internal energy"
+    },
+    {
+      "name": "sml",
+      "unit": "m",
+      "description": "Smoothing length"
+    },
+    {
+      "name": "id",
+      "unit": "",
+      "description": "Particle ID"
+    },
+    {
+      "name": "neighbor",
+      "unit": "",
+      "description": "Neighbor count"
+    },
+    {
+      "name": "alpha",
+      "unit": "",
+      "description": "Artificial viscosity coefficient"
+    },
+    {
+      "name": "gradh",
+      "unit": "",
+      "description": "Grad-h correction term"
+    },
+    {
+      "name": "shockSensor",
+      "unit": "",
+      "description": "Shock detection sensor"
+    },
+    {
+      "name": "ene_floored",
+      "unit": "",
+      "description": "Energy floor flag"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 Shock tube analysis with theoretical comparison.
 
 Usage:
-    python shock_tube_analysis.py <output_directory> [gamma]
+    python analyze_shock_tube.py <output_directory> [gamma]
 """
 
 import sys
@@ -11,13 +11,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+# Add analysis package to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent / 'analysis'))
 
-from analysis import (
-    SimulationReader,
-    TheoreticalComparison,
-    ParticlePlotter
-)
+from readers import SimulationReader  
+from plotting import ParticlePlotter
+from theoretical import TheoreticalComparison
 
 
 def analyze_shock_tube(output_dir: str, gamma: float = 1.4):

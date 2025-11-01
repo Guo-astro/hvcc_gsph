@@ -8,6 +8,7 @@ add_executable(sph_unit_tests
     checkpoint_data_test.cpp
     checkpoint_load_test.cpp
     checkpoint_integration_test.cpp
+    # test_simulation_run_directories.cpp  # TODO: Enable when upgrading to C++17
     # test_disph.cpp  # TODO: Fix to match codebase API
     # test_disph_integration.cpp  # TODO: Fix to match codebase API
 )

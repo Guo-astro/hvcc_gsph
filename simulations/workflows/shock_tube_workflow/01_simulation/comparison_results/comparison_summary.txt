@@ -1,21 +1,21 @@
 SHOCK TUBE COMPARISON: GDISPH vs SSPH vs Analytical
 ======================================================================
 
-Number of timesteps: 27
-Time range: 0.0000 to 0.0000
+Number of timesteps: 83
+Time range: 0.0000 to 0.1600
 Gamma: 1.4
 
 Average L2 Density Errors:
-  GDISPH: 8.750000e-01
-  SSPH:   8.750000e-01
+  GDISPH: 1.557182e-01
+  SSPH:   1.739432e-01
 
 Maximum L2 Density Errors:
-  GDISPH: 8.750000e-01
-  SSPH:   8.750000e-01
+  GDISPH: 2.434851e-01
+  SSPH:   2.639006e-01
 
 Minimum L2 Density Errors:
-  GDISPH: 8.750000e-01
-  SSPH:   8.750000e-01
+  GDISPH: 0.000000e+00
+  SSPH:   0.000000e+00
 
-GDISPH had lower error in 0/27 timesteps
-SSPH had lower error in 0/27 timesteps
+GDISPH had lower error in 70/83 timesteps
+SSPH had lower error in 12/83 timesteps
