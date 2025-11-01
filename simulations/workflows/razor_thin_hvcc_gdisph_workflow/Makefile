@@ -11,8 +11,8 @@ SPH3D := $(BUILD_DIR)/sph3d
 RELAX_DIR := $(WORKFLOW_DIR)/01_relaxation
 RELAX_BUILD := $(RELAX_DIR)/build
 RELAX_PLUGIN := $(RELAX_BUILD)/libdisk_relaxation_plugin.dylib
-RELAX_CONFIG := $(RELAX_DIR)/config.json
-RELAX_CONFIG_TEST := $(RELAX_DIR)/config_test.json
+RELAX_CONFIG := $(RELAX_DIR)/config/production.json
+RELAX_CONFIG_TEST := $(RELAX_DIR)/config/test.json
 RELAX_OUTPUT := $(RELAX_DIR)/output/disk_relaxation
 
 # Step 2: Flyby
@@ -26,9 +26,9 @@ IC_DIR := $(WORKFLOW_DIR)/initial_conditions
 IC_FILE := $(IC_DIR)/relaxed_disk.csv
 
 # Animation
-ANIM_SCRIPT := $(RELAX_DIR)/animate_relaxation.py
-ANIM_OUTPUT := $(RELAX_DIR)/relaxation_animation.mp4
-ANIM_STATIC := $(RELAX_DIR)/relaxation_comparison.png
+ANIM_SCRIPT := $(RELAX_DIR)/scripts/animate_relaxation.py
+ANIM_OUTPUT := $(RELAX_DIR)/results/animations/relaxation_animation.mp4
+ANIM_STATIC := $(RELAX_DIR)/results/plots/relaxation_comparison.png
 
 # Colors for output
 RED := \033[0;31m

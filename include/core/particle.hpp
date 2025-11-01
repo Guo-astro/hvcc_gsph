@@ -26,8 +26,8 @@ namespace sph
         real alpha;   // AV coefficient
 
         real gradh; // grad-h term
-        real volume; // volume element V = m/ρ (for DISPH)
-        real q; // smoothed internal energy density (for DISPH): q = Σ_j (m_j*u_j)*W_ij
+        real volume; // volume element V = m/ρ (for DISPH/GDISPH)
+        real q; // smoothed internal energy density (for DISPH/GDISPH): q = Σ_j (m_j*u_j)*W_ij
 
         real phi = 0.0;             // potential
         bool is_point_mass = false; // Flag to indicate if particle is fixed
@@ -42,6 +42,20 @@ namespace sph
         int oldShockMode;
         bool switch_to_no_shock_region = false; // True if DISPH will be used
         real target_rho;
-    };
+        
+        // Constructor with default initialization to prevent uninitialized members
+        SPHParticle() 
+            : pos{}, vel{}, vel_p{}, acc{},
+              mass(0.0), dens(0.0), pres(0.0), ene(0.0),
+              ene_floored(0), ene_p(0.0), dene(0.0),
+              sml(0.1),  // CRITICAL: Default smoothing length (prevents NaN/inf)
+              sound(0.0), balsara(0.0), alpha(2.0),
+              gradh(1.0), volume(0.0), q(0.0),
+              phi(0.0), is_point_mass(false),
+              id(0), neighbor(0), next(nullptr), is_wall(false),
+              shockSensor(0.0), shockMode(0), oldShockMode(0),
+              switch_to_no_shock_region(false), target_rho(0.0)
+        {}
+    };;
 
 }

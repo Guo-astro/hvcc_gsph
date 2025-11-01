@@ -26,9 +26,9 @@ def create_2d_density_plot(df, ax, title=""):
     ax.clear()
     
     # Get particle positions and densities
-    x = df['x'].values
-    y = df['y'].values
-    density = df['dens'].values
+    x = df['pos_x [m]'].values
+    y = df['pos_y [m]'].values
+    density = df['dens [kg/m^3]'].values
     
     # Create scatter plot colored by density
     scatter = ax.scatter(x, y, c=density, s=1, cmap='viridis', 
@@ -78,10 +78,10 @@ def create_relaxation_animation(output_dir, output_file="relaxation.mp4"):
         
         # Plot 2: Radial density profile
         axes[1].clear()
-        x = df['x'].values
-        y = df['y'].values
+        x = df['pos_x [m]'].values
+        y = df['pos_y [m]'].values
         r = np.sqrt(x**2 + y**2)
-        density = df['dens'].values
+        density = df['dens [kg/m^3]'].values
         
         # Bin the data
         r_bins = np.linspace(0, r.max(), 50)
@@ -141,10 +141,10 @@ def create_static_comparison(output_dir, output_file="relaxation_comparison.png"
     create_2d_density_plot(df_final, axes[0,1], "Final Density (x-y)")
     
     # Initial state - radial profile
-    x = df_initial['x'].values
-    y = df_initial['y'].values
+    x = df_initial['pos_x [m]'].values
+    y = df_initial['pos_y [m]'].values
     r_init = np.sqrt(x**2 + y**2)
-    dens_init = df_initial['dens'].values
+    dens_init = df_initial['dens [kg/m^3]'].values
     
     r_bins = np.linspace(0, r_init.max(), 50)
     profile_init = []
@@ -164,10 +164,10 @@ def create_static_comparison(output_dir, output_file="relaxation_comparison.png"
     axes[1,0].legend()
     
     # Final state - radial profile
-    x = df_final['x'].values
-    y = df_final['y'].values
+    x = df_final['pos_x [m]'].values
+    y = df_final['pos_y [m]'].values
     r_final = np.sqrt(x**2 + y**2)
-    dens_final = df_final['dens'].values
+    dens_final = df_final['dens [kg/m^3]'].values
     
     profile_final = []
     r_centers_final = []
@@ -193,7 +193,13 @@ def create_static_comparison(output_dir, output_file="relaxation_comparison.png"
 if __name__ == "__main__":
     # Get the latest run directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_base = os.path.join(script_dir, "output/disk_relaxation")
+    workflow_dir = os.path.dirname(script_dir)  # Go up from scripts/ to workflow root
+    output_base = os.path.join(workflow_dir, "output/disk_relaxation")
+    results_dir = os.path.join(workflow_dir, "results")
+    
+    # Create results directories if they don't exist
+    os.makedirs(os.path.join(results_dir, "plots"), exist_ok=True)
+    os.makedirs(os.path.join(results_dir, "animations"), exist_ok=True)
     
     # Find the latest run
     runs = glob.glob(os.path.join(output_base, "run_*"))
@@ -207,13 +213,13 @@ if __name__ == "__main__":
     # Create static comparison
     print("\nCreating static comparison plot...")
     create_static_comparison(latest_run, 
-                            os.path.join(script_dir, "relaxation_comparison.png"))
+                            os.path.join(results_dir, "plots", "relaxation_comparison.png"))
     
     # Create animation if ffmpeg is available
     print("\nCreating animation...")
     try:
         create_relaxation_animation(latest_run,
-                                   os.path.join(script_dir, "relaxation_animation.mp4"))
+                                   os.path.join(results_dir, "animations", "relaxation_animation.mp4"))
     except Exception as e:
         print(f"Could not create animation: {e}")
         print("Make sure ffmpeg is installed: brew install ffmpeg")

@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Add the simulation plugin
-add_library(razor_thin_hvcc_gdisph_plugin SHARED
-    razor_thin_hvcc_gdisph.cpp
-)
+add_library(flyby_plugin SHARED src/plugin.cpp)
 
 target_link_libraries(razor_thin_hvcc_gdisph_plugin
     sph_lib

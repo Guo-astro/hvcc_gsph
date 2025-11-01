@@ -13,7 +13,7 @@
   "endTime": 500.0,
   "outputInterval": 25.0,
   
-  "SPHType": "disph",
+  "SPHType": "gdisph",
   "kernel": "wendland",
   "gamma": 1.6666666666666667,
   

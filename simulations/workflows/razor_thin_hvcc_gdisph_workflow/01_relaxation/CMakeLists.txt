@@ -18,7 +18,7 @@ add_compile_definitions(DIM=3)
 
 # Create shared library (plugin)
 add_library(disk_relaxation_plugin SHARED
-    disk_relaxation.cpp
+    src/plugin.cpp
 )
 
 # Link against the main SPH library

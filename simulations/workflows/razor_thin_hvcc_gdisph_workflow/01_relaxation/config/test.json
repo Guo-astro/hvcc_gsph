@@ -11,7 +11,7 @@
   "endTime": 10.0,
   "outputInterval": 2.0,
   
-  "SPHType": "disph",
+  "SPHType": "gdisph",
   "kernel": "wendland",
   "gamma": 1.6666666666666667,
   
@@ -33,7 +33,7 @@
   "densityRelaxationMaxIter": 100,
   "densityRelaxationTolerance": 0.1,
   "densityRelaxationDamping": 0.2,
-  "laneEmdenTable": "simulations/workflows/razor_thin_hvcc_gdisph_workflow/01_relaxation/xi_theta.csv",
+  "laneEmdenTable": "xi_theta.csv",
   
   "enableBinary": true,
   "enableCSV": true,
