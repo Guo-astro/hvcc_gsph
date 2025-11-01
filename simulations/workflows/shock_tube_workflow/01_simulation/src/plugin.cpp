@@ -86,14 +86,17 @@ public:
         sim->set_particles(p);
         sim->set_particle_num(num);
         
-        // Set simulation parameters
-        param->type = SPHType::GDISPH;
-        param->time.end = 0.2;
-        param->time.output = 0.02;
-        param->cfl.sound = 0.3;
-        param->physics.neighbor_number = 50;
+        // Set simulation parameters (SPH type is read from config, not hardcoded)
+        // param->type is already set from config file
+        // param->time.end is already set from config file
+        // param->time.output is already set from config file
+        // param->cfl.sound is already set from config file
+        // param->physics.neighbor_number is already set from config file
         
         std::cout << "Created " << num << " particles\n";
+        std::cout << "  SPH Type: " << (param->type == SPHType::GDISPH ? "GDISPH" : 
+                                       param->type == SPHType::SSPH ? "SSPH" : 
+                                       param->type == SPHType::DISPH ? "DISPH" : "UNKNOWN") << "\n";
         std::cout << "  Left state:  ρ=" << 1.0 << ", P=" << 1.0 << "\n";
         std::cout << "  Right state: ρ=" << 0.125 << ", P=" << 0.1 << "\n";
     }

@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "workflow": "shock_tube",
+    "step": "01_simulation",
+    "purpose": "Sod shock tube problem using GDISPH",
+    "simulation_name": "shock_tube_gdisph",
+    "description": "1D Riemann problem with GDISPH (Godunov DISPH) method",
+    "dimension": 1,
+    "physics": "hydrodynamics",
+    "sph_method": "GDISPH"
+  },
+  
+  "outputDirectory": "results_gdisph",
+  
+  "endTime": 0.2,
+  "outputInterval": 0.01,
+  
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.4,
+  
+  "neighborNumber": 50,
+  "iterativeSml": true,
+  
+  "avAlpha": 1.0,
+  "useBalsaraSwitch": false,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  
+  "useGravity": false,
+  "periodic": false,
+  
+  "enableBinary": true,
+  "enableCSV": true,
+  
+  "enableCheckpointing": false,
+  
+  "cflSound": 0.3,
+  "cflForce": 0.5,
+  
+  "_comments": {
+    "SPHType": "GDISPH for better shock capturing with Riemann solver",
+    "endTime": "Standard Sod problem time = 0.2",
+    "outputInterval": "Save every 0.01 for detailed timestep comparison",
+    "gamma": "Ideal gas with adiabatic index 1.4",
+    "neighborNumber": "Sufficient neighbors for 1D simulation"
+  }
+}
