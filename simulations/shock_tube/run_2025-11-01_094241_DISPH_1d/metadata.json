@@ -1,0 +1,50 @@
+{
+  "run_info": {
+    "run_id": "run_2025-11-01_094241_DISPH_1d",
+    "sample_name": "shock_tube",
+    "description": "",
+    "created_at": "",
+    "completed_at": "",
+    "duration_seconds": 2.443000,
+    "user": "",
+    "hostname": ""
+  },
+  "code_version": {
+    "git_hash": "",
+    "git_branch": "",
+    "git_dirty": false,
+    "compiler": ""
+  },
+  "simulation_params": {
+    "sph_type": "DISPH",
+    "dimension": 1,
+    "particle_count": 500,
+    "gamma": 1.400000,
+    "cfl_sound": 0.300000,
+    "end_time": 0.200000,
+    "output_interval": 0.020000,
+    "neighbor_number": 50,
+    "use_balsara": true,
+    "use_time_dependent_av": false
+  },
+  "unit_system": {
+    "length_unit": "m",
+    "time_unit": "s",
+    "mass_unit": "kg",
+    "length_factor": 1.000000,
+    "time_factor": 1.000000,
+    "mass_factor": 1.000000
+  },
+  "output": {
+    "formats": ["csv", "binary"],
+    "snapshot_count": 0,
+    "snapshot_times": [],
+    "total_output_size_mb": 0.000000
+  },
+  "performance": {
+    "total_timesteps": 22,
+    "wall_time_seconds": 2.443000,
+    "timesteps_per_second": 9.005321,
+    "particles_per_second": 4502.660663
+  }
+}

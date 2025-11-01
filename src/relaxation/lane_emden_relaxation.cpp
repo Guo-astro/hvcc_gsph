@@ -1,9 +1,9 @@
 #include "relaxation/lane_emden_relaxation.hpp"
 #include <omp.h>
 #include <algorithm>
-#include "logger.hpp"
-#include "exception.hpp"
-#include "defines.hpp"
+#include "core/logger.hpp"
+#include "utilities/exception.hpp"
+#include "utilities/defines.hpp"
 
 namespace sph
 {

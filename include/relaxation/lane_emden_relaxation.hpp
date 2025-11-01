@@ -2,8 +2,8 @@
 
 #include "density_relaxation_base.hpp"
 #include "lane_emden_data.hpp"
-#include "particle.hpp"   // For SPHParticle
-#include "parameters.hpp" // For SPHParameters
+#include "core/particle.hpp"   // For SPHParticle
+#include "core/parameters.hpp" // For SPHParameters
 
 namespace sph
 {

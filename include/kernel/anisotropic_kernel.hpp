@@ -3,8 +3,8 @@
 #include <cmath>
 #include <stdexcept>
 #include "kernel_function.hpp"
-#include "vector_type.hpp"
-#include "defines.hpp"
+#include "utilities/vector_type.hpp"
+#include "utilities/defines.hpp"
 
 namespace sph
 {

@@ -3,7 +3,7 @@
  * ================================ */
 #pragma once
 
-#include "vector_type.hpp"
+#include "utilities/vector_type.hpp"
 
 namespace sph
 {

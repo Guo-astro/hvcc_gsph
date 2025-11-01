@@ -1,0 +1,138 @@
+[project]
+name = "gsph-analysis"
+version = "1.0.0"
+description = "Analysis and visualization toolkit for GSPH SPH simulations"
+authors = [
+    {name = "GSPH Development Team"}
+]
+readme = "analysis/README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+keywords = ["sph", "hydrodynamics", "astrophysics", "simulation", "analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Core dependencies for analysis toolkit
+dependencies = [
+    "numpy>=1.20.0,<3.0.0",
+    "scipy>=1.7.0,<2.0.0",
+    "pandas>=1.3.0,<3.0.0",
+    "matplotlib>=3.4.0,<4.0.0",
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "jupyter>=1.0.0",
+    "ipython>=8.0.0",
+    "ruff>=0.1.0",  # Fast linter and formatter
+    "mypy>=1.0.0",  # Type checking
+    "pytest>=7.0.0",  # Testing framework
+    "pytest-cov>=4.0.0",  # Coverage reporting
+]
+
+# Enhanced visualization
+viz = [
+    "seaborn>=0.11.0",  # Statistical visualization
+    "plotly>=5.0.0",  # Interactive plots
+]
+
+# All optional dependencies
+all = [
+    "jupyter>=1.0.0",
+    "ipython>=8.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "seaborn>=0.11.0",
+    "plotly>=5.0.0",
+]
+
+# Entry points for command-line tools
+[project.scripts]
+gsph-analyze = "analysis.cli.analyze:main"
+gsph-animate = "analysis.cli.animate:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Hatchling configuration
+[tool.hatch.build.targets.wheel]
+packages = ["analysis"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["analysis"]
+
+# Ruff configuration (linter and formatter)
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+# MyPy configuration (type checking)
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Gradually enable
+ignore_missing_imports = true  # For third-party libraries without stubs
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--cov=analysis",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["analysis"]
+omit = [
+    "*/tests/*",
+    "*/examples/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

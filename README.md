@@ -1,76 +1,248 @@
 # SPHCODE
 Smoothed Particle Hydrodynamics (SPH)法のサンプルコードです。圧縮性流体専用です。
 
+> **🎉 最近のアップデート (2025-11-01):**  
+> **Checkpoint/Resume System**: 長時間シミュレーションの一時停止・再開機能を実装！  
+> - 自動チェックポイント保存（設定可能な間隔）  
+> - Ctrl+Cによる安全な中断とチェックポイント保存  
+> - シミュレーションの正確な再開  
+> 詳細は [CHECKPOINT_COMPLETE_SUMMARY.md](CHECKPOINT_COMPLETE_SUMMARY.md) をご覧ください。
+>
+> **プロジェクトリファクタリング (2025-10-31):**  
+> コードベースが階層的に整理され、Python解析ツールが `uv` を使用するように modernized されました。  
+> 詳細は [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md) をご覧ください。
+
+## プロジェクト構造
+
+### C++コード
+```
+src/
+├── core/            # シミュレーションフレームワーク (solver, simulation, output)
+├── modules/         # モジュールシステム (pre_interaction, fluid_force, etc.)
+├── algorithms/      # SPHアルゴリズム実装
+│   ├── ssph/       # Standard SPH
+│   ├── disph/      # Density Independent SPH
+│   ├── gsph/       # Godunov SPH
+│   └── gdisph/     # Godunov-DISPH
+├── tree/           # 近傍粒子探索 (Barnes-Hut tree)
+├── utilities/      # ヘルパーコード
+└── sample/         # サンプルシミュレーション
+```
+
+### Python解析ツール
+```
+analysis/
+├── readers.py       # データ読み込み
+├── conservation.py  # 保存量チェック
+├── plotting.py      # 可視化
+├── theoretical.py   # 理論解
+└── cli/            # コマンドラインツール
+```
+
+詳細は [ARCHITECTURE.md](ARCHITECTURE.md) と [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) をご覧ください。
+
 ## コンパイル
-次元を `include/defines.hpp` の `DIM` に設定してからコンパイルします。
+次元を `include/utilities/defines.hpp` の `DIM` に設定してからコンパイルします。
 
-### Visual Studio 2017
-`sph.sln` を開いてコンパイルします。環境変数 `BOOST_INC_PATH` にBoostのパスを設定しておいてください。
-* 例: `BOOST_INC_PATH=C:\boost\boost_1_67_0\include\boost-1_67`
+### CMake (推奨)
+MacOS/Linuxの場合、次のコマンドでビルドします：
 
-### Makefile
-Linux環境ではMakefileを使ってコンパイルできます。あまりちゃんと動作確認してません。
-GCCバージョン7.4.0でコンパイルチェックしています。
+```bash
+# Nixを使う場合（推奨）
+nix develop        # 開発環境をセットアップ
+rm -rf build && mkdir build && cd build
+cmake ..
+make -j8
+./sph shock_tube ../sample/shock_tube/shock_tube.json 1
+```
 
-[Makefileの書き方に関する備忘録 その4 - minus9d's diary](https://minus9d.hatenablog.com/entry/2017/10/20/222901) を参考にしています。
-
-### CMake
-MacOS: 次のコマンドでビルドします。
-```Shell
+MacOS (Homebrewを使う場合):
+```bash
+brew install llvm libomp boost
 brew --prefix llvm  
 brew --prefix libomp  
-echo 'export OpenMP_ROOT=$(brew --prefix)/opt/libomp' >> ~/.zshrc
+export OpenMP_ROOT=$(brew --prefix)/opt/libomp
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 
-sudo ln -s /opt/homebrew/Cellar/boost /usr/local/bin/homebrew/Cellar/boost
+# Build all dimensions (1D, 2D, 3D)
+./scripts/build_all_dimensions.sh build
 
-echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
-echo -e 'export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"\nexport CPPFLAGS="-I/opt/homebrew/opt/llvm/include"' >> ~/.zshrc
-source ~/.zshrc
+# Or build single dimension
+cmake -B build -DBUILD_DIM=2  # 1, 2, or 3
+cmake --build build -j8
 
-rm -rf build && mkdir build && cd build
-cmake -B build \
--DOpenMP_C_FLAGS=-fopenmp=lomp \
--DOpenMP_CXX_FLAGS=-fopenmp=lomp \
--DOpenMP_C_LIB_NAMES="libomp" \
--DOpenMP_CXX_LIB_NAMES="libomp" \
--DOpenMP_libomp_LIBRARY="/opt/homebrew/opt/libomp//lib/libomp.dylib" \
--DOpenMP_CXX_FLAGS="-Xpreprocessor -fopenmp /opt/homebrew/opt/libomp/lib/libomp.dylib -I/opt/homebrew/opt/libomp/include" \
--DOpenMP_CXX_LIB_NAMES="libomp" \
--DOpenMP_C_FLAGS="-Xpreprocessor -fopenmp /opt/homebrew/opt/libomp/lib/libomp.dylib -I/opt/homebrew/opt/libomp/include"
+# Run simulations
+./build/sph1d shock_tube  # 1D
+./build/sph2d khi         # 2D
+./build/sph3d evrard      # 3D
+```
 
+**Note**: GSPHCODE now supports building for all three spatial dimensions (1D, 2D, 3D) simultaneously. See `DIMENSION_BUILD_SYSTEM.md` for details.
 
-cd build && make
-./sph shock_tube 1
+Windows (Visual Studio):
+```bash
+# Visual Studio 2017以降
+# 環境変数を設定: BOOST_INC_PATH=C:\boost\boost_1_67_0\include\boost-1_67
+cmake -B build -DBUILD_DIM=2 -G "Visual Studio 15 2017 Win64"
+# Visual StudioでSPHCODE.slnを開いてビルド
+```
+
+## Python解析ツール
+
+### セットアップ
+Pythonツールは `uv` パッケージマネージャを使用します：
+
+```bash
+# uvのインストール（初回のみ）
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 依存パッケージのインストール
+uv sync
+
+# 解析例
+cd sample/shock_tube
+../../build/sph shock_tube shock_tube.json 1
+
+# クイック解析
+uv run python -m analysis.cli.analyze quick shock_tube
+
+# アニメーション作成
+uv run python -m analysis.cli.animate shock_tube
+```
+
+### Jupyter Notebook
+```bash
+uv run jupyter lab
+# analysis/example_analysis.ipynb を開く
+```
+
+### 手動解析（Pythonスクリプト）
+```python
+import sys
+sys.path.append('../../')  # analysisモジュールへのパス
+
+from analysis import readers, plotting, conservation
+
+# データ読み込み
+data = readers.read_all_csv('results/DISPH/shock_tube/1D/')
+
+# プロット
+plotting.plot_shock_tube(data, theoretical_solution=True)
+
+# 保存量チェック
+conservation.check_energy_conservation(data)
 ```
 
 ## 実行
-### サンプル実行
-次のコマンドを実行します。
-```Shell
-./sph shock_tube 1
+### サンプル実行（プリセット）
+`sample/` ディレクトリにあるプリセット設定を使用：
+```bash
+cd build
+./sph shock_tube ../sample/shock_tube/shock_tube.json 1
 ```
-#### \<sample\>
-サンプルの名前を指定します。以下のサンプルを用意しています。
+
+#### サンプル一覧
 
 |サンプル名|DIM|説明|
 |:---|:---|:---|
 |shock_tube|1|衝撃波管問題 (e.g. Hernquist & Katz 1989)|
-|pairing_instability|2|粒子の初期配置をグリッド状から少しだけずらしています。カーネル関数の設定によっては粒子同士がくっついてしまいます。|
-|gresho_chan_vortex|2|Gresho-Chan vortex (Gresho & Chan 1990)。圧力勾配力と遠心力が釣り合うような初期条件です。|
-|hydrostatic|2|静水圧 (Saitoh & Makino 2013)。圧力は全領域で一定ですが密度差があり、高密度領域を低密度領域が囲うような粒子配置となっています。|
-|khi|2|Kelvin-Helmholtz 不安定性 (Springel 2010)|
-|evrard|3|Evrard collapse (Evrard 1988)。自己重力入りのテスト計算です。|
+|shock_tube_2d|2|2次元衝撃波管問題|
+|sedov_taylor|2|Sedov-Taylor爆発|
+|evrard|3|Evrard collapse (自己重力テスト)|
+|gresho_chan_vortex|2|Gresho-Chan vortex (圧力平衡)|
+|hydrostatic|2|静水圧平衡 (Saitoh & Makino 2013)|
+|khi|2|Kelvin-Helmholtz 不安定性|
+|lane_emden|3|Lane-Emden球 (自己重力)|
+|pairing_instability|2|粒子ペアリング不安定性テスト|
+|vacuum_test|2|真空境界テスト|
+
+その他15+サンプルが利用可能 (`ls sample/` で確認)。
 
 #### \<threads\>
 OpenMPのスレッド数を指定します。省略した場合は使用可能な最大スレッド数 (`omp_get_max_threads()` の戻り値)となります。
 
-### 任意設定で実行
-`src/solver.cpp` の `Solver::make_initial_condition()` に初期条件を実装し、コンパイルしてから、次のコマンドを実行します。
-```Shell
+### カスタム設定で実行
+独自のJSON設定ファイルを作成して実行：
+```bash
+cd build
 ./sph <parameter_file> <threads>
 ```
-#### \<parameter_file\>
-パラメータを入力したjsonファイルを指定します。
+
+設定ファイルのテンプレートは `configs/base/` にあります。
+
+### チェックポイント/再開機能 (NEW!)
+長時間シミュレーションを一時停止・再開できます：
+
+#### 自動チェックポイント
+```json
+{
+  "simulation": "shock_tube",
+  "endTime": 100.0,
+  "enableCheckpointing": true,
+  "checkpointInterval": 10.0,
+  "checkpointMaxKeep": 3,
+  "checkpointOnInterrupt": true
+}
+```
+
+#### Ctrl+Cで安全に中断
+シミュレーション実行中に Ctrl+C を押すと自動的にチェックポイントが保存されます：
+```
+*** Interrupt signal received (Ctrl+C) ***
+Saving checkpoint at t=47.3 to output/run_xyz/checkpoints/checkpoint_t47.300000.chk
+Resume with: "resumeFromCheckpoint": true, "resumeCheckpointFile": "output/run_xyz/checkpoints/checkpoint_t47.300000.chk"
+```
+
+#### チェックポイントから再開
+```json
+{
+  "resumeFromCheckpoint": true,
+  "resumeCheckpointFile": "output/run_xyz/checkpoints/checkpoint_t47.300000.chk",
+  "enableCheckpointing": true
+}
+```
+
+詳細は [CHECKPOINT_COMPLETE_SUMMARY.md](CHECKPOINT_COMPLETE_SUMMARY.md) を参照してください。
+
+## 開発とコントリビューション
+
+### プロジェクト構造の理解
+- **ARCHITECTURE.md** - コードベースのアーキテクチャ解説
+- **DEVELOPER_GUIDE.md** - 開発者向けガイド（モジュール追加方法など）
+- **REFACTORING_SUMMARY.md** - リファクタリングの詳細記録
+- **QUICK_REFERENCE.md** - クイックリファレンス
+
+### 開発環境のセットアップ
+```bash
+# Nix環境（推奨）
+nix develop
+
+# または手動セットアップ
+brew install llvm libomp boost cmake
+# または
+apt-get install clang libomp-dev libboost-all-dev cmake
+```
+
+### テストの実行
+```bash
+# 全サンプルの実行確認
+cd build
+for sample in ../sample/*/; do
+    name=$(basename "$sample")
+    if [ -f "../sample/$name/$name.json" ]; then
+        echo "Testing $name..."
+        ./sph "$name" "../sample/$name/$name.json" 1
+    fi
+done
+
+# Python解析テスト
+uv run pytest analysis/  # (テスト実装予定)
+```
+
+### コントリビューション
+新しいサンプルやSPH手法の追加については `DEVELOPER_GUIDE.md` をご覧ください。
 
 ## 計算例
 ### 衝撃波管問題

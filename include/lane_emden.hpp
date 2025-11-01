@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
-#include "particle.hpp"
+#include "core/particle.hpp"
 
 namespace sph
 {

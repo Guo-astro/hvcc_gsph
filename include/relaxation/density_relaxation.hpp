@@ -7,8 +7,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
-#include "simulation.hpp" // Contains Simulation class
-#include "parameters.hpp" // Contains SPHParameters struct
+#include "core/simulation.hpp" // Contains Simulation class
+#include "core/parameters.hpp" // Contains SPHParameters struct
 
 namespace sph
 {

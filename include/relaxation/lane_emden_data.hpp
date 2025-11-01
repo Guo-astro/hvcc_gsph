@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-#include "defines.hpp"
+#include "utilities/defines.hpp"
 
 namespace sph
 {

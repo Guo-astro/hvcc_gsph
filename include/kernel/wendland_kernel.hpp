@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cassert>
 
-#include "defines.hpp"
+#include "utilities/defines.hpp"
 #include "kernel_function.hpp"
 
 namespace sph

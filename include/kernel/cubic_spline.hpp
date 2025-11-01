@@ -3,9 +3,9 @@
 #include <cmath>
 #include <cassert>
 
-#include "defines.hpp"
+#include "utilities/defines.hpp"
 #include "kernel_function.hpp"
-#include "vector_type.hpp"
+#include "utilities/vector_type.hpp"
 
 namespace sph
 {

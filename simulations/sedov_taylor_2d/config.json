@@ -1,0 +1,32 @@
+{
+  "_description": "2D Sedov-Taylor blast wave using DISPH",
+  "_simulation": "sedov_taylor_2d",
+  "_version": "1.0.0",
+  
+  "SPHType": "disph",
+  "kernel": "cubic_spline",
+  
+  "cflSound": 0.3,
+  "cflForce": 0.125,
+  
+  "avAlpha": 1.0,
+  "useTimeDependentAV": false,
+  
+  "neighborNumber": 32,
+  "leafParticleNumber": 32,
+  "iterativeSmoothingLength": true,
+  
+  "forceCorrection": true,
+  "periodic": false,
+  
+  "gamma": 1.4,
+  
+  "endTime": 0.1,
+  "outputTime": 0.01,
+  
+  "outputDirectory": "simulations/sedov_taylor_2d",
+  "N": 10000,
+  
+  "rangeMin": [-0.5, -0.5],
+  "rangeMax": [0.5, 0.5]
+}

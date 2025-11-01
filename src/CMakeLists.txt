@@ -1,30 +1,11 @@
-target_sources(sph_lib
-    PRIVATE
-        main.cpp
-        bhtree.cpp
-        exhaustive_search.cpp
-        fluid_force.cpp
-        gravity_force.cpp
-        logger.cpp
-        output.cpp
-        pre_interaction.cpp
-        sample_registry.cpp
-        simulation.cpp
-        solver.cpp
-        timestep.cpp
-        heating_cooling.cpp
-        inplane_integration.cpp
-        shock_detection.cpp
-)
-
-# Add subdirectories containing additional source files.
-add_subdirectory(disph)
-add_subdirectory(gdisph)
-add_subdirectory(gsph)
-add_subdirectory(sample)
-add_subdirectory(production_sims)
+# Add subdirectories containing source files
+add_subdirectory(core)
+add_subdirectory(modules)
+add_subdirectory(tree)
+add_subdirectory(algorithms)
+add_subdirectory(utilities)
+# add_subdirectory(sample)  # REMOVED - Legacy samples deleted
+# add_subdirectory(samples)  # REMOVED - Migrated to simulations/ as plugins
+# add_subdirectory(production_sims)  # REMOVED - Migrated to samples/production
 add_subdirectory(relaxation)
 
-# Optionally, copy sample data into the build directory.
-file(COPY ${CMAKE_SOURCE_DIR}/sample DESTINATION ${CMAKE_BINARY_DIR})
-file(COPY ${CMAKE_SOURCE_DIR}/production_sims DESTINATION ${CMAKE_BINARY_DIR})

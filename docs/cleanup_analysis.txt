@@ -1,0 +1,99 @@
+# Root Directory Markdown Files Analysis
+Date: 2025-11-01
+
+## Files Found (14 total)
+
+### 🆕 New Files (Keep - Just Created)
+1. CLEANUP_AND_REDESIGN_PLAN.md - This cleanup plan document
+2. IMPLEMENTATION_ROADMAP.md - Task roadmap for cleanup + checkpoint
+
+### 📚 Migration Documentation (7 files - CONSOLIDATE)
+3. MIGRATION_COMPLETE.md - "Migration Complete: New Self-Contained Simulation Run System"
+4. SAMPLES_MIGRATION_COMPLETE.md - "Complete src/samples Migration Summary"
+5. SAMPLES_MIGRATION_REFERENCE.md - "Sample Simulations Migration Reference"
+6. REORGANIZATION_SUMMARY.md - "2D Sedov-Taylor Implementation & Reorganization Summary"
+
+### 🔧 Refactoring Documentation (3 files - CONSOLIDATE)
+7. REFACTORING_COMPLETE.md - "Refactoring Complete: New Simulation Run System"
+8. REFACTORING_FINAL.md - "Complete Refactoring Finished!"
+9. REFACTORING_SUMMARY.md - "Refactoring Summary"
+
+### 🏗️ Plugin Documentation (2 files - CONSOLIDATE)
+10. PLUGIN_ARCHITECTURE.md - "Plugin-Based Architecture: Complete Migration Plan"
+11. PLUGIN_SYSTEM_SUCCESS.md - "Plugin System Successfully Implemented!"
+
+### 📖 User/Quick Reference (2 files - CONSOLIDATE)
+12. QUICK_REFERENCE.md - "Quick Reference: New Output System"
+13. WHERE_THINGS_ARE.md - "Quick Reference: Where Things Are Now"
+
+### 📄 Main Documentation (1 file - KEEP but simplify)
+14. README.md - Main repository README (Japanese + English mix)
+
+## Consolidation Plan
+
+### Target: docs/developer/MIGRATION_HISTORY.md
+Merge:
+- MIGRATION_COMPLETE.md
+- SAMPLES_MIGRATION_COMPLETE.md
+- SAMPLES_MIGRATION_REFERENCE.md
+- REORGANIZATION_SUMMARY.md
+
+### Target: docs/developer/REFACTORING_NOTES.md
+Merge:
+- REFACTORING_COMPLETE.md
+- REFACTORING_FINAL.md
+- REFACTORING_SUMMARY.md
+
+### Target: docs/architecture/PLUGIN_ARCHITECTURE.md
+Merge:
+- PLUGIN_ARCHITECTURE.md
+- PLUGIN_SYSTEM_SUCCESS.md
+
+### Target: docs/user_guide/QUICK_START.md (enhance existing)
+Merge:
+- QUICK_REFERENCE.md
+
+### Target: docs/README.md (new - SSOT navigation)
+Merge:
+- WHERE_THINGS_ARE.md
+
+### Keep in Root (Final State)
+- README.md (simplified)
+- CLEANUP_AND_REDESIGN_PLAN.md (temporary, will archive after completion)
+- IMPLEMENTATION_ROADMAP.md (temporary, will archive after completion)
+- LICENSE
+- CMakeLists.txt
+- Makefile
+- pyproject.toml
+- flake.nix
+
+## Content Overlap Assessment
+
+Checked docs/ structure - directories exist:
+- docs/developer/ - exists
+- docs/architecture/ - exists
+- docs/user_guide/ - exists
+
+## Summary Statistics
+- Total markdown files in root: 14 files
+- Files to consolidate and remove: 11 files
+- Files to keep in root: 3 files (README.md + 2 planning docs)
+- Expected reduction: 11 → 3 markdown files in root
+
+## Additional Cleanup
+
+### Test Debris to Remove
+- test_results.txt
+- test_new_output_system.py  
+- disph_run.log
+
+### Files to Relocate
+- disph_paper.pdf → docs/references/
+
+## Next Actions (Tasks 2-14)
+1. Create consolidated docs (Tasks 2-7)
+2. Delete redundant files (Task 11)
+3. Update cross-references (Task 12)
+4. Add .gitignore entries (Task 13)
+5. Verify organization (Task 14)
+```

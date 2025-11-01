@@ -5,9 +5,9 @@
 
 // 数値微分と比較する
 #include <iostream>
-#include "sample_registry.hpp"
-#include "simulation.hpp"
-#include "parameters.hpp"
+#include "core/sample_registry.hpp"
+#include "core/simulation.hpp"
+#include "core/parameters.hpp"
 
 // Define a function that will perform your kernel tests.
 namespace sph

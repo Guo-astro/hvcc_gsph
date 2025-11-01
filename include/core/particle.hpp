@@ -1,0 +1,47 @@
+#pragma once
+
+#include "utilities/vector_type.hpp"
+
+namespace sph
+{
+
+    class SPHParticle
+    {
+    public:
+        vec_t pos;       // position
+        vec_t vel;       // velocity
+        vec_t vel_p;     // velocity at t + dt/2
+        vec_t acc;       // acceleration
+        real mass;       // mass
+        real dens;       // mass density
+        real pres;       // pressure
+        real ene;        // internal energy
+        int ene_floored; // Flag: 1 if energy floored, 0 otherwise
+        real ene_p;      // internal energy at t + dt/2
+        real dene;       // du/dt
+        real sml;        // smoothing length
+        real sound;      // sound speed
+
+        real balsara; // balsara switch
+        real alpha;   // AV coefficient
+
+        real gradh; // grad-h term
+        real volume; // volume element V = m/ρ (for DISPH)
+        real q; // smoothed internal energy density (for DISPH): q = Σ_j (m_j*u_j)*W_ij
+
+        real phi = 0.0;             // potential
+        bool is_point_mass = false; // Flag to indicate if particle is fixed
+
+        int id;
+        int neighbor;
+        SPHParticle *next = nullptr;
+        bool is_wall = false; // <<-- flag indicating a wall particle
+
+        real shockSensor; // dimensionless measure of compression
+        int shockMode;    // 1 = currently in shock mode, 0 = not
+        int oldShockMode;
+        bool switch_to_no_shock_region = false; // True if DISPH will be used
+        real target_rho;
+    };
+
+}

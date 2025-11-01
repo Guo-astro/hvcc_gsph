@@ -23,3 +23,17 @@ build_manual/
 codefetch/
 results/
 .codefetchignore
+
+# Test output
+*.log
+*_run.log
+test_results.txt
+test_output/
+
+# Python test files
+test_*.py
+!test/test_*.py  # Keep tests in test/
+
+# Temporary simulation outputs (keep in simulations/)
+*.csv.tmp
+*.sph.tmp.cache/

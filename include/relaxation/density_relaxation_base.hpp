@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
-#include "simulation.hpp"
-#include "parameters.hpp"
+#include "core/simulation.hpp"
+#include "core/parameters.hpp"
 
 namespace sph
 {

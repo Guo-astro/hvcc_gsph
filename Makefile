@@ -123,9 +123,9 @@ run_shock_tube_2p5d:
 
 
 # Run sample: shock_tube_strong_shock
-run_shock_tube_strong_shock:
+run_shock_tube_strong_shock: build
 	@echo "Running shock_tube_strong_shock sample..."
-	./build_manual/sph shock_tube_strong_shock ./sample/shock_tube_strong_shock/shock_tube_strong_shock.json 8
+	./build_manual/sph shock_tube_strong_shock ./sample/shock_tube_strong_shock/shock_tube_strong_shock.json 1
 
 # Run sample: sedov_taylor
 run_sedov_taylor:
