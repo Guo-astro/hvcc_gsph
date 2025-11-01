@@ -1,0 +1,50 @@
+{
+  "run_info": {
+    "run_id": "run_2025-11-01_153056_DISPH_3d",
+    "sample_name": "/Users/guo/OSS/sphcode/simulations/workflows/razor_thin_hvcc_workflow/01_relaxation/build/libdisk_relaxation_plugin.dylib",
+    "description": "",
+    "created_at": "",
+    "completed_at": "",
+    "duration_seconds": 66.749000,
+    "user": "",
+    "hostname": ""
+  },
+  "code_version": {
+    "git_hash": "",
+    "git_branch": "",
+    "git_dirty": true,
+    "compiler": ""
+  },
+  "simulation_params": {
+    "sph_type": "DISPH",
+    "dimension": 3,
+    "particle_count": 9880,
+    "gamma": 1.666667,
+    "cfl_sound": 0.300000,
+    "end_time": 10.000000,
+    "output_interval": 0.010000,
+    "neighbor_number": 64,
+    "use_balsara": true,
+    "use_time_dependent_av": false
+  },
+  "unit_system": {
+    "length_unit": "m",
+    "time_unit": "s",
+    "mass_unit": "kg",
+    "length_factor": 1.000000,
+    "time_factor": 1.000000,
+    "mass_factor": 1.000000
+  },
+  "output": {
+    "formats": ["csv", "binary"],
+    "snapshot_count": 0,
+    "snapshot_times": [],
+    "total_output_size_mb": 0.000000
+  },
+  "performance": {
+    "total_timesteps": 4,
+    "wall_time_seconds": 66.749000,
+    "timesteps_per_second": 0.059926,
+    "particles_per_second": 592.068795
+  }
+}

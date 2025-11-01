@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "workflow": "razor_thin_hvcc",
+    "step": "02_flyby",
+    "purpose": "IMBH flyby simulation with relaxed disk initial conditions",
+    "input_source": "../initial_conditions/relaxed_disk.csv from step 01_relaxation",
+    "simulation_name": "razor_thin_hvcc_gdisph",
+    "description": "Razor-thin HVCC encountering IMBH using GDISPH (Godunov DISPH)",
+    "dimension": 3,
+    "physics": "hydrodynamics + self-gravity + point mass (IMBH)",
+    "sph_method": "GDISPH"
+  },
+  
+  "initialConditionsFile": "../initial_conditions/relaxed_disk.csv",
+  "outputDirectory": "simulations/workflows/razor_thin_hvcc_workflow/02_flyby/output_gdisph",
+  
+  "endTime": 30.0,
+  "outputInterval": 0.5,
+  
+  "SPHType": "gdisph",
+  "kernel": "wendland",
+  "gamma": 1.6666666666666667,
+  
+  "neighborNumber": 512,
+  "iterativeSml": true,
+  
+  "avAlpha": 2.0,
+  "useBalsaraSwitch": true,
+  "useTimeDependentAV": false,
+  "useArtificialConductivity": false,
+  
+  "leafParticleNumber": 64,
+  
+  "useGravity": true,
+  "G": 0.0043,
+  "two_and_half_sim": true,
+  
+  "periodic": false,
+  "recenterParticles": true,
+  
+  "impact_parameter": 1.0,
+  "initial_velocity": 10.0,
+  "point_mass": 100000.0,
+  
+  "enableBinary": true,
+  "enableCSV": false,
+  
+  "enableCheckpointing": true,
+  "checkpointInterval": 2.0,
+  "checkpointMaxKeep": 5,
+  "checkpointOnInterrupt": true,
+  "checkpointDirectory": "checkpoints",
+  
+  "cflSound": 0.3,
+  "cflForce": 0.5,
+  
+  "_comments": {
+    "SPHType": "GDISPH for better shock capturing compared to DISPH",
+    "initialConditionsFile": "Must point to relaxed disk from step 01",
+    "impact_parameter": "Distance of closest approach in parsecs",
+    "initial_velocity": "Infall speed in km/s",
+    "point_mass": "IMBH mass in solar masses (10^5 M☉)",
+    "neighborNumber": "High resolution for gravity and shock calculations",
+    "checkpointInterval": "Frequent checkpoints for long production runs"
+  }
+}

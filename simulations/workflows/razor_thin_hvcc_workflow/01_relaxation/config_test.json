@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "workflow": "razor_thin_hvcc",
+    "step": "01_relaxation",
+    "purpose": "QUICK TEST - Generate hydrostatic disk",
+    "dimension": 3
+  },
+  
+  "outputDirectory": "simulations/workflows/razor_thin_hvcc_workflow/01_relaxation/output",
+  
+  "endTime": 10.0,
+  "outputInterval": 2.0,
+  
+  "SPHType": "disph",
+  "kernel": "wendland",
+  "gamma": 1.6666666666666667,
+  
+  "neighborNumber": 64,
+  "iterativeSml": true,
+  
+  "avAlpha": 2.0,
+  "useBalsaraSwitch": true,
+  
+  "leafParticleNumber": 32,
+  
+  "useGravity": true,
+  "G": 0.0043,
+  "two_and_half_sim": true,
+  
+  "periodic": false,
+  
+  "useDensityRelaxation": true,
+  "densityRelaxationMaxIter": 100,
+  "densityRelaxationTolerance": 0.1,
+  "densityRelaxationDamping": 0.2,
+  "laneEmdenTable": "simulations/workflows/razor_thin_hvcc_workflow/01_relaxation/xi_theta.csv",
+  
+  "enableBinary": true,
+  "enableCSV": true,
+  
+  "enableCheckpointing": true,
+  "checkpointInterval": 5.0,
+  "checkpointMaxKeep": 2,
+  
+  "cflSound": 0.3,
+  "cflForce": 0.5
+}

@@ -1,0 +1,20 @@
+# Workflow output and intermediate files
+
+# Step 1 output
+01_relaxation/output/
+01_relaxation/checkpoints/
+01_relaxation/build/
+
+# Step 2 output
+02_flyby/output/
+02_flyby/output_gdisph/
+02_flyby/checkpoints/
+02_flyby/build/
+
+# Initial conditions (large CSV files)
+initial_conditions/*.csv
+initial_conditions/*.sph
+
+# Keep README files
+!*/README.md
+!.gitignore
